@@ -86,7 +86,7 @@ public class ThreeLevelListAdapter extends BaseExpandableListAdapter {
             tv.setText(model.name);
 
             ImageView im = convertView.findViewById(R.id.group_Image);
-            im.setImageDrawable(context.getResources().getDrawable(model.drawableID));
+            MainActivity.setIconToImageView(im,this.context,model.drawableID,true,false,50,model.colorID);
 
         }
         return convertView;
@@ -131,7 +131,7 @@ public class ThreeLevelListAdapter extends BaseExpandableListAdapter {
                     MenuModel parentModel = header[groupPosition];
                     MenuModel[] childrens = secondLevelData.get(parentModel);
                     Log.i("a",parentModel.name);
-                    MainActivity.setMenuClickListener(childrens[childPosition]);
+                    MainActivity.setMenuClickListener(childrens[childPosition],MainActivity.ma);
 
                     return true;
                 }
@@ -146,7 +146,7 @@ public class ThreeLevelListAdapter extends BaseExpandableListAdapter {
                     {
                         try
                         {
-                            MainActivity.setMenuClickListener(parentModel);
+                            MainActivity.setMenuClickListener(parentModel,MainActivity.ma);
                         }
                         catch (Exception ex)
                         {

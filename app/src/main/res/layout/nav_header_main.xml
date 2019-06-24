@@ -26,8 +26,7 @@
         android:textSize="16dp"
         android:textStyle="bold"
         android:text="@string/nav_header_title"
-        android:textColor="@color/white"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+        android:textColor="@color/white" />
 
 
 </LinearLayout>

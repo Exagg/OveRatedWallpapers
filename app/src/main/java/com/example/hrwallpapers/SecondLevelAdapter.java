@@ -79,6 +79,7 @@ public class SecondLevelAdapter extends BaseExpandableListAdapter {
 
             tv.setText(model.name);
 
+
             if(model.drawableID != 0)
             {
                 ImageView im = convertView.findViewById(R.id.child_image);
@@ -90,17 +91,20 @@ public class SecondLevelAdapter extends BaseExpandableListAdapter {
                 {
                     //Dot menu style
                     param.leftMargin = MainActivity.setPxToDP(125,context);
+                    param.topMargin =MainActivity.setPxToDP(25,context);
                     param.height = MainActivity.setPxToDP(75,context);
                     param.width = MainActivity.setPxToDP(75,context);
                 }
                 else
                 {
-                    param.leftMargin = MainActivity.setPxToDP(80,context);
-                    param.height = MainActivity.setPxToDP(170,context);
-                    param.width = MainActivity.setPxToDP(170,context);
+                    param.leftMargin = MainActivity.setPxToDP(150,context);
+                    param.topMargin =MainActivity.setPxToDP(25,context);
+                    param.height = MainActivity.setPxToDP(100,context);
+                    param.width = MainActivity.setPxToDP(100,context);
                 }
                 im.setLayoutParams(param);
-                im.setImageDrawable(convertView.getResources().getDrawable(model.drawableID));
+                MainActivity.setIconToImageView(im,this.context,model.drawableID,true,false,50,model.colorID);
+
             }
         }
         else
@@ -135,13 +139,14 @@ public class SecondLevelAdapter extends BaseExpandableListAdapter {
                     childImage.getLayoutParams().height
             );
             param.leftMargin = MainActivity.setPxToDP(210,context);
+            param.topMargin =MainActivity.setPxToDP(25,context);
             param.height = MainActivity.setPxToDP(75,context);
             param.width = MainActivity.setPxToDP(75,context);
             childImage.setLayoutParams(param);
 
             if(model.drawableID != 0)
             {
-                childImage.setImageDrawable(context.getResources().getDrawable(model.drawableID));
+                MainActivity.setIconToImageView(childImage,this.context,model.drawableID,true,false,50,model.colorID);
             }
         }
 

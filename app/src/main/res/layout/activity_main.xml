@@ -19,7 +19,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
-        android:background="@drawable/carbon_pattern"
+        android:background="@color/colorPrimaryDark"
         app:headerLayout="@layout/nav_header_main">
 
         <ExpandableListView

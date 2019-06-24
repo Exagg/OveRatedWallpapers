@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 public class wallpaperPopupFragment extends Fragment {
 
@@ -17,7 +18,6 @@ public class wallpaperPopupFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         rootVieW = inflater.inflate(R.layout.wallpaper_popup_fragment,container,false);
-
         return rootVieW;
     }
 

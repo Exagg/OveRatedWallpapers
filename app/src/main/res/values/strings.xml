@@ -9,4 +9,10 @@
     <string name="menu_random">Random</string>
     <string name="menu_categories">Categories</string>
     <string name="menu_toplist">Top List</string>
+
+    <string name="title_activity_base_wallpaper">Wallpaper</string>
+
+    <string name="title_activity_test">test</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

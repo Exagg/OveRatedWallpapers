@@ -15,27 +15,23 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="@color/black"
+            app:title="@string/app_name"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
 
-
     <include layout="@layout/content_main" />
 
-    <fragment
-        android:name="com.example.hrwallpapers.wallpaperPopupFragment"
-        android:id="@+id/walpaper_popup_fragment"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_marginTop="?attr/actionBarSize"/>
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+    <FrameLayout
+        android:id="@+id/wallpaper_fragment_holder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+
 
 </android.support.design.widget.CoordinatorLayout>

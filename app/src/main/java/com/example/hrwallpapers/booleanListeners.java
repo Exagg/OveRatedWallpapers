@@ -1,6 +1,8 @@
 package com.example.hrwallpapers;
 
-public class booleanListeners {
+import java.io.Serializable;
+
+public class booleanListeners implements Serializable {
     private boolean boo = false;
     private ChangeListener listener;
 

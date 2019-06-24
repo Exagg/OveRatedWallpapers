@@ -1,14 +1,24 @@
 package com.example.hrwallpapers;
 
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Context;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.os.Parcelable;
+import android.os.PersistableBundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
@@ -20,41 +30,31 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
-import android.view.WindowManager;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
-import com.bumptech.glide.Glide;
-import com.google.android.flexbox.AlignContent;
-import com.google.android.flexbox.AlignItems;
-import com.google.android.flexbox.FlexDirection;
-import com.google.android.flexbox.FlexWrap;
-import com.google.android.flexbox.FlexboxLayout;
-import com.google.android.flexbox.FlexboxLayoutManager;
-import com.google.android.flexbox.JustifyContent;
+import com.bumptech.glide.request.RequestOptions;
+import com.google.gson.Gson;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static android.support.constraint.motion.MotionScene.TAG;
+import info.androidhive.fontawesome.FontDrawable;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener{
 
     public ArrayList<capturedImages> ImageList = new ArrayList<capturedImages>();
 
@@ -63,23 +63,28 @@ public class MainActivity extends AppCompatActivity
     ExpandableListAdapter menuAdapter;
     HashMap<MenuModel,List<MenuModel>> menuHashmap = new HashMap<>();
     List<MenuModel> menuHeaderList = new ArrayList<>();
-
+    public static wallpaperRecyclerViewAdapter recyclerViewAdapter;
+    public static RecyclerView recyclerView;
+    public static wallpaperModel selectedWallpaper;
+    public static MenuModel activeMenu;
+    public static List<wallpaperModel> activeModelList;
+    public static Fragment popupFragment;
+    public static FrameLayout fragmentHolder;
+    public static View mainContentView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ma = this;
         setContentView(R.layout.activity_main);
+        fragmentHolder = findViewById(R.id.wallpaper_fragment_holder);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+
+        recyclerView = (RecyclerView) this.findViewById(R.id.recyclerForWallpapers);
+        popupFragment = setFragment(new wallpaperPopupFragment());
+        mainContentView = findViewById(R.id.main_content);
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -93,8 +98,15 @@ public class MainActivity extends AppCompatActivity
         expandableListView = findViewById(R.id.menu_expandable);
 
         ThreeLevelMenuData();
-        //loadMenuData();
-        //setEventToExpandableList();
+
+        if(savedInstanceState != null)
+        {
+            int currentPosition = recyclerViewAdapter.getCurrentViewPosition();
+            triggerForLoadMore(activeModelList,this);
+            recyclerViewAdapter.notifyDataSetChanged();
+            if(currentPosition > 4) recyclerView.scrollTo(currentPosition % 2, currentPosition / 2);
+        }
+
     }
 
     @Override
@@ -132,10 +144,38 @@ public class MainActivity extends AppCompatActivity
 
         }*/
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
+    // This could be moved into an abstract BaseActivity
+    // class for being re-used by several instances
+    protected Fragment setFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction =
+                fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.wallpaper_fragment_holder, fragment);
+        fragmentTransaction.commit();
+        return fragment;
+    }
+
+    public void showFullScreenActivity(wallpaperModel model,Context startContext,final Class<? extends Activity> targetActivity)
+    {
+        Intent i = new Intent(startContext,targetActivity);
+
+        selectedWallpaper = model;
+
+        if(Build.VERSION.SDK_INT > 20)
+        {
+
+            ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this);
+            startActivity(i,options.toBundle());
+        }
+        else {
+            startActivity(i);
+        }
+    }
+
 
     private void ThreeLevelMenuData()
     {
@@ -161,77 +201,78 @@ public class MainActivity extends AppCompatActivity
                 0,0,0,0,0,
                 "","desc","","toplist");
 
-        MenuModel headerWelcome = new MenuModel("Welcome",false,false,true,R.drawable.ic_nuclear,welcomeQuery);
-        MenuModel headerQuickAccess = new MenuModel("Quick Access",true,true,true,R.drawable.ic_hot,null);
-        MenuModel headerCategories = new MenuModel("Categories",true,true,true,R.drawable.ic_photo_gallery,null);
-        MenuModel headerGallery = new MenuModel("Gallery",false,false,true,R.drawable.ic_camera,null);
-        MenuModel headerLastViews = new MenuModel("Last Views",false,false,true,R.drawable.ic_eye,null);
+        MenuModel headerRandom = new MenuModel("Random",false,false,true,R.string.fa_random_solid,welcomeQuery);
+        MenuModel headerQuickAccess = new MenuModel("Quick Access",true,true,true,R.string.fa_star,null);
+        MenuModel headerCategories = new MenuModel("Categories",true,true,true,R.string.fa_list_alt,null);
+        MenuModel headerGallery = new MenuModel("Gallery",false,false,true,R.string.fa_camera_retro_solid,null);
+        MenuModel headerLastViews = new MenuModel("Last Views",false,false,true,R.string.fa_eye,null);
+        MenuModel headerFavorires = new MenuModel("Favorites",false,false,true,R.string.fa_star,null);
 
 
-        MenuModel mostViewedModel = new MenuModel("Most Viewed",false,false,false,R.drawable.icon_dot,mostViewedQuery);
-        MenuModel topListModel = new MenuModel("Top List",false,false,false,R.drawable.icon_dot,topListQuery);
-        MenuModel randomModel = new MenuModel("Random",false,false,false,R.drawable.icon_dot,randomQuery);
-        MenuModel latestModel = new MenuModel("Latest",false,false,false,R.drawable.icon_dot,latestQuery);
-        MenuModel relevanceModel = new MenuModel("Relevance",false,false,false,R.drawable.icon_dot,relevanceQuery);
-        MenuModel favoritesModel = new MenuModel("Favorites",false,false,false,R.drawable.icon_dot,favoritesQuery);
+        MenuModel mostViewedModel = new MenuModel("Most Viewed",false,false,false,R.string.fa_dot_circle_solid,mostViewedQuery);
+        MenuModel topListModel = new MenuModel("Top List",false,false,false,R.string.fa_dot_circle_solid,topListQuery);
+        MenuModel randomModel = new MenuModel("Random",false,false,false,R.string.fa_dot_circle_solid,randomQuery);
+        MenuModel latestModel = new MenuModel("Latest",false,false,false,R.string.fa_dot_circle_solid,latestQuery);
+        MenuModel relevanceModel = new MenuModel("Relevance",false,false,false,R.string.fa_dot_circle_solid,relevanceQuery);
+        MenuModel favoritesModel = new MenuModel("Favorites",false,false,false,R.string.fa_dot_circle_solid,favoritesQuery);
 
-        MenuModel AnimeMangaModel = new MenuModel("Anime & Manga",true,true,false,R.drawable.ic_menu_right,null);
-        MenuModel ArtDesignModel = new MenuModel("Art & Design",true,true,false,R.drawable.ic_menu_right,null);
-        MenuModel EntertainmentModel = new MenuModel("Entertainment",true,true,false,R.drawable.ic_menu_right,null);
-        MenuModel KnowledgeModel = new MenuModel("Knowledge",true,true,false,R.drawable.ic_menu_right,null);
-        MenuModel LocationModel = new MenuModel("Location",true,true,false,R.drawable.ic_menu_right,null);
-        MenuModel MiscellaneousModel = new MenuModel("Miscellaneous",true,true,false,R.drawable.ic_menu_right,null);
-        MenuModel NatureModel = new MenuModel("Nature",true,true,false,R.drawable.ic_menu_right,null);
-        MenuModel PeopleModel = new MenuModel("People",true,true,false,R.drawable.ic_menu_right,null);
-        MenuModel VehiclesModel = new MenuModel("Vehicles",true,true,false,R.drawable.ic_menu_right,null);
+        MenuModel AnimeMangaModel = new MenuModel("Anime & Manga",true,true,false,R.string.fa_chevron_right_solid,null);
+        MenuModel ArtDesignModel = new MenuModel("Art & Design",true,true,false,R.string.fa_chevron_right_solid,null);
+        MenuModel EntertainmentModel = new MenuModel("Entertainment",true,true,false,R.string.fa_chevron_right_solid,null);
+        MenuModel KnowledgeModel = new MenuModel("Knowledge",true,true,false,R.string.fa_chevron_right_solid,null);
+        MenuModel LocationModel = new MenuModel("Location",true,true,false,R.string.fa_chevron_right_solid,null);
+        MenuModel MiscellaneousModel = new MenuModel("Miscellaneous",true,true,false,R.string.fa_chevron_right_solid,null);
+        MenuModel NatureModel = new MenuModel("Nature",true,true,false,R.string.fa_chevron_right_solid,null);
+        MenuModel PeopleModel = new MenuModel("People",true,true,false,R.string.fa_chevron_right_solid,null);
+        MenuModel VehiclesModel = new MenuModel("Vehicles",true,true,false,R.string.fa_chevron_right_solid,null);
 
 
-        MenuModel animeCharactersModel = new MenuModel("Characters",false,false,false,R.drawable.icon_dot,null);
-        MenuModel animeOtherModel = new MenuModel("Other",false,false,false,R.drawable.icon_dot,null);
-        MenuModel animeSeriesModel = new MenuModel("Series",false,false,false,R.drawable.icon_dot,null);
-        MenuModel animeVisualNovelsModel = new MenuModel("Visual Novels",false,false,false,R.drawable.icon_dot,null);
+        MenuModel animeCharactersModel = new MenuModel("Characters",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel animeOtherModel = new MenuModel("Other",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel animeSeriesModel = new MenuModel("Series",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel animeVisualNovelsModel = new MenuModel("Visual Novels",false,false,false,R.string.fa_dot_circle_solid,null);
 
         MenuModel[] animeThirdLevelCollector = new MenuModel[] { animeCharactersModel,animeOtherModel,animeSeriesModel,animeVisualNovelsModel};
 
 
-        MenuModel artArchitectureModel = new MenuModel("Architecture",false,false,false,R.drawable.icon_dot,null);
-        MenuModel artDigitallModel = new MenuModel("Digitall",false,false,false,R.drawable.icon_dot,null);
-        MenuModel artPhotographyModel = new MenuModel("Photography",false,false,false,R.drawable.icon_dot,null);
-        MenuModel artTraditionalModel = new MenuModel("Traditional ",false,false,false,R.drawable.icon_dot,null);
+        MenuModel artArchitectureModel = new MenuModel("Architecture",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel artDigitallModel = new MenuModel("Digitall",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel artPhotographyModel = new MenuModel("Photography",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel artTraditionalModel = new MenuModel("Traditional ",false,false,false,R.string.fa_dot_circle_solid,null);
 
         MenuModel[] artThirdLevelCollector = new MenuModel[] {artArchitectureModel,artDigitallModel,artPhotographyModel,artTraditionalModel};
 
 
-        MenuModel entertainmentComicBooksModel = new MenuModel("Comick Books",false,false,false,R.drawable.icon_dot,null);
-        MenuModel entertainmentGraphicNovelModel = new MenuModel("Graphic Novel",false,false,false,R.drawable.icon_dot,null);
-        MenuModel entertainmentEventsModel = new MenuModel("Events",false,false,false,R.drawable.icon_dot,null);
-        MenuModel entertainmentGamesModel = new MenuModel("Games",false,false,false,R.drawable.icon_dot,null);
-        MenuModel entertainmentLiteratureModel = new MenuModel("Literatures",false,false,false,R.drawable.icon_dot,null);
-        MenuModel entertainmentMoviesModel = new MenuModel("Movies",false,false,false,R.drawable.icon_dot,null);
-        MenuModel entertainmentMusicModel = new MenuModel("Music",false,false,false,R.drawable.icon_dot,null);
-        MenuModel entertainmentSportModel = new MenuModel("Sport",false,false,false,R.drawable.icon_dot,null);
-        MenuModel entertainmentTelevisionModel = new MenuModel("Television",false,false,false,R.drawable.icon_dot,null);
+        MenuModel entertainmentComicBooksModel = new MenuModel("Comick Books",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel entertainmentGraphicNovelModel = new MenuModel("Graphic Novel",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel entertainmentEventsModel = new MenuModel("Events",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel entertainmentGamesModel = new MenuModel("Games",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel entertainmentLiteratureModel = new MenuModel("Literatures",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel entertainmentMoviesModel = new MenuModel("Movies",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel entertainmentMusicModel = new MenuModel("Music",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel entertainmentSportModel = new MenuModel("Sport",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel entertainmentTelevisionModel = new MenuModel("Television",false,false,false,R.string.fa_dot_circle_solid,null);
 
         MenuModel[] entertainmentThirdLevelCollector = new MenuModel[] {entertainmentComicBooksModel,entertainmentEventsModel,entertainmentGraphicNovelModel,entertainmentGamesModel,entertainmentLiteratureModel,entertainmentMoviesModel,entertainmentMusicModel,entertainmentSportModel,entertainmentTelevisionModel};
 
 
-        MenuModel knowledgeHistoryModel = new MenuModel("History",false,false,false,R.drawable.icon_dot,null);
-        MenuModel knowledgeHolidayModel = new MenuModel("Holiday",false,false,false,R.drawable.icon_dot,null);
-        MenuModel knowledgeMilitaryModel = new MenuModel("Military",false,false,false,R.drawable.icon_dot,null);
-        MenuModel knowledgeWeaponsModel = new MenuModel("Weapons",false,false,false,R.drawable.icon_dot,null);
-        MenuModel knowledgeQuotesModel = new MenuModel("Quotes",false,false,false,R.drawable.icon_dot,null);
-        MenuModel knowledgeReligionModel = new MenuModel("Religion",false,false,false,R.drawable.icon_dot,null);
-        MenuModel knowledgeScienceModel = new MenuModel("Science",false,false,false,R.drawable.icon_dot,null);
+        MenuModel knowledgeHistoryModel = new MenuModel("History",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel knowledgeHolidayModel = new MenuModel("Holiday",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel knowledgeMilitaryModel = new MenuModel("Military",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel knowledgeWeaponsModel = new MenuModel("Weapons",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel knowledgeQuotesModel = new MenuModel("Quotes",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel knowledgeReligionModel = new MenuModel("Religion",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel knowledgeScienceModel = new MenuModel("Science",false,false,false,R.string.fa_dot_circle_solid,null);
 
         MenuModel[] knowledgeThirdLevelCollector = new MenuModel[] {knowledgeHistoryModel,knowledgeHolidayModel,knowledgeMilitaryModel,knowledgeWeaponsModel,knowledgeQuotesModel,knowledgeReligionModel,knowledgeScienceModel};
 
 
 
 
-        MenuModel locationCitiesModel = new MenuModel("Cities",false,false,false,R.drawable.icon_dot,null);
-        MenuModel locationCountriesModel = new MenuModel("Countries",false,false,false,R.drawable.icon_dot,null);
-        MenuModel locationOtherModel = new MenuModel("Other",false,false,false,R.drawable.icon_dot,null);
-        MenuModel locationSpaceModel = new MenuModel("Space",false,false,false,R.drawable.icon_dot,null);
+        MenuModel locationCitiesModel = new MenuModel("Cities",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel locationCountriesModel = new MenuModel("Countries",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel locationOtherModel = new MenuModel("Other",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel locationSpaceModel = new MenuModel("Space",false,false,false,R.string.fa_dot_circle_solid,null);
 
         MenuModel[] locationThirdLevelCollector = new MenuModel[] {locationCitiesModel,locationCountriesModel,locationOtherModel,locationSpaceModel};
 
@@ -239,12 +280,12 @@ public class MainActivity extends AppCompatActivity
 
 
 
-        MenuModel miscClothingModel = new MenuModel("Clothing",false,false,false,R.drawable.icon_dot,null);
-        MenuModel miscColorsModel = new MenuModel("Colors",false,false,false,R.drawable.icon_dot,null);
-        MenuModel miscCompaniesModel = new MenuModel("Companies",false,false,false,R.drawable.icon_dot,null);
-        MenuModel miscLogosModel = new MenuModel("Logos",false,false,false,R.drawable.icon_dot,null);
-        MenuModel miscFoodModel = new MenuModel("Food",false,false,false,R.drawable.icon_dot,null);
-        MenuModel miscTechnologyModel = new MenuModel("Technology",false,false,false,R.drawable.icon_dot,null);
+        MenuModel miscClothingModel = new MenuModel("Clothing",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel miscColorsModel = new MenuModel("Colors",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel miscCompaniesModel = new MenuModel("Companies",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel miscLogosModel = new MenuModel("Logos",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel miscFoodModel = new MenuModel("Food",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel miscTechnologyModel = new MenuModel("Technology",false,false,false,R.string.fa_dot_circle_solid,null);
 
 
         MenuModel[] miscThirdLevelCollector = new MenuModel[] {miscClothingModel,miscColorsModel,miscCompaniesModel,miscLogosModel,miscFoodModel,miscTechnologyModel};
@@ -254,32 +295,32 @@ public class MainActivity extends AppCompatActivity
 
 
 
-        MenuModel natureAnimalModel = new MenuModel("Animal",false,false,false,R.drawable.icon_dot,null);
-        MenuModel natureLandscapeModel = new MenuModel("Landscape",false,false,false,R.drawable.icon_dot,null);
-        MenuModel naturePlantsModel = new MenuModel("Plants",false,false,false,R.drawable.icon_dot,null);
+        MenuModel natureAnimalModel = new MenuModel("Animal",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel natureLandscapeModel = new MenuModel("Landscape",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel naturePlantsModel = new MenuModel("Plants",false,false,false,R.string.fa_dot_circle_solid,null);
 
         MenuModel[] natureThirdLevelCollector = new MenuModel[] {natureAnimalModel,natureLandscapeModel,naturePlantsModel};
 
 
 
-        MenuModel peopleArtistsModel = new MenuModel("Artists",false,false,false,R.drawable.icon_dot,null);
-        MenuModel peopleCelebritiesModel = new MenuModel("Celebrities",false,false,false,R.drawable.icon_dot,null);
+        MenuModel peopleArtistsModel = new MenuModel("Artists",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel peopleCelebritiesModel = new MenuModel("Celebrities",false,false,false,R.string.fa_dot_circle_solid,null);
         MenuModel peopleFictionalCharactersModel = new MenuModel("Fictional Characters",false,false,false,0,null);
-        MenuModel peopleModelsModel = new MenuModel("Models",false,false,false,R.drawable.icon_dot,null);
-        MenuModel peopleOtherFigureModel = new MenuModel("Other Figure",false,false,false,R.drawable.icon_dot,null);
-        MenuModel peoplePornstarsModel = new MenuModel("Pornstars",false,false,false,R.drawable.icon_dot,null);
+        MenuModel peopleModelsModel = new MenuModel("Models",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel peopleOtherFigureModel = new MenuModel("Other Figure",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel peoplePornstarsModel = new MenuModel("Pornstars",false,false,false,R.string.fa_dot_circle_solid,null);
 
 
         MenuModel[] peopleThirdLevelCollector = new MenuModel[] {peopleArtistsModel,peopleCelebritiesModel,peopleFictionalCharactersModel,peopleModelsModel,peopleOtherFigureModel,peoplePornstarsModel};
 
 
 
-        MenuModel vehiclesAircraftModel = new MenuModel("Aircraft",false,false,false,R.drawable.icon_dot,null);
-        MenuModel vehiclesCarsModel = new MenuModel("Cars",false,false,false,R.drawable.icon_dot,null);
-        MenuModel vehiclesMotorcycleModel = new MenuModel("Motorcycle",false,false,false,R.drawable.icon_dot,null);
-        MenuModel vehiclesShipsModel = new MenuModel("Ships",false,false,false,R.drawable.icon_dot,null);
-        MenuModel vehiclesSpaceCraftsModel = new MenuModel("Space Crafts",false,false,false,R.drawable.icon_dot,null);
-        MenuModel vehiclesTrainsModel = new MenuModel("Trains",false,false,false,R.drawable.icon_dot,null);
+        MenuModel vehiclesAircraftModel = new MenuModel("Aircraft",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel vehiclesCarsModel = new MenuModel("Cars",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel vehiclesMotorcycleModel = new MenuModel("Motorcycle",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel vehiclesShipsModel = new MenuModel("Ships",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel vehiclesSpaceCraftsModel = new MenuModel("Space Crafts",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel vehiclesTrainsModel = new MenuModel("Trains",false,false,false,R.string.fa_dot_circle_solid,null);
 
 
 
@@ -290,12 +331,14 @@ public class MainActivity extends AppCompatActivity
         MenuModel[] quickAccessSecondLevel = new MenuModel[]{mostViewedModel,topListModel,randomModel,latestModel,relevanceModel,favoritesModel};
         MenuModel[] categoriesSecondLevel = new MenuModel[]{AnimeMangaModel,ArtDesignModel,EntertainmentModel,KnowledgeModel,LocationModel,MiscellaneousModel,NatureModel,PeopleModel,VehiclesModel};
         MenuModel[] gallerySecondLevel = new MenuModel[]{};
+        MenuModel[] favoritesSecondLevel = new MenuModel[]{};
         MenuModel[] lastViewsSecondLevel = new MenuModel[]{};
 
         LinkedHashMap<MenuModel, MenuModel[]> welcomeThirdLevel = new LinkedHashMap<>();
         LinkedHashMap<MenuModel, MenuModel[]> quickAccessThirdLevel = new LinkedHashMap<>();
         LinkedHashMap<MenuModel, MenuModel[]> categoriesThirdLevel = new LinkedHashMap<>();
         LinkedHashMap<MenuModel, MenuModel[]> galleryThirdLevel = new LinkedHashMap<>();
+        LinkedHashMap<MenuModel, MenuModel[]> favoritesThirdLevel = new LinkedHashMap<>();
         LinkedHashMap<MenuModel, MenuModel[]> lastViewsThirdLevel = new LinkedHashMap<>();
         /**
          * Second level array list
@@ -307,9 +350,10 @@ public class MainActivity extends AppCompatActivity
         List<LinkedHashMap<MenuModel, MenuModel[]>> data = new ArrayList<>();
 
         final List<MenuModel> parentList = new ArrayList<>();
-        parentList.add(headerWelcome);
+        parentList.add(headerRandom);
         parentList.add(headerQuickAccess);
         parentList.add(headerCategories);
+        parentList.add(headerFavorires);
         parentList.add(headerGallery);
         parentList.add(headerLastViews);
 
@@ -319,6 +363,7 @@ public class MainActivity extends AppCompatActivity
         secondLevel.add(welcomeSecondLevel);
         secondLevel.add(quickAccessSecondLevel);
         secondLevel.add(categoriesSecondLevel);
+        secondLevel.add(favoritesSecondLevel);
         secondLevel.add(gallerySecondLevel);
         secondLevel.add(lastViewsSecondLevel);
         quickAccessThirdLevel.put(null, null);
@@ -335,6 +380,7 @@ public class MainActivity extends AppCompatActivity
         data.add(welcomeThirdLevel);
         data.add(quickAccessThirdLevel);
         data.add(categoriesThirdLevel);
+        data.add(favoritesThirdLevel);
         data.add(galleryThirdLevel);
         data.add(lastViewsThirdLevel);
         expandableListView = (ExpandableListView) findViewById(R.id.menu_expandable);
@@ -356,7 +402,7 @@ public class MainActivity extends AppCompatActivity
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
 
                 MenuModel[] groupModel = secondLevel.get(groupPosition);
-                MainActivity.setMenuClickListener(groupModel[childPosition]);
+                MainActivity.setMenuClickListener(groupModel[childPosition],MainActivity.ma);
                 return true;
             }
         });
@@ -366,12 +412,26 @@ public class MainActivity extends AppCompatActivity
                 MenuModel header = parentList.get(groupPosition);
                 MenuModel[] childrens = secondLevel.get(0);
                 if(childrens == null)
-                    MainActivity.setMenuClickListener(header);
+                    MainActivity.setMenuClickListener(header,MainActivity.ma);
                 else if(childrens.length == 0)
-                    MainActivity.setMenuClickListener(header);
+                    MainActivity.setMenuClickListener(header,MainActivity.ma);
                 return false;
             }
         });
+    }
+
+    public static void setIconToImageView(ImageView imageView, Context context,int resource ,boolean isSolid,boolean isBrand,int size)
+    {
+        FontDrawable drawable = new FontDrawable(context,resource,isSolid,isBrand);
+        drawable.setTextSize(MainActivity.setPxToDP(size,context));
+        imageView.setImageDrawable(drawable);
+    }
+    public static void setIconToImageView(ImageView imageView, Context context, int resource , boolean isSolid, boolean isBrand, int size, int color)
+    {
+        FontDrawable drawable = new FontDrawable(context,resource,isSolid,isBrand);
+        drawable.setTextSize(MainActivity.setPxToDP(size,context));
+        drawable.setTextColor(color);
+        imageView.setImageDrawable(drawable);
     }
 
     public static int setPxToDP(int px,Context context)
@@ -382,79 +442,49 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public static void setMenuClickListener(MenuModel menuModel)
+    public static void setMenuClickListener(MenuModel menuModel, final Activity activity)
     {
         if(menuModel.queryModel != null)
         {
+
+            MainActivity.activeMenu = menuModel;
+
+            DrawerLayout drawer = activity.findViewById(R.id.drawer_layout);
+            drawer.closeDrawer(GravityCompat.START);
+
             String url = menuModel.queryModel.getUrl();
             Object[] container = new Object[] {url};
-            AsyncTask task = new getRequestOnPage();
+            AsyncTask task = new HttpGetImagesAsync();
 
+            ((HttpGetImagesAsync) task).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {
+                @Override
+                public void taskFinished(List<wallpaperModel> list) {
+                    triggerForLoadMore(list,activity);
+                }
+            });
             task.execute(container);
+
         }
     }
 
-    public static void triggerForLoadMor(List<wallpaperModel> wallpaperModels)
+    public static void triggerForLoadMore(List<wallpaperModel> wallpaperModels,Activity activity)
     {
-        wallpaperRecyclerViewAdapter adapter = new wallpaperRecyclerViewAdapter(wallpaperModels);
-        RecyclerView recyclerView = MainActivity.ma.findViewById(R.id.recyclerForWallpapers);
+        recyclerViewAdapter = new wallpaperRecyclerViewAdapter(wallpaperModels,fragmentHolder,popupFragment);
 
-        GridLayoutManager layoutManager = new GridLayoutManager(MainActivity.ma,3);
-
+        GridLayoutManager layoutManager = new GridLayoutManager(activity.getApplicationContext(),2);
 
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(recyclerViewAdapter);
 
-        recyclerView.setAdapter(adapter);
+
+        MainActivity.activeModelList = wallpaperModels;
     }
 
-    public static void LoadImageFromURL(ImageView im, String url)
+    public static void LoadImageFromURL(ImageView im, String url, final CircleProgressBar progressBar, RequestOptions requestOptions,wallpaperModel model)
     {
-        Random r = new Random();
-        int width = r.nextInt(1920);
-        int height = r.nextInt(1920);
+        new GlideImageLoader(im,progressBar).load(url,requestOptions,model);
 
-        Glide.with(MainActivity.ma)
-                .load(url)
-                .centerCrop()
-                .into(im);
     }
 }
 
-class getRequestOnPage extends AsyncTask<Object,Integer, List<wallpaperModel>> {
-    @Override
-    protected List<wallpaperModel> doInBackground(Object... objects) {
 
-        List<wallpaperModel> response= new ArrayList<>();
-
-        String url = (String) objects[0];
-        Log.i(TAG, "doInBackground: Url : " + url);
-        try {
-
-            Document doc = Jsoup.connect(url).get();
-            Elements elems = doc.select("figure");
-
-            Log.i("a", String.valueOf(elems.size()));
-            for (int i = 0; i < elems.size() ; i++) {
-                String id = elems.get(i).attr("data-wallpaper-id");
-                String thumbUrl = String.format("https://th.wallhaven.cc/small/%s/%s.jpg",id.substring(0,2),id);
-                String originalUrl = String.format("https://w.wallhaven.cc/full/%s/wallhaven-%s.jpg",id.substring(0,2),id);
-
-                wallpaperModel m = new wallpaperModel(thumbUrl,originalUrl,id);
-                if(id != "") response.add(m);
-
-
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return response;
-    }
-
-    @Override
-    protected void onPostExecute(List<wallpaperModel> collection) {
-
-        MainActivity.triggerForLoadMor(collection);
-    }
-}

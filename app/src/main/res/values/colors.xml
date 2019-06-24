@@ -143,4 +143,11 @@
     <color name="dark_blue">#00008B</color>
     <color name="navy">#000080</color>
     <color name="black">#000000</color>
+
+    <color name="black_overlay">#66000000</color>
+
+    <color name="fullScreenActionBarBackground">#48141414</color>
+    <color name="fullScreenBackground">#0f0f0f</color>
+
+    <color name="CircleLoadingBarPercentageColor">#D2691E</color>
 </resources>

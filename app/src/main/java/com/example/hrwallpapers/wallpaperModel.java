@@ -1,9 +1,12 @@
 package com.example.hrwallpapers;
 
+import java.io.Serializable;
+
 public class wallpaperModel {
 
     String thumbSrc,originalSrc,id;
     booleanListeners isFavorite;
+
 
     public wallpaperModel(String thumbSrc,String originalSrc,String id)
     {
