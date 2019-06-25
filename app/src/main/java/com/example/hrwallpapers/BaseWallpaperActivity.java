@@ -1,34 +1,26 @@
 package com.example.hrwallpapers;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.gesture.Gesture;
-import android.graphics.Color;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
+import android.os.AsyncTask;
 import android.os.Build;
-import android.os.PersistableBundle;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.os.Handler;
 import android.transition.Slide;
-import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
-import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 
@@ -39,22 +31,22 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
-
-import static android.support.constraint.motion.MotionScene.TAG;
 
 public class BaseWallpaperActivity extends AppCompatActivity {
 
     private int ANIMATION_DURATION = 250;
 
     private static final String TAG ="BaseWallpaperTAG";
+    private static final int VIEW_PAGER_LOAD_LIMIT = 5;
+    private static BaseWallpaperActivity baseWallpaper;
+
     private ActionBar actionBar;
     private View bottomArea;
     private View rightArea;
     private View leftArea;
     private View mainView;
-    private ViewPager viewPager;
+    public ViewPager viewPager;
 
     private boolean mVisible;
 
@@ -64,6 +56,8 @@ public class BaseWallpaperActivity extends AppCompatActivity {
 
     public List<wallpaperModel>wallpaperModelList;
     public MenuModel menuModel;
+
+    public BaseWallpaperPagerAdapter adapter;
 
     private RequestOptions requestOptions = new RequestOptions()
             .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -75,10 +69,19 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setAnimation();
         setContentView(R.layout.activity_base_wallpaper);
+        baseWallpaper = this;
+        if(this.getIntent().getExtras().containsKey("wallpaperList"))
+        {
+            Type listType = new TypeToken<List<wallpaperModel>>(){}.getType();
+            String listData = getIntent().getStringExtra("wallpaperList");
 
-
-        model= MainActivity.selectedWallpaper;
-        wallpaperModelList = MainActivity.activeModelList;
+            wallpaperModelList = new Gson().fromJson(listData,listType);
+        }
+        if(this.getIntent().getExtras().containsKey("listIndex"))
+        {
+            int index = getIntent().getIntExtra("listIndex",1);
+            if(index != -1) model = wallpaperModelList.get(index);
+        }
         menuModel = MainActivity.activeMenu;
 
         actionBar = getSupportActionBar();
@@ -117,8 +120,8 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         MainActivity.setIconToImageView(rightIcon,this,R.string.fa_chevron_right_solid,true,false,100,getResources().getColor(R.color.white));
 
 
-
-        viewPager.setAdapter(new BaseWallpaperPagerAdapter(this,wallpaperModelList));
+        adapter = new BaseWallpaperPagerAdapter(this,wallpaperModelList);
+        viewPager.setAdapter(adapter);
         viewPager.setCurrentItem(wallpaperModelList.indexOf(model));
 
         final GestureDetector tapDetector = new GestureDetector(this, new TapGestureListener());
@@ -140,8 +143,49 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             }
         });
 
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int i, float v, int i1) {
+
+            }
+
+            @Override
+            public void onPageSelected(int i) {
+
+                Log.i(TAG, "onPageSelected: " + i);
+
+                if(wallpaperModelList.size() - i < VIEW_PAGER_LOAD_LIMIT)
+                {
+                    if(MainActivity.task.getStatus() == AsyncTask.Status.FINISHED)
+                    {
+                        menuModel.queryModel.setActivePage(menuModel.queryModel.getActivePage() + 1);
+                        menuModel.queryModel.prepareUrl();
+                        MainActivity.setMenuClickListener(menuModel,baseWallpaper,MainActivity.VIEWPAGER_LOAD_MORE);
+                    }
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int i) {
+
+            }
+        });
+
     }
 
+    @Override
+    public void onBackPressed() {
+
+        int currentIndex =adapter.getCurrentPosition();
+        String listData = new Gson().toJson(wallpaperModelList);
+        Intent intent = new Intent();
+
+        intent.putExtra("wallpaperList",listData);
+        intent.putExtra("listIndex",currentIndex);
+        setResult(RESULT_OK,intent);
+        finish();
+        super.onBackPressed();
+    }
 
     public void setAnimation() {
         if (Build.VERSION.SDK_INT > 20) {
@@ -153,7 +197,6 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             getWindow().setEnterTransition(slide);
         }
     }
-
 
     private void toogleUI()
     {
@@ -172,6 +215,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         }
         mVisible = mVisible ? false : true;
     }
+
     public void slideUp(View view){
         view.setVisibility(View.VISIBLE);
         TranslateAnimation animate = new TranslateAnimation(
@@ -235,7 +279,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == android.R.id.home) {
             // This ID represents the Home or Up button.
-            NavUtils.navigateUpFromSameTask(this);
+            onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);

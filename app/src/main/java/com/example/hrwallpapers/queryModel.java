@@ -1,9 +1,9 @@
 package com.example.hrwallpapers;
 public class queryModel {
 
-    public boolean general,anime,people,sfw,sketchy,nsfw;
-    public int resolutionW,resolutionH,ratioX,ratioY,id,activePage;
-    public String colorHex,orderBy,query,sorting,url;
+    private boolean general,anime,people,sfw,sketchy,nsfw;
+    private int resolutionW,resolutionH,ratioX,ratioY,id,activePage;
+    private String colorHex,orderBy,query,sorting,url;
 
 
     public queryModel(boolean general, boolean anime, boolean people, boolean sfw, boolean sketchy, boolean nsfw,
@@ -28,7 +28,7 @@ public class queryModel {
     }
 
 
-    private void prepareUrl()
+    public void prepareUrl()
     {
         this.url = "search?";
         String categories ="";

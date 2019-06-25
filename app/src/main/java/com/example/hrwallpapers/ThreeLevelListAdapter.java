@@ -131,7 +131,7 @@ public class ThreeLevelListAdapter extends BaseExpandableListAdapter {
                     MenuModel parentModel = header[groupPosition];
                     MenuModel[] childrens = secondLevelData.get(parentModel);
                     Log.i("a",parentModel.name);
-                    MainActivity.setMenuClickListener(childrens[childPosition],MainActivity.ma);
+                    MainActivity.setMenuClickListener(childrens[childPosition],MainActivity.ma,MainActivity.RECREATE);
 
                     return true;
                 }
@@ -146,7 +146,7 @@ public class ThreeLevelListAdapter extends BaseExpandableListAdapter {
                     {
                         try
                         {
-                            MainActivity.setMenuClickListener(parentModel,MainActivity.ma);
+                            MainActivity.setMenuClickListener(parentModel,MainActivity.ma,MainActivity.RECREATE);
                         }
                         catch (Exception ex)
                         {

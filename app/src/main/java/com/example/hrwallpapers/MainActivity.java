@@ -2,6 +2,7 @@ package com.example.hrwallpapers;
 
 import android.app.Activity;
 import android.app.ActivityOptions;
+import android.arch.core.executor.TaskExecutor;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -13,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -38,6 +40,7 @@ import android.widget.ProgressBar;
 
 import com.bumptech.glide.request.RequestOptions;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -45,6 +48,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +59,19 @@ import info.androidhive.fontawesome.FontDrawable;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener{
+
+
+    public static final int LOAD_MORE = 0;
+    public static final int RECREATE = 1;
+    public static final int VIEWPAGER_LOAD_MORE = 2;
+
+    public static final int RECYCLER_VIEW_COLUMN = 2;
+    public static final int LOAD_MORE_SCROLL_RANGE = 3000;
+
+    public static final int FULLSCREEN_REQUEST_CODE = 0;
+
+
+    private static final String TAG = "Mainactivity";
 
     public ArrayList<capturedImages> ImageList = new ArrayList<capturedImages>();
 
@@ -71,6 +88,9 @@ public class MainActivity extends AppCompatActivity
     public static Fragment popupFragment;
     public static FrameLayout fragmentHolder;
     public static View mainContentView;
+
+    public static AsyncTask task;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,11 +121,44 @@ public class MainActivity extends AppCompatActivity
 
         if(savedInstanceState != null)
         {
-            int currentPosition = recyclerViewAdapter.getCurrentViewPosition();
-            triggerForLoadMore(activeModelList,this);
-            recyclerViewAdapter.notifyDataSetChanged();
-            if(currentPosition > 4) recyclerView.scrollTo(currentPosition % 2, currentPosition / 2);
+            if(recyclerViewAdapter != null)
+            {
+                int currentPosition = recyclerViewAdapter.getCurrentViewPosition();
+                triggerForLoadMore(activeModelList,this,activeMenu,RECREATE);
+                recyclerViewAdapter.notifyDataSetChanged();
+                if(currentPosition > 4) recyclerView.scrollToPosition(currentPosition);
+            }
         }
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            private int calculatedYPos = 0;
+            private int actualHeight = 0;
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                calculatedYPos = recyclerView.computeVerticalScrollOffset();
+                actualHeight = recyclerView.computeVerticalScrollRange();
+
+
+
+                if(actualHeight - (recyclerView.computeVerticalScrollExtent() + calculatedYPos) < LOAD_MORE_SCROLL_RANGE)
+                {
+                    Log.i("Scroll", "onScrolled: " + LOAD_MORE_SCROLL_RANGE + " <" + (actualHeight - (recyclerView.computeVerticalScrollExtent() + calculatedYPos)));
+                    if(task.getStatus() == AsyncTask.Status.FINISHED)
+                    {
+                        Log.i("Scroll", "onScrolled: Task status finished olarak geldi.");
+                        if(activeMenu.queryModel != null)
+                        {
+                            Log.i("Scroll", "onScrolled: task çalıştırıldı.");
+                            activeMenu.queryModel.setActivePage(activeMenu.queryModel.getActivePage() + 1);
+                            activeMenu.queryModel.prepareUrl();
+                            setMenuClickListener(activeMenu,MainActivity.ma,LOAD_MORE);
+                        }
+                    }
+                }
+                super.onScrolled(recyclerView, dx, dy);
+
+            }
+
+        });
 
     }
 
@@ -162,6 +215,9 @@ public class MainActivity extends AppCompatActivity
     public void showFullScreenActivity(wallpaperModel model,Context startContext,final Class<? extends Activity> targetActivity)
     {
         Intent i = new Intent(startContext,targetActivity);
+        String listData = new Gson().toJson(activeModelList); // List activity içerisinde yeniden build edilecek. View ve class idleri değişecek.
+        i.putExtra("listIndex",activeModelList.indexOf(model)); // Modelin indexi viewpagerda görüntülenecek
+        i.putExtra("wallpaperList",listData);
 
         selectedWallpaper = model;
 
@@ -169,13 +225,40 @@ public class MainActivity extends AppCompatActivity
         {
 
             ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this);
-            startActivity(i,options.toBundle());
+            startActivityForResult(i,FULLSCREEN_REQUEST_CODE,options.toBundle());
         }
         else {
-            startActivity(i);
+            startActivityForResult(i,FULLSCREEN_REQUEST_CODE);
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == FULLSCREEN_REQUEST_CODE)
+        {
+            if(resultCode == RESULT_OK)
+            {
+                if(data.getExtras().containsKey("wallpaperList") && data.getExtras().containsKey("listIndex"))
+                {
+                    Type listType = new TypeToken<List<wallpaperModel>>(){}.getType();
+                    int index =data.getIntExtra("listIndex",-1) - 2;
+                    String listData = data.getStringExtra("wallpaperList");
+                    List<wallpaperModel> modelList = new Gson().fromJson(listData,listType);
+
+                    modelList = modelList.subList(activeModelList.size(),modelList.size());
+
+                    triggerForLoadMore(modelList,this,activeMenu,LOAD_MORE);
+                    recyclerView.scrollToPosition(index);
+                    Log.i(TAG, "onActivityResult: " + activeModelList.size()+ " - Index : " + index);
+
+                }
+            }
+
+
+        }
+    }
 
     private void ThreeLevelMenuData()
     {
@@ -402,7 +485,7 @@ public class MainActivity extends AppCompatActivity
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
 
                 MenuModel[] groupModel = secondLevel.get(groupPosition);
-                MainActivity.setMenuClickListener(groupModel[childPosition],MainActivity.ma);
+                MainActivity.setMenuClickListener(groupModel[childPosition],MainActivity.ma,RECREATE);
                 return true;
             }
         });
@@ -412,9 +495,9 @@ public class MainActivity extends AppCompatActivity
                 MenuModel header = parentList.get(groupPosition);
                 MenuModel[] childrens = secondLevel.get(0);
                 if(childrens == null)
-                    MainActivity.setMenuClickListener(header,MainActivity.ma);
+                    MainActivity.setMenuClickListener(header,MainActivity.ma, RECREATE);
                 else if(childrens.length == 0)
-                    MainActivity.setMenuClickListener(header,MainActivity.ma);
+                    MainActivity.setMenuClickListener(header,MainActivity.ma,RECREATE);
                 return false;
             }
         });
@@ -426,6 +509,7 @@ public class MainActivity extends AppCompatActivity
         drawable.setTextSize(MainActivity.setPxToDP(size,context));
         imageView.setImageDrawable(drawable);
     }
+
     public static void setIconToImageView(ImageView imageView, Context context, int resource , boolean isSolid, boolean isBrand, int size, int color)
     {
         FontDrawable drawable = new FontDrawable(context,resource,isSolid,isBrand);
@@ -441,43 +525,68 @@ public class MainActivity extends AppCompatActivity
         return Math.round((float) px / den);
     }
 
-
-    public static void setMenuClickListener(MenuModel menuModel, final Activity activity)
+    public static void setMenuClickListener(final MenuModel menuModel, final Activity activity,int state)
     {
-        if(menuModel.queryModel != null)
+        getImagesOnHttp(menuModel,activity,state);
+    }
+
+    public static void getImagesOnHttp(final MenuModel menuModel, final Activity activity,final int state)
+    {
+        if(menuModel.queryModel != null && (task == null || task.getStatus() == AsyncTask.Status.FINISHED))
         {
+            task = new HttpGetImagesAsync();
 
-            MainActivity.activeMenu = menuModel;
-
-            DrawerLayout drawer = activity.findViewById(R.id.drawer_layout);
-            drawer.closeDrawer(GravityCompat.START);
+            if(activity.getClass() == MainActivity.class)
+            {
+                DrawerLayout drawer = activity.findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.START);
+            }
 
             String url = menuModel.queryModel.getUrl();
             Object[] container = new Object[] {url};
-            AsyncTask task = new HttpGetImagesAsync();
 
             ((HttpGetImagesAsync) task).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {
                 @Override
                 public void taskFinished(List<wallpaperModel> list) {
-                    triggerForLoadMore(list,activity);
+                    triggerForLoadMore(list,activity,menuModel,state);
                 }
             });
             task.execute(container);
-
         }
     }
 
-    public static void triggerForLoadMore(List<wallpaperModel> wallpaperModels,Activity activity)
+    public static void triggerForLoadMore(List<wallpaperModel> wallpaperModels,Activity activity,MenuModel menuModel,int state)
     {
-        recyclerViewAdapter = new wallpaperRecyclerViewAdapter(wallpaperModels,fragmentHolder,popupFragment);
+        //Mainactivity LOAD_MORE,NOTIFY_DATA_CHANGED created for the state
+        if(activity.getClass() == MainActivity.class)
+        {
+            if(MainActivity.activeMenu == menuModel && state == LOAD_MORE)
+            {
+                //Load more images for the same menu
+                MainActivity.activeModelList.addAll(wallpaperModels);
+                recyclerViewAdapter.notifyDataSetChanged();
+            }
+            else if(state == RECREATE )
+            {
+                //Load new images from the new query
+                recyclerViewAdapter = new wallpaperRecyclerViewAdapter(wallpaperModels,fragmentHolder,popupFragment);
 
-        GridLayoutManager layoutManager = new GridLayoutManager(activity.getApplicationContext(),2);
-
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(recyclerViewAdapter);
-
-
-        MainActivity.activeModelList = wallpaperModels;
+                GridLayoutManager layoutManager = new GridLayoutManager(activity.getApplicationContext(),RECYCLER_VIEW_COLUMN);
+                recyclerView.setLayoutManager(layoutManager);
+                recyclerView.setAdapter(recyclerViewAdapter);
+                MainActivity.activeModelList = wallpaperModels;
+                MainActivity.activeMenu = menuModel;
+            }
+        }
+        else if(activity.getClass() == BaseWallpaperActivity.class)
+        {
+            BaseWallpaperActivity baseWallpaperActivity = (BaseWallpaperActivity) activity;
+            if(menuModel != null && state == VIEWPAGER_LOAD_MORE)
+            {
+                baseWallpaperActivity.wallpaperModelList.addAll(wallpaperModels);
+                baseWallpaperActivity.adapter.notifyDataSetChanged();
+            }
+        }
     }
 
     public static void LoadImageFromURL(ImageView im, String url, final CircleProgressBar progressBar, RequestOptions requestOptions,wallpaperModel model)
