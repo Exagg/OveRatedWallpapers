@@ -249,9 +249,12 @@ public class MainActivity extends AppCompatActivity
 
                     modelList = modelList.subList(activeModelList.size(),modelList.size());
 
-                    triggerForLoadMore(modelList,this,activeMenu,LOAD_MORE);
-                    recyclerView.scrollToPosition(index);
-                    Log.i(TAG, "onActivityResult: " + activeModelList.size()+ " - Index : " + index);
+                    if(modelList.size() > 0)
+                    {
+                        triggerForLoadMore(modelList,this,activeMenu,LOAD_MORE);
+                        recyclerView.scrollToPosition(index);
+                        Log.i(TAG, "onActivityResult: " + activeModelList.size()+ " - Index : " + index);
+                    } // else no need to update when size is equal to activelist
 
                 }
             }
@@ -310,52 +313,79 @@ public class MainActivity extends AppCompatActivity
         MenuModel VehiclesModel = new MenuModel("Vehicles",true,true,false,R.string.fa_chevron_right_solid,null);
 
 
-        MenuModel animeCharactersModel = new MenuModel("Characters",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel animeOtherModel = new MenuModel("Other",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel animeSeriesModel = new MenuModel("Series",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel animeVisualNovelsModel = new MenuModel("Visual Novels",false,false,false,R.string.fa_dot_circle_solid,null);
-
+        MenuModel animeCharactersModel = new MenuModel("Characters",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(false,true,false,true,true,true,0,0,0,0,0,"","desc","Characters","date_added"));
+        MenuModel animeOtherModel = new MenuModel("Other",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(false,true,false,true,true,true,0,0,0,0,0,"","desc","","date_added"));
+        MenuModel animeSeriesModel = new MenuModel("Series",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(false,true,false,true,true,true,0,0,0,0,0,"","desc","Series","date_added"));
+        MenuModel animeVisualNovelsModel = new MenuModel("Visual Novels",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(false,true,false,true,true,true,0,0,0,0,0,"","desc","Visual Novels","date_added"));
         MenuModel[] animeThirdLevelCollector = new MenuModel[] { animeCharactersModel,animeOtherModel,animeSeriesModel,animeVisualNovelsModel};
 
 
-        MenuModel artArchitectureModel = new MenuModel("Architecture",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel artDigitallModel = new MenuModel("Digitall",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel artPhotographyModel = new MenuModel("Photography",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel artTraditionalModel = new MenuModel("Traditional ",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel artArchitectureModel = new MenuModel("Architecture",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,false,true,true,true,0,0,0,0,0,"","desc","Architecture","date_added"));
+        MenuModel artDigitallModel = new MenuModel("Digitall",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,false,true,true,true,0,0,0,0,0,"","desc","Digitall","date_added"));
+        MenuModel artPhotographyModel = new MenuModel("Photography",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,false,true,true,true,0,0,0,0,0,"","desc","Photography","date_added"));
+        MenuModel artTraditionalModel = new MenuModel("Traditional ",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,false,true,true,true,0,0,0,0,0,"","desc","Traditional","date_added"));
 
         MenuModel[] artThirdLevelCollector = new MenuModel[] {artArchitectureModel,artDigitallModel,artPhotographyModel,artTraditionalModel};
 
 
-        MenuModel entertainmentComicBooksModel = new MenuModel("Comick Books",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel entertainmentGraphicNovelModel = new MenuModel("Graphic Novel",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel entertainmentEventsModel = new MenuModel("Events",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel entertainmentGamesModel = new MenuModel("Games",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel entertainmentLiteratureModel = new MenuModel("Literatures",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel entertainmentMoviesModel = new MenuModel("Movies",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel entertainmentMusicModel = new MenuModel("Music",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel entertainmentSportModel = new MenuModel("Sport",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel entertainmentTelevisionModel = new MenuModel("Television",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel entertainmentComicBooksModel = new MenuModel("Comick Books",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Comic Books","date_added"));
+        MenuModel entertainmentGraphicNovelModel = new MenuModel("Graphic Novel",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Graphich Novel","date_added"));
+        MenuModel entertainmentEventsModel = new MenuModel("Events",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Event","date_added"));
+        MenuModel entertainmentGamesModel = new MenuModel("Games",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Games","date_added"));
+        MenuModel entertainmentLiteratureModel = new MenuModel("Literatures",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Literature","date_added"));
+        MenuModel entertainmentMoviesModel = new MenuModel("Movies",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Movies","date_added"));
+        MenuModel entertainmentMusicModel = new MenuModel("Music",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Muisc","date_added"));
+        MenuModel entertainmentSportModel = new MenuModel("Sport",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Sport","date_added"));
+        MenuModel entertainmentTelevisionModel = new MenuModel("Television",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Television","date_added"));
 
         MenuModel[] entertainmentThirdLevelCollector = new MenuModel[] {entertainmentComicBooksModel,entertainmentEventsModel,entertainmentGraphicNovelModel,entertainmentGamesModel,entertainmentLiteratureModel,entertainmentMoviesModel,entertainmentMusicModel,entertainmentSportModel,entertainmentTelevisionModel};
 
 
-        MenuModel knowledgeHistoryModel = new MenuModel("History",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel knowledgeHolidayModel = new MenuModel("Holiday",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel knowledgeMilitaryModel = new MenuModel("Military",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel knowledgeWeaponsModel = new MenuModel("Weapons",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel knowledgeQuotesModel = new MenuModel("Quotes",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel knowledgeReligionModel = new MenuModel("Religion",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel knowledgeScienceModel = new MenuModel("Science",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel knowledgeHistoryModel = new MenuModel("History",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","History","date_added"));
+        MenuModel knowledgeHolidayModel = new MenuModel("Holiday",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Holiday","date_added"));
+        MenuModel knowledgeMilitaryModel = new MenuModel("Military",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Military","date_added"));
+        MenuModel knowledgeWeaponsModel = new MenuModel("Weapons",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Weapon","date_added"));
+        MenuModel knowledgeQuotesModel = new MenuModel("Quotes",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Quote","date_added"));
+        MenuModel knowledgeReligionModel = new MenuModel("Religion",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Religion","date_added"));
+        MenuModel knowledgeScienceModel = new MenuModel("Science",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Science","date_added"));
 
         MenuModel[] knowledgeThirdLevelCollector = new MenuModel[] {knowledgeHistoryModel,knowledgeHolidayModel,knowledgeMilitaryModel,knowledgeWeaponsModel,knowledgeQuotesModel,knowledgeReligionModel,knowledgeScienceModel};
 
 
 
 
-        MenuModel locationCitiesModel = new MenuModel("Cities",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel locationCountriesModel = new MenuModel("Countries",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel locationOtherModel = new MenuModel("Other",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel locationSpaceModel = new MenuModel("Space",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel locationCitiesModel = new MenuModel("Cities",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","City","date_added"));
+        MenuModel locationCountriesModel = new MenuModel("Countries",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Country","date_added"));
+        MenuModel locationOtherModel = new MenuModel("Other",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Location","date_added"));
+        MenuModel locationSpaceModel = new MenuModel("Space",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Space","date_added"));
 
         MenuModel[] locationThirdLevelCollector = new MenuModel[] {locationCitiesModel,locationCountriesModel,locationOtherModel,locationSpaceModel};
 
@@ -363,12 +393,18 @@ public class MainActivity extends AppCompatActivity
 
 
 
-        MenuModel miscClothingModel = new MenuModel("Clothing",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel miscColorsModel = new MenuModel("Colors",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel miscCompaniesModel = new MenuModel("Companies",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel miscLogosModel = new MenuModel("Logos",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel miscFoodModel = new MenuModel("Food",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel miscTechnologyModel = new MenuModel("Technology",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel miscClothingModel = new MenuModel("Clothing",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Clothing","date_added"));
+        MenuModel miscColorsModel = new MenuModel("Colors",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Colors","date_added"));
+        MenuModel miscCompaniesModel = new MenuModel("Companies",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Company","date_added"));
+        MenuModel miscLogosModel = new MenuModel("Logos",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Logo","date_added"));
+        MenuModel miscFoodModel = new MenuModel("Food",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Food","date_added"));
+        MenuModel miscTechnologyModel = new MenuModel("Technology",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Technology","date_added"));
 
 
         MenuModel[] miscThirdLevelCollector = new MenuModel[] {miscClothingModel,miscColorsModel,miscCompaniesModel,miscLogosModel,miscFoodModel,miscTechnologyModel};
@@ -378,32 +414,47 @@ public class MainActivity extends AppCompatActivity
 
 
 
-        MenuModel natureAnimalModel = new MenuModel("Animal",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel natureLandscapeModel = new MenuModel("Landscape",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel naturePlantsModel = new MenuModel("Plants",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel natureAnimalModel = new MenuModel("Animal",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Animal","date_added"));
+        MenuModel natureLandscapeModel = new MenuModel("Landscape",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Landscape","date_added"));
+        MenuModel naturePlantsModel = new MenuModel("Plants",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Plant","date_added"));
 
         MenuModel[] natureThirdLevelCollector = new MenuModel[] {natureAnimalModel,natureLandscapeModel,naturePlantsModel};
 
 
 
-        MenuModel peopleArtistsModel = new MenuModel("Artists",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel peopleCelebritiesModel = new MenuModel("Celebrities",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel peopleFictionalCharactersModel = new MenuModel("Fictional Characters",false,false,false,0,null);
-        MenuModel peopleModelsModel = new MenuModel("Models",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel peopleOtherFigureModel = new MenuModel("Other Figure",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel peoplePornstarsModel = new MenuModel("Pornstars",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel peopleArtistsModel = new MenuModel("Artists",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(false,false,true,true,true,true,0,0,0,0,0,"","desc","Artists","date_added"));
+        MenuModel peopleCelebritiesModel = new MenuModel("Celebrities",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(false,false,true,true,true,true,0,0,0,0,0,"","desc","Celebrities","date_added"));
+        MenuModel peopleFictionalCharactersModel = new MenuModel("Fictional Characters",false,false,false,0,
+                new queryModel(false,false,true,true,true,true,0,0,0,0,0,"","desc","Fictional","date_added"));
+        MenuModel peopleModelsModel = new MenuModel("Models",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(false,false,true,true,true,true,0,0,0,0,0,"","desc","Models","date_added"));
+        MenuModel peopleOtherFigureModel = new MenuModel("Other Figure",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(false,false,true,true,true,true,0,0,0,0,0,"","desc","Figure","date_added"));
+        MenuModel peoplePornstarsModel = new MenuModel("Pornstars",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(false,false,true,true,true,true,0,0,0,0,0,"","desc","Pornstars","date_added"));
 
 
         MenuModel[] peopleThirdLevelCollector = new MenuModel[] {peopleArtistsModel,peopleCelebritiesModel,peopleFictionalCharactersModel,peopleModelsModel,peopleOtherFigureModel,peoplePornstarsModel};
 
 
 
-        MenuModel vehiclesAircraftModel = new MenuModel("Aircraft",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel vehiclesCarsModel = new MenuModel("Cars",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel vehiclesMotorcycleModel = new MenuModel("Motorcycle",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel vehiclesShipsModel = new MenuModel("Ships",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel vehiclesSpaceCraftsModel = new MenuModel("Space Crafts",false,false,false,R.string.fa_dot_circle_solid,null);
-        MenuModel vehiclesTrainsModel = new MenuModel("Trains",false,false,false,R.string.fa_dot_circle_solid,null);
+        MenuModel vehiclesAircraftModel = new MenuModel("Aircraft",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Aircraft","date_added"));
+        MenuModel vehiclesCarsModel = new MenuModel("Cars",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Cars","date_added"));
+        MenuModel vehiclesMotorcycleModel = new MenuModel("Motorcycle",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Motorcycle","date_added"));
+        MenuModel vehiclesShipsModel = new MenuModel("Ships",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Ships","date_added"));
+        MenuModel vehiclesSpaceCraftsModel = new MenuModel("Space Crafts",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Space Crafts","date_added"));
+        MenuModel vehiclesTrainsModel = new MenuModel("Trains",false,false,false,R.string.fa_dot_circle_solid,
+                new queryModel(true,false,true,true,true,true,0,0,0,0,0,"","desc","Trains","date_added"));
 
 
 
@@ -541,8 +592,9 @@ public class MainActivity extends AppCompatActivity
                 DrawerLayout drawer = activity.findViewById(R.id.drawer_layout);
                 drawer.closeDrawer(GravityCompat.START);
             }
-
             String url = menuModel.queryModel.getUrl();
+            Log.i(TAG, "getImagesOnHttp: " + url);
+
             Object[] container = new Object[] {url};
 
             ((HttpGetImagesAsync) task).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {

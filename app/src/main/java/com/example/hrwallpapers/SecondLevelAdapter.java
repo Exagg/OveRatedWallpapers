@@ -75,47 +75,48 @@ public class SecondLevelAdapter extends BaseExpandableListAdapter {
         if (convertView == null) {
             LayoutInflater layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(R.layout.menu_child_of_group,null);
-            TextView tv = convertView.findViewById(R.id.child_id);
 
-            tv.setText(model.name);
-
-
-            if(model.drawableID != 0)
-            {
-                ImageView im = convertView.findViewById(R.id.child_image);
-                LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
-                        im.getLayoutParams().width,
-                        im.getLayoutParams().height
-                );
-                if(getChildrenCount(groupPosition) == 0)
-                {
-                    //Dot menu style
-                    param.leftMargin = MainActivity.setPxToDP(125,context);
-                    param.topMargin =MainActivity.setPxToDP(25,context);
-                    param.height = MainActivity.setPxToDP(75,context);
-                    param.width = MainActivity.setPxToDP(75,context);
-                }
-                else
-                {
-                    param.leftMargin = MainActivity.setPxToDP(150,context);
-                    param.topMargin =MainActivity.setPxToDP(25,context);
-                    param.height = MainActivity.setPxToDP(100,context);
-                    param.width = MainActivity.setPxToDP(100,context);
-                }
-                im.setLayoutParams(param);
-                MainActivity.setIconToImageView(im,this.context,model.drawableID,true,false,50,model.colorID);
-
-            }
         }
-        else
+
+        TextView tv = convertView.findViewById(R.id.child_id);
+
+        tv.setText(model.name);
+
+
+        if(model.drawableID != 0)
         {
-            TextView tv = convertView.findViewById(R.id.child_id);
-
-            if(tv.getText() != model.name)
+            ImageView im = convertView.findViewById(R.id.child_image);
+            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                    im.getLayoutParams().width,
+                    im.getLayoutParams().height
+            );
+            if(getChildrenCount(groupPosition) == 0)
             {
-                tv.setText(model.name);
+                //Dot menu style
+                param.leftMargin = MainActivity.setPxToDP(125,context);
+                param.topMargin =MainActivity.setPxToDP(25,context);
+                param.height = MainActivity.setPxToDP(75,context);
+                param.width = MainActivity.setPxToDP(75,context);
             }
+            else
+            {
+                param.leftMargin = MainActivity.setPxToDP(150,context);
+                param.topMargin =MainActivity.setPxToDP(25,context);
+                param.height = MainActivity.setPxToDP(100,context);
+                param.width = MainActivity.setPxToDP(100,context);
+            }
+            im.setLayoutParams(param);
+            MainActivity.setIconToImageView(im,this.context,model.drawableID,true,false,50,model.colorID);
         }
+
+
+
+        if(tv.getText() != model.name)
+        {
+            tv.setText(model.name);
+        }
+
+
         return convertView;
     }
 
@@ -127,27 +128,27 @@ public class SecondLevelAdapter extends BaseExpandableListAdapter {
         {
             LayoutInflater layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(R.layout.menu_child_of_group,null);
+        }
 
-            TextView tv = convertView.findViewById(R.id.child_id);
+        TextView tv = convertView.findViewById(R.id.child_id);
 
-            tv.setText(model.name);
+        tv.setText(model.name);
 
-            ImageView childImage = convertView.findViewById(R.id.child_image);
-            convertView.requestLayout();
-            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
-                    childImage.getLayoutParams().width,
-                    childImage.getLayoutParams().height
-            );
-            param.leftMargin = MainActivity.setPxToDP(210,context);
-            param.topMargin =MainActivity.setPxToDP(25,context);
-            param.height = MainActivity.setPxToDP(75,context);
-            param.width = MainActivity.setPxToDP(75,context);
-            childImage.setLayoutParams(param);
+        ImageView childImage = convertView.findViewById(R.id.child_image);
+        convertView.requestLayout();
+        LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                childImage.getLayoutParams().width,
+                childImage.getLayoutParams().height
+        );
+        param.leftMargin = MainActivity.setPxToDP(210,context);
+        param.topMargin =MainActivity.setPxToDP(25,context);
+        param.height = MainActivity.setPxToDP(75,context);
+        param.width = MainActivity.setPxToDP(75,context);
+        childImage.setLayoutParams(param);
 
-            if(model.drawableID != 0)
-            {
-                MainActivity.setIconToImageView(childImage,this.context,model.drawableID,true,false,50,model.colorID);
-            }
+        if(model.drawableID != 0)
+        {
+            MainActivity.setIconToImageView(childImage,this.context,model.drawableID,true,false,50,model.colorID);
         }
 
         return convertView;

@@ -41,6 +41,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     private static final int VIEW_PAGER_LOAD_LIMIT = 5;
     private static BaseWallpaperActivity baseWallpaper;
 
+
     private ActionBar actionBar;
     private View bottomArea;
     private View rightArea;
@@ -135,11 +136,46 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             }
         });
 
+        if(wallpaperModelList != null && model != null)
+        {
+            if(wallpaperModelList.size() - wallpaperModelList.indexOf(model) < VIEW_PAGER_LOAD_LIMIT)
+            {
+
+                if(MainActivity.task.getStatus() == AsyncTask.Status.FINISHED)
+                {
+                    menuModel.queryModel.setActivePage(menuModel.queryModel.getActivePage() + 1);
+                    menuModel.queryModel.prepareUrl();
+                    MainActivity.setMenuClickListener(menuModel,baseWallpaper,MainActivity.VIEWPAGER_LOAD_MORE);
+                }
+            }
+        }
+
+
 
         leftArea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int index = viewPager.getCurrentItem();
+                index--;
 
+                if(index > -1 && index <= adapter.getCount())
+                {
+                    viewPager.setCurrentItem(index);
+                }
+            }
+        });
+
+        rightArea.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int index = viewPager.getCurrentItem();
+                index++;
+
+
+                if(index > -1 && index <= adapter.getCount())
+                {
+                    viewPager.setCurrentItem(index);
+                }
             }
         });
 
@@ -176,9 +212,10 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-        int currentIndex =adapter.getCurrentPosition();
+        int currentIndex =viewPager.getCurrentItem();
         String listData = new Gson().toJson(wallpaperModelList);
         Intent intent = new Intent();
+
 
         intent.putExtra("wallpaperList",listData);
         intent.putExtra("listIndex",currentIndex);

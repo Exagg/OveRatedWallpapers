@@ -19,7 +19,6 @@ public class BaseWallpaperPagerAdapter extends PagerAdapter {
 
     private Context mContext;
     private List<wallpaperModel> wallpaperList;
-    private int currentPosition;
     public BaseWallpaperPagerAdapter(Context context, List<wallpaperModel> wallpaperList)
     {
         this.wallpaperList = wallpaperList;
@@ -45,9 +44,6 @@ public class BaseWallpaperPagerAdapter extends PagerAdapter {
         return model;
     }
 
-    public int getCurrentPosition() {
-        return currentPosition;
-    }
 
     @Override
     public int getCount() {
@@ -63,7 +59,6 @@ public class BaseWallpaperPagerAdapter extends PagerAdapter {
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
         LayoutInflater layoutInflater = LayoutInflater.from(mContext);
-        currentPosition = position;
         View layout = layoutInflater.inflate(R.layout.base_wallpaper_viewpager,container,false);
         ImageView im = layout.findViewById(R.id.base_wallpaper_main_image);
         CircleProgressBar circleProgressBar = layout.findViewById(R.id.base_wallpaper_circleProgressBar);

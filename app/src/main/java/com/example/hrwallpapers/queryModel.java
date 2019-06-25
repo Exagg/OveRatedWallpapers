@@ -23,6 +23,7 @@ public class queryModel {
         this.orderBy = orderBy;
         this.sorting = sorting;
         this.activePage = 1;
+        this.query = query;
 
         prepareUrl();
     }
