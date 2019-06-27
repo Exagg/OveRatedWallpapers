@@ -102,6 +102,8 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         recyclerView = (RecyclerView) this.findViewById(R.id.recyclerForWallpapers);
+
+        recyclerView.getItemAnimator().setChangeDuration(0);
         popupFragment = setFragment(new wallpaperPopupFragment());
         mainContentView = findViewById(R.id.main_content);
 
@@ -621,7 +623,7 @@ public class MainActivity extends AppCompatActivity
             else if(state == RECREATE )
             {
                 //Load new images from the new query
-                recyclerViewAdapter = new wallpaperRecyclerViewAdapter(wallpaperModels,fragmentHolder,popupFragment);
+                recyclerViewAdapter = new wallpaperRecyclerViewAdapter(wallpaperModels,fragmentHolder,popupFragment,MainActivity.mainContentView);
 
                 GridLayoutManager layoutManager = new GridLayoutManager(activity.getApplicationContext(),RECYCLER_VIEW_COLUMN);
                 recyclerView.setLayoutManager(layoutManager);
@@ -643,6 +645,7 @@ public class MainActivity extends AppCompatActivity
 
     public static void LoadImageFromURL(ImageView im, String url, final CircleProgressBar progressBar, RequestOptions requestOptions,wallpaperModel model)
     {
+        Log.i(TAG, "LoadImageFromURL: " + url);
         new GlideImageLoader(im,progressBar).load(url,requestOptions,model);
 
     }

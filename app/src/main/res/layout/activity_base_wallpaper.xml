@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/base_wallpaper_container"
@@ -7,82 +7,208 @@
     android:layout_height="match_parent"
     android:theme="@style/FullscreenTheme"
     android:background="@color/fullScreenBackground"
-    tools:context=".BaseWallpaperActivity">
+    tools:context=".BaseWallpaperActivity"
+    android:orientation="vertical">
 
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/base_wallpaper_viewPager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
-    </android.support.v4.view.ViewPager>
 
-    <FrameLayout
+
+
+    <com.sothree.slidinguppanel.SlidingUpPanelLayout
+        android:id="@+id/base_wallpaper_slidingpanel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fitsSystemWindows="true">
+        android:gravity="bottom"
+        app:umanoScrollableView="@id/base_Wallpaper_similiar_recyclerView"
+        app:umanoPanelHeight="0dp"
+        app:umanoShadowHeight="0dp">
 
-        <FrameLayout
+        /*
+            FIRST CHILD IS STARTS VISIBILE WHILE STARTING ACITIVITY
+            SECOND CHILD IS INVISIBILE UNTIL SLIDING SCREEN
+        */
+
+        <LinearLayout
+            android:id="@+id/base_wallpaper_sliding_area"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingTop="15dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1920x1080"
+                android:textSize="20dp"
+                android:layout_gravity="right"
+                android:layout_marginRight="15dp"
+                android:typeface="serif"
+                android:textColor="@color/white"/>
 
             <LinearLayout
-                android:id="@+id/base_wallpaper_left_area"
-                android:layout_width="50dp"
-                android:layout_height="200dp"
-                android:layout_gravity="left|center_vertical">
-
-                <ImageView
-                    android:id="@+id/base_wallpaper_left_icon"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/base_wallpaper_right_area"
-                android:layout_width="50dp"
-                android:layout_height="200dp"
-                android:layout_gravity="right|center_vertical">
-
-                <ImageView
-                    android:id="@+id/base_wallpaper_right_icon"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/base_wallpaper_bottom_area"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_gravity="bottom"
-                android:background="@color/fullScreenActionBarBackground">
-
-
-                <ImageView
-                    android:id="@+id/base_wallpaper_download_button"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="# Tags"
+                    android:textSize="20dp"
+                    android:typeface="serif"
+                    android:padding="15dp"
+                    android:textColor="@color/spring_green"/>
+                <com.google.android.flexbox.FlexboxLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:layout_weight="33" />
+                    android:layout_height="wrap_content"
+                    app:flexWrap="wrap"
+                    app:alignItems="stretch"
+                    app:alignContent="stretch">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Aston Martin"
+                        android:textColor="@color/white"
+                        android:padding="10dp"
+                        android:layout_margin="10dp"
+                        app:layout_alignSelf="center"
+                        android:background="@drawable/tag_pattern"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Black"
+                        android:textColor="@color/white"
+                        android:padding="10dp"
+                        android:layout_margin="10dp"
+                        app:layout_alignSelf="center"
+                        android:background="@drawable/tag_pattern"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Matt"
+                        android:textColor="@color/white"
+                        android:padding="10dp"
+                        android:layout_margin="10dp"
+                        app:layout_alignSelf="center"
+                        android:background="@drawable/tag_pattern"/>
 
-                <ImageView
-                    android:id="@+id/base_wallpaper_corp_button"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:layout_weight="33" />
+                </com.google.android.flexbox.FlexboxLayout>
 
-                <ImageView
+
+                <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:layout_weight="33" />
+                    android:layout_height="wrap_content"
+                    android:text="Similiar Wallpapers"
+                    android:textColor="@color/white"
+                    android:textSize="20dp"
+                    android:padding="15dp"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/base_Wallpaper_similiar_recyclerView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="10dp"
+                        android:clickable="true"
+                        android:isScrollContainer="true">
+                    </android.support.v7.widget.RecyclerView>
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/base_wallpaper_fragment_holder"
+                        android:visibility="visible"></FrameLayout>
+
+                </FrameLayout>
             </LinearLayout>
-        </FrameLayout>
-
-    </FrameLayout>
+        </LinearLayout>
 
 
-</FrameLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <android.support.v4.view.ViewPager
+                    android:id="@+id/base_wallpaper_viewPager"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                </android.support.v4.view.ViewPager>
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fitsSystemWindows="true">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <LinearLayout
+                            android:id="@+id/base_wallpaper_left_area"
+                            android:layout_width="50dp"
+                            android:layout_height="200dp"
+                            android:layout_gravity="left|center_vertical">
+
+                            <ImageView
+                                android:id="@+id/base_wallpaper_left_icon"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/base_wallpaper_right_area"
+                            android:layout_width="50dp"
+                            android:layout_height="200dp"
+                            android:layout_gravity="right|center_vertical">
+
+                            <ImageView
+                                android:id="@+id/base_wallpaper_right_icon"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/base_wallpaper_bottom_area"
+                            android:layout_width="match_parent"
+                            android:layout_height="50dp"
+                            android:layout_gravity="bottom"
+                            android:background="@color/fullScreenActionBarBackground">
+
+
+                            <ImageView
+                                android:id="@+id/base_wallpaper_download_button"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:layout_weight="33" />
+
+                            <ImageView
+                                android:id="@+id/base_wallpaper_corp_button"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:layout_weight="33" />
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:layout_weight="33" />
+                        </LinearLayout>
+                    </FrameLayout>
+
+                </FrameLayout>
+            </FrameLayout>
+        </LinearLayout>
+
+    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+
+</LinearLayout>

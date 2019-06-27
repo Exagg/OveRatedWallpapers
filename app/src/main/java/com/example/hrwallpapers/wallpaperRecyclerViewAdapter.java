@@ -3,7 +3,9 @@ package com.example.hrwallpapers;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.os.RecoverySystem;
@@ -73,12 +75,12 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             .priority(Priority.HIGH)
             .centerCrop();
 
-    public wallpaperRecyclerViewAdapter(List<wallpaperModel> modelList, FrameLayout fragmentHolderLayout, Fragment popupFragment)
+    public wallpaperRecyclerViewAdapter(List<wallpaperModel> modelList, FrameLayout fragmentHolderLayout, Fragment popupFragment,View v)
     {
         this.modelList = modelList;
         this.fragmentHolder = fragmentHolderLayout;
         this.popupFragment = popupFragment;
-        mainContentView = MainActivity.ma.mainContentView;
+        mainContentView = v;
     }
 
     public int getCurrentViewPosition() {
@@ -89,7 +91,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
     @Override
     public wallpaperViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         wallpaperModel model = modelList.get(i);
-        View itemView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.wallpaper_list_model,null);
+        View itemView = LayoutInflater.from(mainContentView.getContext()).inflate(R.layout.wallpaper_list_model,null);
         CircleProgressBar progressBar = itemView.findViewById(R.id.wallpaper_list_progressbar);
         return new wallpaperViewHolder(itemView,progressBar,popupFragment);
     }
@@ -148,20 +150,20 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             likeImageView = fragment.getView().findViewById(R.id.wallpaper_like_button);
             shareImageView = fragment.getView().findViewById(R.id.wallpaper_share_button);
             downloadImageView = fragment.getView().findViewById(R.id.wallpaper_download_button);
+            fragmentBaseImageView = fragment.getView().findViewById(R.id.wallpaper_popup_base_image);
 
             this.circleProgressBar = circleProgressBar;
-
 
 
             MainActivity.setIconToImageView(shareImageView,itemView.getContext(),R.string.fa_share_solid,true,false,standSize);
             MainActivity.setIconToImageView(downloadImageView,itemView.getContext(),R.string.fa_download_solid,true,false,standSize);
 
-            fragmentBaseImageView = fragment.getView().findViewById(R.id.wallpaper_popup_base_image);
             okHttpClient = new OkHttpClient();
 
             this.circleProgressBar.setOnLoaded(new onProgressBarLoaded() {
                 @Override
                 public void progressBarLoaded(View view) {
+                    Log.i(TAG, "progressBarLoaded: loaded");
                     wallpaperImage.setVisibility(View.VISIBLE);
                 }
             });
@@ -201,7 +203,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
                     //set on cache get screenshot for fastest set blur background
                     Bitmap bitmap = getScreenShot(mainContentView);
 
-                    BitmapDrawable dr = new BitmapDrawable(mainContentView.getResources(),bitmap);
+                    BitmapDrawable dr = new BitmapDrawable(MainActivity.mainContentView.getResources(),bitmap);
                     ImageView backgroundBlur = fragment.getView().findViewById(R.id.fragment_blur_background);
 
                     Glide.with(fragment.getContext())
@@ -375,11 +377,11 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         {
             if(model.isFavorite.isTrue())
             {
-                MainActivity.setIconToImageView(likeImageView,itemView.getContext(),R.string.fa_heart,true,false,standSize);
+                MainActivity.setIconToImageView(likeImageView,mainContentView.getContext(),R.string.fa_heart,true,false,standSize);
             }
             else
             {
-                MainActivity.setIconToImageView(likeImageView,itemView.getContext(),R.string.fa_heart,false,false,standSize);
+                MainActivity.setIconToImageView(likeImageView,mainContentView.getContext(),R.string.fa_heart,false,false,standSize);
             }
         }
     }

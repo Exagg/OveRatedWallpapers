@@ -6,10 +6,17 @@ import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.transition.Slide;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -22,13 +29,16 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -65,12 +75,17 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             .priority(Priority.HIGH)
             .fitCenter();
 
+    private Fragment popupFragment;
+
+    private SlidingUpPanelLayout mSlidingPanel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setAnimation();
         setContentView(R.layout.activity_base_wallpaper);
         baseWallpaper = this;
+        popupFragment = setFragment(new wallpaperPopupFragment(),R.id.base_wallpaper_fragment_holder);
         if(this.getIntent().getExtras().containsKey("wallpaperList"))
         {
             Type listType = new TypeToken<List<wallpaperModel>>(){}.getType();
@@ -109,11 +124,13 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         rightArea = findViewById(R.id.base_wallpaper_right_area);
         leftIcon = findViewById(R.id.base_wallpaper_left_icon);
         rightIcon = findViewById(R.id.base_wallpaper_right_icon);
-
         viewPager =findViewById(R.id.base_wallpaper_viewPager);
-
         mainView = findViewById(R.id.base_wallpaper_container);
+        mSlidingPanel = findViewById(R.id.base_wallpaper_slidingpanel);
 
+
+
+        mSlidingPanel.setAnchorPoint(0.7f); // it will up to %70 of screen size
 
         //Set fontawesome icons to imageviews
 
@@ -125,7 +142,23 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         viewPager.setAdapter(adapter);
         viewPager.setCurrentItem(wallpaperModelList.indexOf(model));
 
-        final GestureDetector tapDetector = new GestureDetector(this, new TapGestureListener());
+
+        RecyclerView popupRecyclerView = findViewById(R.id.base_Wallpaper_similiar_recyclerView);
+        FrameLayout fragmentHolder = findViewById(R.id.base_wallpaper_fragment_holder);
+
+        popupRecyclerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.i(TAG, "onTouch: ");
+                return false;
+            }
+        });
+
+        GridLayoutManager layoutManager = new GridLayoutManager(this.getApplicationContext(),2);
+        popupRecyclerView.setLayoutManager(layoutManager);
+        popupRecyclerView.setAdapter(new wallpaperRecyclerViewAdapter(wallpaperModelList,fragmentHolder,popupFragment,popupRecyclerView));
+
+        final GestureDetector tapDetector = new GestureDetector(this, new GestureListener());
 
 
         viewPager.setOnTouchListener(new View.OnTouchListener() {
@@ -212,16 +245,32 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-        int currentIndex =viewPager.getCurrentItem();
-        String listData = new Gson().toJson(wallpaperModelList);
-        Intent intent = new Intent();
+        if(mSlidingPanel.getPanelState() != SlidingUpPanelLayout.PanelState.COLLAPSED)
+        {
+            mSlidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+        }
+        else
+        {
+            int currentIndex =viewPager.getCurrentItem();
+            String listData = new Gson().toJson(wallpaperModelList);
+            Intent intent = new Intent();
 
 
-        intent.putExtra("wallpaperList",listData);
-        intent.putExtra("listIndex",currentIndex);
-        setResult(RESULT_OK,intent);
-        finish();
-        super.onBackPressed();
+            intent.putExtra("wallpaperList",listData);
+            intent.putExtra("listIndex",currentIndex);
+            setResult(RESULT_OK,intent);
+            finish();
+            super.onBackPressed();
+        }
+    }
+
+    protected Fragment setFragment(Fragment fragment,int layoutID) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction =
+                fragmentManager.beginTransaction();
+        fragmentTransaction.replace(layoutID, fragment);
+        fragmentTransaction.commit();
+        return fragment;
     }
 
     public void setAnimation() {
@@ -334,15 +383,74 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         win.setAttributes(winParams);
     }
 
-    class TapGestureListener extends GestureDetector.SimpleOnGestureListener
+    public void swipeSlidingPanel()
     {
+        if(mSlidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.ANCHORED)
+        {
+            mSlidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+        }
+        else if (mSlidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED)
+        {
+            mSlidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.ANCHORED);
+        }
+    }
+
+    private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
+
+        private static final int SWIPE_THRESHOLD = 300;
+        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
+
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
             toogleUI();
-            return false;
+            return super.onSingleTapUp(e);
         }
 
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            return super.onDoubleTap(e);
+        }
 
+        @Override
+        public void onLongPress(MotionEvent e) {
+            super.onLongPress(e);
+        }
+
+        // Determines the fling velocity and then fires the appropriate swipe event accordingly
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            boolean result = false;
+            try {
+                float diffY = e2.getY() - e1.getY();
+                float diffX = e2.getX() - e1.getX();
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX > 0) {
+                            //onSwipeRight();
+                        } else {
+                            //onSwipeLeft();
+                        }
+                    }
+                } else {
+                    if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffY > 0) {
+                            swipeSlidingPanel();
+                        } else {
+                            swipeSlidingPanel();
+                        }
+                    }
+                }
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+            return result;
+        }
     }
+
 
 }

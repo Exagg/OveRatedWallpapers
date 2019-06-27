@@ -80,7 +80,7 @@ public class GlideImageLoader {
                     }
                     @Override
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        if(mProgressBar.getProgress() == (float)0.0)
+                        if(mProgressBar.getProgress()< (float)100)
                         {
                             mProgressBar.setProgressWithAnimation((float) 100); // trigger the loaded event when the image cames from cache
                         }
@@ -126,7 +126,7 @@ public class GlideImageLoader {
                     @Override
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                         ProgressAppGlideModule.forget(url);
-                        if(mProgressBar.getProgress() == (float)0.0)
+                        if(mProgressBar.getProgress() < (float)100)
                         {
                             mProgressBar.setProgressWithAnimation((float) 100); // trigger the loaded event when the image cames from cache
                         }
