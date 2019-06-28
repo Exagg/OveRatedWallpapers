@@ -38,10 +38,9 @@ class HttpGetImagesAsync extends AsyncTask<Object,Integer, List<wallpaperModel>>
 
                 wallpaperModel m = new wallpaperModel(thumbUrl,originalUrl,id);
                 if(id != "") response.add(m);
-
-
             }
-        } catch (MalformedURLException e) {
+
+            } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();

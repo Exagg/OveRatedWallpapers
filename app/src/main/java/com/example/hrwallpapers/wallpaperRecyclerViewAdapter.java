@@ -81,6 +81,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         this.fragmentHolder = fragmentHolderLayout;
         this.popupFragment = popupFragment;
         mainContentView = v;
+        setHasStableIds(true);
     }
 
     public int getCurrentViewPosition() {
@@ -112,6 +113,19 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
     public void setModelList(List<wallpaperModel> list)
     {
         this.modelList = list;
+    }
+    public void addModelListToList(List<wallpaperModel> list)
+    {
+        this.modelList.addAll(list);
+    }
+    public void addModelToList(wallpaperModel model)
+    {
+        this.modelList.add(model);
+    }
+
+    @Override
+    public void setHasStableIds(boolean hasStableIds) {
+        super.setHasStableIds(hasStableIds);
     }
 
     public class wallpaperViewHolder extends RecyclerView.ViewHolder
@@ -163,7 +177,6 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             this.circleProgressBar.setOnLoaded(new onProgressBarLoaded() {
                 @Override
                 public void progressBarLoaded(View view) {
-                    Log.i(TAG, "progressBarLoaded: loaded");
                     wallpaperImage.setVisibility(View.VISIBLE);
                 }
             });
@@ -257,7 +270,8 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
                             if(event.getAction() == MotionEvent.ACTION_UP)
                             {
-                                MainActivity.ma.showFullScreenActivity(model,MainActivity.ma, BaseWallpaperActivity.class); //Tek dokunuş yapıldı.
+                                MainActivity.ma.showFullScreenActivity(model,MainActivity.ma, BaseWallpaperActivity.class,modelList); //Tek dokunuş yapıldı.
+                                Log.i(TAG, "onTouch: " + model.id);
                             }
                         }
                     }

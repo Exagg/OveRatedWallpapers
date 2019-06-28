@@ -22,109 +22,13 @@
         android:gravity="bottom"
         app:umanoScrollableView="@id/base_Wallpaper_similiar_recyclerView"
         app:umanoPanelHeight="0dp"
-        app:umanoShadowHeight="0dp">
+        app:umanoShadowHeight="0dp"
+        app:umanoDragView="@id/base_wallpaper_sliding_area">
 
         /*
             FIRST CHILD IS STARTS VISIBILE WHILE STARTING ACITIVITY
             SECOND CHILD IS INVISIBILE UNTIL SLIDING SCREEN
         */
-
-        <LinearLayout
-            android:id="@+id/base_wallpaper_sliding_area"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:paddingTop="15dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="1920x1080"
-                android:textSize="20dp"
-                android:layout_gravity="right"
-                android:layout_marginRight="15dp"
-                android:typeface="serif"
-                android:textColor="@color/white"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="# Tags"
-                    android:textSize="20dp"
-                    android:typeface="serif"
-                    android:padding="15dp"
-                    android:textColor="@color/spring_green"/>
-                <com.google.android.flexbox.FlexboxLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:flexWrap="wrap"
-                    app:alignItems="stretch"
-                    app:alignContent="stretch">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Aston Martin"
-                        android:textColor="@color/white"
-                        android:padding="10dp"
-                        android:layout_margin="10dp"
-                        app:layout_alignSelf="center"
-                        android:background="@drawable/tag_pattern"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Black"
-                        android:textColor="@color/white"
-                        android:padding="10dp"
-                        android:layout_margin="10dp"
-                        app:layout_alignSelf="center"
-                        android:background="@drawable/tag_pattern"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Matt"
-                        android:textColor="@color/white"
-                        android:padding="10dp"
-                        android:layout_margin="10dp"
-                        app:layout_alignSelf="center"
-                        android:background="@drawable/tag_pattern"/>
-
-                </com.google.android.flexbox.FlexboxLayout>
-
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Similiar Wallpapers"
-                    android:textColor="@color/white"
-                    android:textSize="20dp"
-                    android:padding="15dp"/>
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-
-                    <android.support.v7.widget.RecyclerView
-                        android:id="@+id/base_Wallpaper_similiar_recyclerView"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginTop="10dp"
-                        android:clickable="true"
-                        android:isScrollContainer="true">
-                    </android.support.v7.widget.RecyclerView>
-
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/base_wallpaper_fragment_holder"
-                        android:visibility="visible"></FrameLayout>
-
-                </FrameLayout>
-            </LinearLayout>
-        </LinearLayout>
 
 
         <LinearLayout
@@ -207,6 +111,82 @@
 
                 </FrameLayout>
             </FrameLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/base_wallpaper_sliding_area"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingTop="15dp"
+            android:clickable="true">
+
+            <TextView
+                android:id="@+id/base_wallpaper_resolution_textview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20dp"
+                android:layout_gravity="right"
+                android:gravity="right"
+                android:textAlignment="gravity"
+                android:layout_marginRight="15dp"
+                android:typeface="serif"
+                android:textColor="@color/white"
+                android:clickable="true"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clickable="true">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="# Tags"
+                    android:textSize="20dp"
+                    android:typeface="serif"
+                    android:padding="15dp"
+                    android:textColor="@color/spring_green"/>
+                <com.google.android.flexbox.FlexboxLayout
+                    android:id="@+id/base_wallpaper_tags_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:flexWrap="wrap"
+                    app:alignItems="stretch"
+                    app:alignContent="stretch">
+
+                </com.google.android.flexbox.FlexboxLayout>
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Similiar Wallpapers"
+                    android:textColor="@color/white"
+                    android:textSize="20dp"
+                    android:padding="15dp"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/base_Wallpaper_similiar_recyclerView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="10dp"
+                        android:clickable="true"
+                        android:isScrollContainer="true">
+                    </android.support.v7.widget.RecyclerView>
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/base_wallpaper_fragment_holder"
+                        android:visibility="gone"></FrameLayout>
+
+                </FrameLayout>
+            </LinearLayout>
         </LinearLayout>
 
     </com.sothree.slidinguppanel.SlidingUpPanelLayout>

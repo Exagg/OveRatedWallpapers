@@ -49,7 +49,7 @@ public class queryModel {
         if(this.getRatioY() != 0 & this.getRatioX() != 0) ratios = this.getRatioX() + "x" + this.getRatioY();
 
 
-        this.url +=this.getQuery() != null ? "q=" + this.getQuery() + "&" : "";
+        this.url +=this.getQuery() != "" ? "q=" + this.getQuery().replace(" ","%20") + "&" : "";
         this.url +=categories != "" ? "categories=" + categories + "&" : "";
         this.url +=purity != "" ? "purity=" + purity + "&" : "";
         this.url +=atLeast != "" ? "atLeast=" + atLeast + "&" : "";
@@ -80,6 +80,7 @@ public class queryModel {
     }
 
     public String getUrl() {
+        prepareUrl();
         return url;
     }
 

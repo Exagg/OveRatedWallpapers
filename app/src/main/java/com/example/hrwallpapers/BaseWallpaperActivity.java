@@ -10,17 +10,23 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SimpleItemAnimator;
+import android.text.Layout;
 import android.transition.Slide;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.MenuItem;
@@ -32,15 +38,18 @@ import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.flexbox.FlexboxLayout;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BaseWallpaperActivity extends AppCompatActivity {
@@ -78,7 +87,10 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     private Fragment popupFragment;
 
     private SlidingUpPanelLayout mSlidingPanel;
-
+    private FlexboxLayout tagsContainer;
+    private TextView resolutionTextView;
+    private RecyclerView popupRecyclerView;
+    private FrameLayout fragmentHolder;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,7 +110,12 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             int index = getIntent().getIntExtra("listIndex",1);
             if(index != -1) model = wallpaperModelList.get(index);
         }
-        menuModel = MainActivity.activeMenu;
+        if(this.getIntent().getExtras().containsKey("menuModel"))
+        {
+            String menuData = getIntent().getStringExtra("menuModel");
+            menuModel = new Gson().fromJson(menuData, MenuModel.class);
+        }
+
 
         actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -127,6 +144,8 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         viewPager =findViewById(R.id.base_wallpaper_viewPager);
         mainView = findViewById(R.id.base_wallpaper_container);
         mSlidingPanel = findViewById(R.id.base_wallpaper_slidingpanel);
+        tagsContainer = findViewById(R.id.base_wallpaper_tags_container);
+        resolutionTextView = findViewById(R.id.base_wallpaper_resolution_textview);
 
 
 
@@ -143,20 +162,20 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         viewPager.setCurrentItem(wallpaperModelList.indexOf(model));
 
 
-        RecyclerView popupRecyclerView = findViewById(R.id.base_Wallpaper_similiar_recyclerView);
-        FrameLayout fragmentHolder = findViewById(R.id.base_wallpaper_fragment_holder);
+        popupRecyclerView = findViewById(R.id.base_Wallpaper_similiar_recyclerView);
+        fragmentHolder = findViewById(R.id.base_wallpaper_fragment_holder);
 
         popupRecyclerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                Log.i(TAG, "onTouch: ");
                 return false;
             }
         });
 
+
         GridLayoutManager layoutManager = new GridLayoutManager(this.getApplicationContext(),2);
         popupRecyclerView.setLayoutManager(layoutManager);
-        popupRecyclerView.setAdapter(new wallpaperRecyclerViewAdapter(wallpaperModelList,fragmentHolder,popupFragment,popupRecyclerView));
+        ((SimpleItemAnimator) popupRecyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
 
         final GestureDetector tapDetector = new GestureDetector(this, new GestureListener());
 
@@ -168,6 +187,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                 return false;
             }
         });
+
 
         if(wallpaperModelList != null && model != null)
         {
@@ -182,8 +202,6 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                 }
             }
         }
-
-
 
         leftArea.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -383,16 +401,125 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         win.setAttributes(winParams);
     }
 
-    public void swipeSlidingPanel()
+    public void onSwipeDown()
     {
-        if(mSlidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.ANCHORED)
+        if(mSlidingPanel.getPanelState() != SlidingUpPanelLayout.PanelState.COLLAPSED)
         {
             mSlidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         }
-        else if (mSlidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED)
+    }
+    public void onSwipeUp()
+    {
+
+        if (mSlidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED)
         {
+            final wallpaperModel activeModel = wallpaperModelList.get(viewPager.getCurrentItem());
+
+            if(activeModel.tagList.size() == 0)
+            {
+                final Context context = getApplicationContext();
+                final Activity activity = this;
+                tagsContainer.removeAllViews();
+                resolutionTextView.setText("");
+                HttpGetTagsAsync task = new HttpGetTagsAsync();
+                task.setTaskFisinhed(new HttpGetTagsAsync.onAsyncTaskFisinhed() {
+                    @Override
+                    public void taskFinished(wallpaperModel model) {
+                        if(model != null)
+                        {
+                            activeModel.tagList = model.tagList;
+
+                            for (String s :
+                                    activeModel.tagList)
+                            {
+                                if(s != "")
+                                {
+                                    LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                                    View newTag = layoutInflater.inflate(R.layout.tag_textviews,null);
+                                    TextView tag = (TextView) newTag.findViewById(R.id.tag_view);
+                                    tag.setText(s);
+                                    tagsContainer.addView(newTag);
+                                    final queryModel queryModel = activeModel.getTagQueryModel(activeModel.tagList.indexOf(s));
+                                    if(queryModel != null) // Tags Click listener.
+                                    {
+                                        newTag.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                MenuModel menu = menuModel;
+                                                menu.queryModel = queryModel;
+
+                                                if(menu.queryModel != null && (MainActivity.task == null || MainActivity.task.getStatus() == AsyncTask.Status.FINISHED))
+                                                {
+                                                    MainActivity.task = new HttpGetImagesAsync();
+
+                                                    String url = menu.queryModel.getUrl();
+                                                    Log.i(TAG, "getImagesOnHttp: " + url);
+
+                                                    Object[] container = new Object[] {url};
+
+                                                    ((HttpGetImagesAsync) MainActivity.task).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {
+                                                        @Override
+                                                        public void taskFinished(List<wallpaperModel> list) {
+                                                            MainActivity.ma.showFullScreenActivity(activeModel,activity,BaseWallpaperActivity.class,list);
+                                                        }
+                                                    });
+                                                    MainActivity.task.execute(container);
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                            resolutionTextView.setText(model.resolution); //resolution textview content
+
+                            if(activeModel.tagList.size() > 0)
+                            {
+                                List<wallpaperModel> similiarList =new ArrayList<>();
+                                final wallpaperRecyclerViewAdapter similiarAdapter = new wallpaperRecyclerViewAdapter(similiarList,fragmentHolder,popupFragment,popupRecyclerView);
+
+                                //Load smiliar images
+                                for (String s :
+                                        activeModel.tagList) {
+                                    HttpGetImagesAsync task = new HttpGetImagesAsync();
+                                    queryModel queryModel = activeModel.getTagQueryModel(activeModel.tagList.indexOf(s));
+                                    MenuModel menu = menuModel;
+                                    menu.queryModel = queryModel;
+
+                                    if(menu.queryModel != null && task != null)
+                                    {
+
+
+                                        String url = menu.queryModel.getUrl();
+                                        Log.i(TAG, "loading similiar: " + url);
+
+                                        Object[] container = new Object[] {url};
+
+                                        ((HttpGetImagesAsync) task).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {
+                                            @Override
+                                            public void taskFinished(List<wallpaperModel> list) {
+                                                similiarAdapter.addModelListToList(list);
+                                                similiarAdapter.notifyDataSetChanged();
+                                            }
+                                        });
+                                        task.execute(container);
+                                    }
+                                }
+                                popupRecyclerView.setAdapter(similiarAdapter);
+                            }
+                        }
+                        Log.i(TAG, "taskFinished: " + model.thumbSrc);
+                    }
+                });
+                task.execute(activeModel);
+            }
+
             mSlidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.ANCHORED);
         }
+    }
+
+    private void loadTags(final MenuModel menuModel, final Activity activity,final wallpaperModel model)
+    {
+
     }
 
     private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
@@ -439,9 +566,9 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                 } else {
                     if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
                         if (diffY > 0) {
-                            swipeSlidingPanel();
+                            onSwipeDown();
                         } else {
-                            swipeSlidingPanel();
+                            onSwipeUp();
                         }
                     }
                 }

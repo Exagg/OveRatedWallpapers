@@ -56,7 +56,6 @@ public class GlideImageLoader {
         //Get Image
         Glide.with(mImageView.getContext())
                 .load(url)
-                .transition(withCrossFade())
                 .apply(options.skipMemoryCache(true))
                 .listener(new RequestListener<Drawable>() {
                     @Override
@@ -82,7 +81,7 @@ public class GlideImageLoader {
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                         if(mProgressBar.getProgress()< (float)100)
                         {
-                            mProgressBar.setProgressWithAnimation((float) 100); // trigger the loaded event when the image cames from cache
+                            mProgressBar.setProgress((float) 100); // trigger the loaded event when the image cames from cache
                         }
                         ProgressAppGlideModule.forget(url);
                         return false;
@@ -113,7 +112,6 @@ public class GlideImageLoader {
 
         Glide.with(mImageView.getContext())
                 .load(url)
-                .transition(withCrossFade())
                 .apply(options.skipMemoryCache(true))
                 .listener(new RequestListener<Drawable>() {
                     @Override
@@ -128,7 +126,7 @@ public class GlideImageLoader {
                         ProgressAppGlideModule.forget(url);
                         if(mProgressBar.getProgress() < (float)100)
                         {
-                            mProgressBar.setProgressWithAnimation((float) 100); // trigger the loaded event when the image cames from cache
+                            mProgressBar.setProgress((float) 100); // trigger the loaded event when the image cames from cache
                         }
                         return false;
                     }

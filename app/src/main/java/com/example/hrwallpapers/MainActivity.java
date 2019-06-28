@@ -214,12 +214,14 @@ public class MainActivity extends AppCompatActivity
         return fragment;
     }
 
-    public void showFullScreenActivity(wallpaperModel model,Context startContext,final Class<? extends Activity> targetActivity)
+    public void showFullScreenActivity(wallpaperModel model,Context startContext,final Class<? extends Activity> targetActivity,List<wallpaperModel> modelList)
     {
         Intent i = new Intent(startContext,targetActivity);
-        String listData = new Gson().toJson(activeModelList); // List activity içerisinde yeniden build edilecek. View ve class idleri değişecek.
-        i.putExtra("listIndex",activeModelList.indexOf(model)); // Modelin indexi viewpagerda görüntülenecek
+        String listData = new Gson().toJson(modelList); // List activity içerisinde yeniden build edilecek. View ve class idleri değişecek.
+        String menuData = new Gson().toJson(activeMenu);
+        i.putExtra("listIndex",modelList.indexOf(model)); // Modelin indexi viewpagerda görüntülenecek
         i.putExtra("wallpaperList",listData);
+        i.putExtra("menuModel",menuData);
 
         selectedWallpaper = model;
 
@@ -249,15 +251,17 @@ public class MainActivity extends AppCompatActivity
                     String listData = data.getStringExtra("wallpaperList");
                     List<wallpaperModel> modelList = new Gson().fromJson(listData,listType);
 
-                    modelList = modelList.subList(activeModelList.size(),modelList.size());
-
-                    if(modelList.size() > 0)
+                    if(modelList.size() > activeModelList.size())
                     {
-                        triggerForLoadMore(modelList,this,activeMenu,LOAD_MORE);
-                        recyclerView.scrollToPosition(index);
-                        Log.i(TAG, "onActivityResult: " + activeModelList.size()+ " - Index : " + index);
-                    } // else no need to update when size is equal to activelist
+                        modelList = modelList.subList(activeModelList.size(),modelList.size());
 
+                        if(modelList.size() > 0)
+                        {
+                            triggerForLoadMore(modelList,this,activeMenu,LOAD_MORE);
+                            recyclerView.scrollToPosition(index);
+                            Log.i(TAG, "onActivityResult: " + activeModelList.size()+ " - Index : " + index);
+                        } // else no need to update when size is equal to activelist
+                    }
                 }
             }
 
@@ -582,6 +586,11 @@ public class MainActivity extends AppCompatActivity
     {
         getImagesOnHttp(menuModel,activity,state);
     }
+    public static void setMenuClickListener(final queryModel queryModel,final Activity activity,int state)
+    {
+        MenuModel carrierMenuModel = new MenuModel("",false,false,false,0,queryModel);
+        getImagesOnHttp(carrierMenuModel,activity,state);
+    }
 
     public static void getImagesOnHttp(final MenuModel menuModel, final Activity activity,final int state)
     {
@@ -640,12 +649,16 @@ public class MainActivity extends AppCompatActivity
                 baseWallpaperActivity.wallpaperModelList.addAll(wallpaperModels);
                 baseWallpaperActivity.adapter.notifyDataSetChanged();
             }
+            else if (menuModel != null && state == RECREATE)
+            {
+                baseWallpaperActivity.wallpaperModelList = wallpaperModels;
+                baseWallpaperActivity.adapter.notifyDataSetChanged();
+            }
         }
     }
 
     public static void LoadImageFromURL(ImageView im, String url, final CircleProgressBar progressBar, RequestOptions requestOptions,wallpaperModel model)
     {
-        Log.i(TAG, "LoadImageFromURL: " + url);
         new GlideImageLoader(im,progressBar).load(url,requestOptions,model);
 
     }

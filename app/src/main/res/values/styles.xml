@@ -27,4 +27,5 @@
     <style name="FullscreenActionBarStyle" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:background">@color/fullScreenActionBarBackground</item>
     </style>
+
 </resources>
