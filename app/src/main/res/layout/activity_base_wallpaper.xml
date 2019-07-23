@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/base_wallpaper_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:theme="@style/FullscreenTheme"
-    android:background="@color/fullScreenBackground"
+    android:background="@drawable/fullscreen_background"
     tools:context=".BaseWallpaperActivity"
     android:orientation="vertical">
-
-
-
-
-
 
     <com.sothree.slidinguppanel.SlidingUpPanelLayout
         android:id="@+id/base_wallpaper_slidingpanel"
@@ -24,13 +19,12 @@
         app:umanoPanelHeight="0dp"
         app:umanoShadowHeight="0dp"
         app:umanoDragView="@id/base_wallpaper_sliding_area">
-
         /*
             FIRST CHILD IS STARTS VISIBILE WHILE STARTING ACITIVITY
             SECOND CHILD IS INVISIBILE UNTIL SLIDING SCREEN
+
+
         */
-
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
@@ -41,78 +35,176 @@
                     android:id="@+id/base_wallpaper_viewPager"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
-
                 </android.support.v4.view.ViewPager>
-
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:fitsSystemWindows="true">
-
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
+                        <FrameLayout
+                            android:id="@+id/base_wallpaper_custom_actionbar"
+                            android:layout_width="match_parent"
+                            android:layout_height="70dp">
+                            <ImageView
+                                android:id="@+id/base_wallpaper_back_button"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:layout_gravity="center_vertical"
+                                android:src="@drawable/ic_arrow_back"
+                                android:tint="@color/white"
+                                android:layout_marginLeft="15dp"/>
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="70dp"
+                                android:layout_gravity="right"
+                                android:layout_marginRight="10dp">
 
+                                <ImageView
+                                    android:id="@+id/base_wallpaper_like"
+                                    android:layout_width="30dp"
+                                    android:layout_height="30dp"
+                                    android:layout_gravity="center"
+                                    android:tint="@color/white"
+                                    android:layout_marginRight="25dp"
+                                    android:src="@drawable/ic_favorites_unlike"/>
+                                <ImageView
+                                    android:id="@+id/base_wallpaper_setas"
+                                    android:layout_width="50dp"
+                                    android:layout_height="50dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_phone_image"
+                                    android:tint="@color/white"/>
+                            </LinearLayout>
+                        </FrameLayout>
                         <LinearLayout
                             android:id="@+id/base_wallpaper_left_area"
                             android:layout_width="50dp"
                             android:layout_height="200dp"
-                            android:layout_gravity="left|center_vertical">
-
+                            android:layout_gravity="left|center_vertical"
+                            android:visibility="gone">
                             <ImageView
                                 android:id="@+id/base_wallpaper_left_icon"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center" />
                         </LinearLayout>
-
                         <LinearLayout
                             android:id="@+id/base_wallpaper_right_area"
                             android:layout_width="50dp"
                             android:layout_height="200dp"
-                            android:layout_gravity="right|center_vertical">
-
+                            android:layout_gravity="right|center_vertical"
+                            android:visibility="gone">
                             <ImageView
                                 android:id="@+id/base_wallpaper_right_icon"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center" />
                         </LinearLayout>
-
-                        <LinearLayout
-                            android:id="@+id/base_wallpaper_bottom_area"
-                            android:layout_width="match_parent"
+                        <ImageView
+                            android:id="@+id/fullscreen_share_button"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@drawable/ic_share"
+                            android:background="@drawable/circle_imageview_drawable"
+                            android:tint="@color/white"
+                            android:padding="7dp"
+                            android:layout_marginLeft="35dp"
+                            android:layout_marginBottom="35dp"
+                            android:layout_gravity="bottom|left"
+                            />
+                        <ImageView
+                            android:id="@+id/base_wallpaper_wizard_button"
+                            android:layout_width="50dp"
                             android:layout_height="50dp"
-                            android:layout_gravity="bottom"
-                            android:background="@color/fullScreenActionBarBackground">
+                            android:src="@drawable/ic_magic_wand"
+                            android:layout_gravity="bottom|center_horizontal"
+                            android:background="@drawable/circle_imageview_drawable"
+                            android:layout_marginBottom="50dp"
+                            android:tint="@color/white"
 
+                            android:padding="7dp"/>
+                        <com.example.hrwallpapers.ExpandableLinearLayout
+                            android:id="@+id/base_wallpaper_download_expandable"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="bottom|right"
+                            android:layout_marginRight="35dp"
+                            android:layout_marginBottom="35dp"
+                            android:orientation="vertical"
+                            app:toggleDirection="1">
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="right">
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="@color/white"
+                                        android:layout_gravity="center"
+                                        android:layout_marginRight="10dp"
+                                        android:padding="5dp"
+                                        android:background="@drawable/border_for_textviews"
+                                        android:text="Download as High Quality"/>
+                                    <ImageView
+                                        android:layout_width="40dp"
+                                        android:layout_height="40dp"
+                                        android:src="@drawable/ic_high_quality"
+                                        android:layout_marginBottom="15dp"
+                                        android:layout_marginTop="15dp"
+                                        android:tint="@color/white"
+                                        android:padding="10dp"
+                                        android:background="@drawable/circle_imageview_drawable"
+                                        android:layout_weight="40"/>
+                                </LinearLayout>
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:layout_gravity="right">
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="@color/white"
+                                        android:layout_gravity="center"
+                                        android:padding="5dp"
+                                        android:layout_marginRight="10dp"
+                                        android:background="@drawable/border_for_textviews"
+                                        android:text="Save as Actual"/>
+
+                                    <ImageView
+                                        android:layout_width="40dp"
+                                        android:layout_height="40dp"
+                                        android:layout_weight="40"
+                                        android:tint="@color/white"
+                                        android:layout_marginBottom="15dp"
+                                        android:layout_marginTop="15dp"
+                                        android:padding="10dp"
+                                        android:background="@drawable/circle_imageview_drawable"
+                                        android:src="@drawable/ic_screen_size"/>
+                                </LinearLayout>
+                                </LinearLayout>
 
                             <ImageView
-                                android:id="@+id/base_wallpaper_download_button"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:layout_gravity="center"
-                                android:layout_weight="33" />
-
-                            <ImageView
-                                android:id="@+id/base_wallpaper_corp_button"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:layout_gravity="center"
-                                android:layout_weight="33" />
-
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:layout_gravity="center"
-                                android:layout_weight="33" />
-                        </LinearLayout>
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:id="@+id/fullscreen_download_button"
+                                android:src="@drawable/ic_file_download"
+                                android:background="@drawable/circle_imageview_drawable"
+                                android:tint="@color/white"
+                                android:layout_gravity="bottom|right"
+                                android:padding="7dp"/>
+                        </com.example.hrwallpapers.ExpandableLinearLayout>
                     </FrameLayout>
-
                 </FrameLayout>
             </FrameLayout>
         </LinearLayout>
-
         <LinearLayout
             android:id="@+id/base_wallpaper_sliding_area"
             android:layout_width="match_parent"
@@ -120,7 +212,6 @@
             android:orientation="vertical"
             android:paddingTop="15dp"
             android:clickable="true">
-
             <TextView
                 android:id="@+id/base_wallpaper_resolution_textview"
                 android:layout_width="match_parent"
@@ -133,20 +224,39 @@
                 android:typeface="serif"
                 android:textColor="@color/white"
                 android:clickable="true"/>
-
-            <LinearLayout
+            <com.example.hrwallpapers.ExpandableLinearLayout
+                android:id="@+id/base_wallpaper_tags_expandable"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
+                app:toggleDrawable="@drawable/ic_arrow_drop_down"
+                app:toggleAnimatable="true"
+                app:toggleColor="@color/gray"
+                app:toggleHeight="20dp"
+                app:toggleWidth="20dp"
+                app:toggleDirection="3"
                 android:clickable="true">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="# Tags"
-                    android:textSize="20dp"
-                    android:typeface="serif"
-                    android:padding="15dp"
-                    android:textColor="@color/spring_green"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:id="@+id/expandable_layout_textview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="# Tags"
+                        android:textSize="20dp"
+                        android:typeface="serif"
+                        android:layout_gravity="center_vertical"
+                        android:textColor="@color/green"/>
+
+                    <ImageView
+                        android:id="@+id/expandable_layout_button"
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:src="@drawable/ic_arrow_drop_down"
+                        android:tint="@color/white"
+                        android:layout_gravity="right"/>
+                </FrameLayout>
                 <com.google.android.flexbox.FlexboxLayout
                     android:id="@+id/base_wallpaper_tags_container"
                     android:layout_width="match_parent"
@@ -154,41 +264,33 @@
                     app:flexWrap="wrap"
                     app:alignItems="stretch"
                     app:alignContent="stretch">
-
                 </com.google.android.flexbox.FlexboxLayout>
-
-
-                <TextView
+            </com.example.hrwallpapers.ExpandableLinearLayout>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Similiar Wallpapers"
+                android:textColor="@color/white"
+                android:textSize="20dp"
+                android:padding="15dp"/>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/base_Wallpaper_similiar_recyclerView"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Similiar Wallpapers"
-                    android:textColor="@color/white"
-                    android:textSize="20dp"
-                    android:padding="15dp"/>
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-
-                    <android.support.v7.widget.RecyclerView
-                        android:id="@+id/base_Wallpaper_similiar_recyclerView"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginTop="10dp"
-                        android:clickable="true"
-                        android:isScrollContainer="true">
-                    </android.support.v7.widget.RecyclerView>
-
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/base_wallpaper_fragment_holder"
-                        android:visibility="gone"></FrameLayout>
-
-                </FrameLayout>
-            </LinearLayout>
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="10dp"
+                    android:clickable="true"
+                    android:isScrollContainer="true">
+                </android.support.v7.widget.RecyclerView>
+            </FrameLayout>
         </LinearLayout>
-
     </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/base_wallpaper_fragment_holder"
+        android:visibility="gone"></FrameLayout>
 
-</LinearLayout>
+</FrameLayout>

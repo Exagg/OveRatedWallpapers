@@ -9,6 +9,10 @@ public class wallpaperModel {
     booleanListeners isFavorite;
     ArrayList<String> tagList;
     public String resolution;
+    public int tagsCurrentPage = 0;
+    public int originalWidth = 0;
+    public int originalHeight = 0;
+    boolean isPng=false;
 
 
     public wallpaperModel(String thumbSrc,String originalSrc,String id)
@@ -27,6 +31,7 @@ public class wallpaperModel {
             String tag = tagList.get(tagPosition);
 
             queryModel model= new queryModel(true,true,true,true,true,true,0,0,0,0,0,"","desc",tag,"random");
+            model.setActivePage(tagsCurrentPage);
             return model;
         }
         else return null;

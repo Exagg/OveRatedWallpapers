@@ -3,9 +3,14 @@ package com.example.hrwallpapers;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -31,9 +36,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -43,6 +50,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexboxLayout;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -61,21 +69,27 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     private static BaseWallpaperActivity baseWallpaper;
 
 
-    private ActionBar actionBar;
-    private View bottomArea;
+    private View customActionBar;
     private View rightArea;
     private View leftArea;
     private View mainView;
     public ViewPager viewPager;
+    private Activity thisActivity;
 
     private boolean mVisible;
 
     private ImageView leftIcon;
     private ImageView rightIcon;
+    private ImageView shareImageView;
+    private ImageView likeImageView;
+    private ImageView backImageView;
+    private ImageView wizardImageView;
+    private ImageView setAsImageView;
     public wallpaperModel model;
 
+
     public List<wallpaperModel>wallpaperModelList;
-    public MenuModel menuModel;
+    public queryModel queryModel;
 
     public BaseWallpaperPagerAdapter adapter;
 
@@ -91,6 +105,16 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     private TextView resolutionTextView;
     private RecyclerView popupRecyclerView;
     private FrameLayout fragmentHolder;
+    public wallpaperRecyclerViewAdapter similiarAdapter;
+    private ExpandableLinearLayout expandableArea;
+    private ExpandableLinearLayout downloadExpandableContainer;
+
+    private HttpGetTagsAsync getTagsAsync = new HttpGetTagsAsync();
+    private HttpGetImagesAsync getSimiliarAsync = new HttpGetImagesAsync();
+    private DownloadImageAsync downloadImageAsync = new DownloadImageAsync();
+    private final Context baseWallpaperContext = this;
+    private static HttpGetImagesAsync task = new HttpGetImagesAsync();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,6 +122,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         setContentView(R.layout.activity_base_wallpaper);
         baseWallpaper = this;
         popupFragment = setFragment(new wallpaperPopupFragment(),R.id.base_wallpaper_fragment_holder);
+        thisActivity = this;
         if(this.getIntent().getExtras().containsKey("wallpaperList"))
         {
             Type listType = new TypeToken<List<wallpaperModel>>(){}.getType();
@@ -107,21 +132,18 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         }
         if(this.getIntent().getExtras().containsKey("listIndex"))
         {
-            int index = getIntent().getIntExtra("listIndex",1);
-            if(index != -1) model = wallpaperModelList.get(index);
+            int index = getIntent().getIntExtra("listIndex",0);
+            if(index == -1) index = 0;
+            model = wallpaperModelList.get(index);
+
         }
-        if(this.getIntent().getExtras().containsKey("menuModel"))
+        if(this.getIntent().getExtras().containsKey("queryData"))
         {
-            String menuData = getIntent().getStringExtra("menuModel");
-            menuModel = new Gson().fromJson(menuData, MenuModel.class);
+            String menuData = getIntent().getStringExtra("queryData");
+            queryModel = new Gson().fromJson(menuData, queryModel.class);
         }
 
 
-        actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.fullScreenActionBarBackground)));
-        }
 
         if (Build.VERSION.SDK_INT >= 19 && Build.VERSION.SDK_INT < 21) {
             setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, true);
@@ -136,7 +158,6 @@ public class BaseWallpaperActivity extends AppCompatActivity {
 
 
         mVisible = false;
-        bottomArea = findViewById(R.id.base_wallpaper_bottom_area);
         leftArea = findViewById(R.id.base_wallpaper_left_area);
         rightArea = findViewById(R.id.base_wallpaper_right_area);
         leftIcon = findViewById(R.id.base_wallpaper_left_icon);
@@ -146,24 +167,37 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         mSlidingPanel = findViewById(R.id.base_wallpaper_slidingpanel);
         tagsContainer = findViewById(R.id.base_wallpaper_tags_container);
         resolutionTextView = findViewById(R.id.base_wallpaper_resolution_textview);
-
+        shareImageView = findViewById(R.id.fullscreen_share_button);
+        expandableArea = findViewById(R.id.base_wallpaper_tags_expandable);
+        customActionBar = findViewById(R.id.base_wallpaper_custom_actionbar);
+        likeImageView = findViewById(R.id.base_wallpaper_like);
+        backImageView = findViewById(R.id.base_wallpaper_back_button);
+        downloadExpandableContainer =findViewById(R.id.base_wallpaper_download_expandable);
+        wizardImageView =findViewById(R.id.base_wallpaper_wizard_button);
+        setAsImageView = findViewById(R.id.base_wallpaper_setas);
 
 
         mSlidingPanel.setAnchorPoint(0.7f); // it will up to %70 of screen size
 
-        //Set fontawesome icons to imageviews
 
-        MainActivity.setIconToImageView(leftIcon,this,R.string.fa_chevron_left_solid,true,false,100,getResources().getColor(R.color.white));
-        MainActivity.setIconToImageView(rightIcon,this,R.string.fa_chevron_right_solid,true,false,100,getResources().getColor(R.color.white));
+        if(model.isFavorite.isTrue())MainActivity.changeImageViewAsLiked(likeImageView);
+        else MainActivity.changeImageViewAsUnliked(likeImageView);
 
 
         adapter = new BaseWallpaperPagerAdapter(this,wallpaperModelList);
         viewPager.setAdapter(adapter);
         viewPager.setCurrentItem(wallpaperModelList.indexOf(model));
+        viewPager.setOffscreenPageLimit(2);
+        loadTags(model);
 
 
         popupRecyclerView = findViewById(R.id.base_Wallpaper_similiar_recyclerView);
         fragmentHolder = findViewById(R.id.base_wallpaper_fragment_holder);
+
+        List<wallpaperModel> similiarList =new ArrayList<>();
+        similiarAdapter = new wallpaperRecyclerViewAdapter(similiarList,fragmentHolder,popupFragment,mainView,this,queryModel);
+        popupRecyclerView.setAdapter(similiarAdapter);
+
 
         popupRecyclerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -172,6 +206,76 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             }
         });
 
+        popupRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            private int calculatedYPos = 0;
+            private int actualHeight = 0;
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                calculatedYPos = recyclerView.computeVerticalScrollOffset();
+                actualHeight = recyclerView.computeVerticalScrollRange();
+
+
+
+                if(actualHeight - (recyclerView.computeVerticalScrollExtent() + calculatedYPos) < MainActivity.LOAD_MORE_SCROLL_RANGE)
+                {
+                    Log.i("Scroll", "onScrolled: " + MainActivity.LOAD_MORE_SCROLL_RANGE + " < " + (actualHeight - (recyclerView.computeVerticalScrollExtent() + calculatedYPos)));
+                    wallpaperModel activeModel = wallpaperModelList.get(viewPager.getCurrentItem());
+                    //Load smiliar images
+
+
+                    if(activeModel.tagList.size() > 0 && mSlidingPanel.getPanelState() != SlidingUpPanelLayout.PanelState.COLLAPSED)
+                    {
+                        if((task == null || task.getStatus() == AsyncTask.Status.FINISHED))
+                        {
+                            task = new HttpGetImagesAsync();
+
+                            Object[] container = new Object[] {activeModel.tagList,activeModel};
+
+
+                            ((HttpGetImagesAsync)  task).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {
+                                @Override
+                                public void taskFinished(List<wallpaperModel> list) {
+                                    similiarAdapter.addModelListToList(list);
+                                    similiarAdapter.notifyDataSetChanged();
+                                }
+                            });
+                            task.execute(container);
+                        }
+                    }
+                }
+                super.onScrolled(recyclerView, dx, dy);
+
+            }
+
+        });
+
+        mSlidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+            float offset = 0;
+            @Override
+            public void onPanelSlide(View panel, float slideOffset) {
+                offset = slideOffset;
+            }
+
+            @Override
+            public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
+                if(newState == SlidingUpPanelLayout.PanelState.EXPANDED)
+                {
+                    expandableArea.setSTATE(expandableArea.COLLAPSED); // CLOSE TAGS AREA
+                }
+                else if(newState == SlidingUpPanelLayout.PanelState.COLLAPSED)
+                {
+                    if(newState == SlidingUpPanelLayout.PanelState.COLLAPSED)
+                    {
+                        cleanSimiliars();
+                        mSlidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);// Fix the bug to the fixed state as ANCHORED
+                    }
+                }
+                else if(newState == SlidingUpPanelLayout.PanelState.ANCHORED && offset < 0.2f)
+                {
+                    mSlidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                }
+            }
+        });
 
         GridLayoutManager layoutManager = new GridLayoutManager(this.getApplicationContext(),2);
         popupRecyclerView.setLayoutManager(layoutManager);
@@ -182,9 +286,13 @@ public class BaseWallpaperActivity extends AppCompatActivity {
 
         viewPager.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                tapDetector.onTouchEvent(event);
-                return false;
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                if(tapDetector.onTouchEvent(event))
+                {
+                    return true;
+                }
+                else return false;
             }
         });
 
@@ -194,11 +302,11 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             if(wallpaperModelList.size() - wallpaperModelList.indexOf(model) < VIEW_PAGER_LOAD_LIMIT)
             {
 
-                if(MainActivity.task.getStatus() == AsyncTask.Status.FINISHED)
+                if(task.getStatus() == AsyncTask.Status.FINISHED)
                 {
-                    menuModel.queryModel.setActivePage(menuModel.queryModel.getActivePage() + 1);
-                    menuModel.queryModel.prepareUrl();
-                    MainActivity.setMenuClickListener(menuModel,baseWallpaper,MainActivity.VIEWPAGER_LOAD_MORE);
+                    queryModel.setActivePage(queryModel.getActivePage() + 1);
+                    queryModel.prepareUrl();
+                    MainActivity.setMenuClickListenerForViewPager(queryModel,viewPager,adapter,task);
                 }
             }
         }
@@ -230,26 +338,95 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             }
         });
 
+
+        shareImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                View view = viewPager.findViewWithTag("container" + viewPager.getCurrentItem());
+                if(view != null)
+                {
+                    ImageView im = view.findViewById(R.id.base_wallpaper_main_image);
+                    if(im !=null)
+                    {
+                        BitmapDrawable drawable = (BitmapDrawable) im.getDrawable();
+                        if (drawable != null)
+                        {
+                            Bitmap bitmap = drawable.getBitmap();
+                            share(bitmap);
+                        }
+                        else Log.i(TAG, "onClick: Drawable is null");
+                    }
+                }
+            }
+        });
+
+        setAsImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
+
+                if(model != null)
+                {
+                    downloadImageAsync = new DownloadImageAsync();
+                    downloadImageAsync.setTaskFisinhed(new DownloadImageAsync.onTaskFinished() {
+                        @Override
+                        public void Finished(String imagePath) {
+                            if(imagePath != null)
+                            {
+                                Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+                                setAs(bitmap);
+                            }
+                        }
+                    });
+                    downloadImageAsync.execute(model);
+                }
+                /*View view = viewPager.findViewWithTag("container" + viewPager.getCurrentItem());
+                if(view != null)
+                {
+                    ImageView im = view.findViewById(R.id.base_wallpaper_main_image);
+                    if(im != null)
+                    {
+                        BitmapDrawable drawable = (BitmapDrawable)im.getDrawable();
+                        if(drawable != null)
+                        {
+                            Bitmap bitmap = drawable.getBitmap();
+                            setAs(bitmap);
+                        }
+                    }
+                }*/
+            }
+        });
+
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int i, float v, int i1) {
-
             }
 
             @Override
             public void onPageSelected(int i) {
 
-                Log.i(TAG, "onPageSelected: " + i);
+                wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
+                model.tagsCurrentPage = 0;
+                resolutionTextView.setText("");
+                similiarAdapter.clearModels();
+                getSimiliarAsync.cancel(true);
+                loadTags(model);
 
                 if(wallpaperModelList.size() - i < VIEW_PAGER_LOAD_LIMIT)
                 {
-                    if(MainActivity.task.getStatus() == AsyncTask.Status.FINISHED)
+                    if(task == null) task = new HttpGetImagesAsync();
+                    if(task.getStatus() != AsyncTask.Status.RUNNING)
                     {
-                        menuModel.queryModel.setActivePage(menuModel.queryModel.getActivePage() + 1);
-                        menuModel.queryModel.prepareUrl();
-                        MainActivity.setMenuClickListener(menuModel,baseWallpaper,MainActivity.VIEWPAGER_LOAD_MORE);
+                       queryModel.setActivePage(queryModel.getActivePage() + 1);
+                       MainActivity.setMenuClickListenerForViewPager(queryModel,viewPager,adapter,task);
                     }
                 }
+
+                //Eğer liked olarak geldiyse likeimageview ona göre şekillenecek.
+                if(model.isFavorite.isTrue()) MainActivity.changeImageViewAsLiked(likeImageView);
+                else MainActivity.changeImageViewAsUnliked(likeImageView); // Eğer bir önceki wallpaper liked durumda ise yeni görüntü unliked olarak açılacak.
             }
 
             @Override
@@ -258,7 +435,30 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             }
         });
 
+        likeImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
+                MainActivity.likeWallpaper(model,likeImageView);
+            }
+        });
+
+        backImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
     }
+
+    private void cleanSimiliars()
+    {
+        similiarAdapter.modelList.clear();
+        similiarAdapter.notifyDataSetChanged();
+    }
+
+
 
     @Override
     public void onBackPressed() {
@@ -302,49 +502,81 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         }
     }
 
+    int TOGGLE_HIDE = 1;
+    int TOGGLE_SHOW = 0;
     private void toogleUI()
     {
         if(mVisible)
         {
-            slideDown(bottomArea);
-            slideLeft(leftArea,-1);
-            slideLeft(rightArea,1);
-            actionBar.hide();
+            slideDown(wizardImageView,1,TOGGLE_HIDE);
+            slideDown(downloadExpandableContainer,1,TOGGLE_HIDE);
+            slideDown(shareImageView,1,TOGGLE_HIDE);
+            slideLeft(leftArea,-1,TOGGLE_HIDE);
+            slideLeft(rightArea,1,TOGGLE_HIDE);
+            slideDown(customActionBar,-1,TOGGLE_HIDE);
+            if(downloadExpandableContainer != null) downloadExpandableContainer.setSTATE(ExpandableLinearLayout.COLLAPSED);
         }
         else {
-            slideUp(bottomArea);
-            slideRight(leftArea, -1);
-            slideRight(rightArea, 1);
-            actionBar.show();
+
+            slideUp(wizardImageView,1,TOGGLE_SHOW);
+            slideUp(downloadExpandableContainer,1,TOGGLE_SHOW);
+            slideUp(shareImageView,1,TOGGLE_SHOW);
+            slideRight(leftArea, -1,TOGGLE_SHOW);
+            slideRight(rightArea, 1,TOGGLE_SHOW);
+            slideUp(customActionBar,-1,TOGGLE_SHOW);
         }
         mVisible = mVisible ? false : true;
     }
 
-    public void slideUp(View view){
+    public void slideUp(final View view, int direction,int state){
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        int height = view.getHeight() + params.bottomMargin + params.topMargin;
+        view.setClickable(true);
         view.setVisibility(View.VISIBLE);
         TranslateAnimation animate = new TranslateAnimation(
                 0,                 // fromXDelta
                 0,                 // toXDelta
-                view.getHeight(),  // fromYDelta
+                height * direction,  // fromYDelta
                 0);                // toYDelta
         animate.setDuration(ANIMATION_DURATION);
         animate.setFillAfter(true);
         view.startAnimation(animate);
     }
 
-    public void slideDown(View view){
-        TranslateAnimation animate = new TranslateAnimation(
+    public void slideDown(final View view,int direction,final int state){
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        int height = view.getHeight() + params.bottomMargin + params.topMargin;
+        final TranslateAnimation animate = new TranslateAnimation(
                 0,                 // fromXDelta
                 0,                 // toXDelta
                 0,                 // fromYDelta
-                view.getHeight()); // toYDelta
+                height * direction); // toYDelta
         animate.setDuration(ANIMATION_DURATION);
         animate.setFillAfter(true);
+        animate.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if(state == TOGGLE_HIDE)
+                {
+                    Log.i(TAG, "onAnimationEnd: " + view.getId());
+                    view.setClickable(false); //Animasyon ile çerçeve dışına çıktıntna sonra click eventini tetiklemeye devam etmemesi için
+                }
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
         view.startAnimation(animate);
+
     }
 
-    public void slideRight(View view,int direction)
-    {
+    public void slideRight(View view,int direction,int state) {
         TranslateAnimation animate = new TranslateAnimation(
                 view.getWidth() * direction,
                 0,
@@ -355,8 +587,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         animate.setFillAfter(true);
         view.startAnimation(animate);
     }
-    public void slideLeft(View view,int direction)
-    {
+    public void slideLeft(View view,int direction, int state) {
         TranslateAnimation animate = new TranslateAnimation(
                 0,
                 view.getWidth()* direction,
@@ -367,6 +598,8 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         animate.setFillAfter(true);
         view.startAnimation(animate);
     }
+
+
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -401,141 +634,175 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         win.setAttributes(winParams);
     }
 
-    public void onSwipeDown()
-    {
+    public void onSwipeDown() {
         if(mSlidingPanel.getPanelState() != SlidingUpPanelLayout.PanelState.COLLAPSED)
         {
             mSlidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+            wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
+            model.tagsCurrentPage = 0;
+            getSimiliarAsync.cancel(true);
         }
     }
-    public void onSwipeUp()
+    public void onSwipeUp() {
+
+        Log.i(TAG, "onSwipeUp: " + mSlidingPanel.getPanelState());
+        if (mSlidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED) {
+            final wallpaperModel activeModel = wallpaperModelList.get(viewPager.getCurrentItem());
+            if(activeModel.resolution != null)
+            {
+                resolutionTextView.setText(activeModel.resolution); //resolution textview content*/
+            }
+            loadSimiliars(activeModel);
+            mSlidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.ANCHORED);
+
+
+
+
+        }
+    }
+
+    private void loadTagViews(String s,final wallpaperModel activeModel) {
+        LayoutInflater layoutInflater = (LayoutInflater) baseWallpaperContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View newTag = layoutInflater.inflate(R.layout.tag_textviews, null);
+        TextView tag = newTag.findViewById(R.id.tag_view);
+        tag.setText(s);
+        tagsContainer.addView(newTag);
+        final queryModel tagQueryModel = activeModel.getTagQueryModel(activeModel.tagList.indexOf(s));
+        tag.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG, "onClick: " + tagQueryModel);
+                if (tagQueryModel != null && (task == null || task.getStatus() != AsyncTask.Status.RUNNING)) {
+
+
+                    tagQueryModel.setActivePage(1);
+                    task = new HttpGetImagesAsync();
+
+                    String url = tagQueryModel.getUrl();
+                    Log.i(TAG, "getImagesOnHttp: " + url);
+
+                    Object[] container = new Object[]{url};
+
+                    ((HttpGetImagesAsync) task).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {
+                        @Override
+                        public void taskFinished(List<wallpaperModel> list) {
+                            MainActivity.ma.showFullScreenActivity(activeModel, baseWallpaperContext, BaseWallpaperActivity.class, list, tagQueryModel);
+                        }
+                    });
+                    task.execute(container);
+                }
+            }
+        });
+    }
+
+    private void loadTags(final wallpaperModel mModel)
     {
 
-        if (mSlidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED)
+        if(mModel.tagList.size() == 0)
         {
-            final wallpaperModel activeModel = wallpaperModelList.get(viewPager.getCurrentItem());
-
-            if(activeModel.tagList.size() == 0)
+            if(getTagsAsync.getStatus() == AsyncTask.Status.RUNNING || getTagsAsync.getStatus() == AsyncTask.Status.PENDING)
             {
-                final Context context = getApplicationContext();
-                final Activity activity = this;
-                tagsContainer.removeAllViews();
-                resolutionTextView.setText("");
-                HttpGetTagsAsync task = new HttpGetTagsAsync();
-                task.setTaskFisinhed(new HttpGetTagsAsync.onAsyncTaskFisinhed() {
-                    @Override
-                    public void taskFinished(wallpaperModel model) {
-                        if(model != null)
-                        {
-                            activeModel.tagList = model.tagList;
+                getTagsAsync.cancel(true);
+            }
+            resolutionTextView.setText("");
+            getTagsAsync = new HttpGetTagsAsync();
+            getTagsAsync.setTaskFisinhed(new HttpGetTagsAsync.onAsyncTaskFisinhed() {
+                @Override
+                public void taskFinished(wallpaperModel model) {
+                    mModel.tagList = model.tagList;
 
-                            for (String s :
-                                    activeModel.tagList)
-                            {
-                                if(s != "")
-                                {
-                                    LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                                    View newTag = layoutInflater.inflate(R.layout.tag_textviews,null);
-                                    TextView tag = (TextView) newTag.findViewById(R.id.tag_view);
-                                    tag.setText(s);
-                                    tagsContainer.addView(newTag);
-                                    final queryModel queryModel = activeModel.getTagQueryModel(activeModel.tagList.indexOf(s));
-                                    if(queryModel != null) // Tags Click listener.
-                                    {
-                                        newTag.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-                                                MenuModel menu = menuModel;
-                                                menu.queryModel = queryModel;
-
-                                                if(menu.queryModel != null && (MainActivity.task == null || MainActivity.task.getStatus() == AsyncTask.Status.FINISHED))
-                                                {
-                                                    MainActivity.task = new HttpGetImagesAsync();
-
-                                                    String url = menu.queryModel.getUrl();
-                                                    Log.i(TAG, "getImagesOnHttp: " + url);
-
-                                                    Object[] container = new Object[] {url};
-
-                                                    ((HttpGetImagesAsync) MainActivity.task).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {
-                                                        @Override
-                                                        public void taskFinished(List<wallpaperModel> list) {
-                                                            MainActivity.ma.showFullScreenActivity(activeModel,activity,BaseWallpaperActivity.class,list);
-                                                        }
-                                                    });
-                                                    MainActivity.task.execute(container);
-                                                }
-                                            }
-                                        });
-                                    }
-                                }
-                            }
-                            resolutionTextView.setText(model.resolution); //resolution textview content
-
-                            if(activeModel.tagList.size() > 0)
-                            {
-                                List<wallpaperModel> similiarList =new ArrayList<>();
-                                final wallpaperRecyclerViewAdapter similiarAdapter = new wallpaperRecyclerViewAdapter(similiarList,fragmentHolder,popupFragment,popupRecyclerView);
-
-                                //Load smiliar images
-                                for (String s :
-                                        activeModel.tagList) {
-                                    HttpGetImagesAsync task = new HttpGetImagesAsync();
-                                    queryModel queryModel = activeModel.getTagQueryModel(activeModel.tagList.indexOf(s));
-                                    MenuModel menu = menuModel;
-                                    menu.queryModel = queryModel;
-
-                                    if(menu.queryModel != null && task != null)
-                                    {
-
-
-                                        String url = menu.queryModel.getUrl();
-                                        Log.i(TAG, "loading similiar: " + url);
-
-                                        Object[] container = new Object[] {url};
-
-                                        ((HttpGetImagesAsync) task).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {
-                                            @Override
-                                            public void taskFinished(List<wallpaperModel> list) {
-                                                similiarAdapter.addModelListToList(list);
-                                                similiarAdapter.notifyDataSetChanged();
-                                            }
-                                        });
-                                        task.execute(container);
-                                    }
-                                }
-                                popupRecyclerView.setAdapter(similiarAdapter);
+                    if(mModel.id == model.id)
+                    {
+                        tagsContainer.removeAllViews();
+                        for (String s :
+                                mModel.tagList) {
+                            if (s != "") {
+                                loadTagViews(s,mModel);
                             }
                         }
-                        Log.i(TAG, "taskFinished: " + model.thumbSrc);
                     }
-                });
-                task.execute(activeModel);
+                }
+            });
+            getTagsAsync.execute(mModel);
+        }
+        else
+        {
+            Log.i(TAG, "loadTags: model has tags");
+        }
+    }
+
+    private void loadSimiliars(final wallpaperModel mModel)
+    {
+        if (mModel.tagList.size() != 0 || getTagsAsync.getStatus() == AsyncTask.Status.RUNNING) {
+
+            if(mModel.tagList.size() == 0)
+            {
+                tagsContainer.removeAllViews();
             }
 
-            mSlidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.ANCHORED);
+            if (mModel != null) {
+
+
+                if (mModel.tagList.size() > 0 & popupRecyclerView.getAdapter().getItemCount() == 0) {
+                    expandableArea.setSTATE(ExpandableLinearLayout.EXPANDED);
+                    if(getSimiliarAsync.getStatus() != AsyncTask.Status.PENDING || getSimiliarAsync.getStatus() == AsyncTask.Status.RUNNING)
+                    {
+                        getSimiliarAsync.cancel(true);
+                    }
+                    if ((getSimiliarAsync != null || getSimiliarAsync.getStatus() != AsyncTask.Status.RUNNING)) {
+                        getSimiliarAsync = new HttpGetImagesAsync();
+
+                        Object[] container = new Object[]{mModel.tagList, mModel};
+
+                        (getSimiliarAsync).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {
+                            @Override
+                            public void taskFinished(List<wallpaperModel> list) {
+                                int firstIndex = similiarAdapter.getItemCount() - 1;
+                                similiarAdapter.addModelListToList(list);
+                                similiarAdapter.notifyItemRangeChanged(firstIndex,list.size());
+                            }
+                        });
+                        getSimiliarAsync.execute(container);
+                    }
+                }
+            }
         }
     }
 
-    private void loadTags(final MenuModel menuModel, final Activity activity,final wallpaperModel model)
+    private void share(Bitmap bitmap)
     {
-
+        String bitmapPath = MediaStore.Images.Media.insertImage(getContentResolver(),bitmap,"test",null);
+        Uri bitmapUri = Uri.parse(bitmapPath);
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("image/jpeg");
+        shareIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, bitmapUri);
+        shareIntent.putExtra(Intent.EXTRA_TEXT,"Hey please check this application " + "https://play.google.com/store/apps/details?id=" +getPackageName());
+        shareIntent.setType("image/png");
+        startActivity(Intent.createChooser(shareIntent,"Share with"));
     }
 
+    private void setAs(Bitmap bitmap)
+    {
+        String bitmapPath =MediaStore.Images.Media.insertImage(getContentResolver(),bitmap,"test","null");
+        Uri bitmapUri =Uri.parse(bitmapPath);
+        Intent setAsIntent = new Intent(Intent.ACTION_ATTACH_DATA);
+        setAsIntent.addCategory(Intent.CATEGORY_DEFAULT);
+        setAsIntent.setDataAndType(bitmapUri,"image/*");
+        setAsIntent.putExtra("mimeType","image/*");
+        setAsIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        this.startActivity(Intent.createChooser(setAsIntent,"Set As:"));
+    }
     private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
 
-        private static final int SWIPE_THRESHOLD = 300;
-        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+        private static final int SWIPE_THRESHOLD = 100;
+        private static final int SWIPE_VELOCITY_THRESHOLD = 50;
 
-        @Override
-        public boolean onDown(MotionEvent e) {
-            return true;
-        }
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
             toogleUI();
-            return super.onSingleTapUp(e);
+            return true;
         }
 
         @Override
@@ -567,8 +834,10 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                     if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
                         if (diffY > 0) {
                             onSwipeDown();
+                            result =true;
                         } else {
                             onSwipeUp();
+                            result =true;
                         }
                     }
                 }
@@ -577,6 +846,13 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             }
             return result;
         }
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return false;
+        }
+
+
     }
 
 

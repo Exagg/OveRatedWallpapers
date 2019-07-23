@@ -20,6 +20,17 @@ public class SecondLevelAdapter extends BaseExpandableListAdapter {
     List<MenuModel[]> data;
     MenuModel[] headers;
 
+    private final float arrowsHeight = 75;
+    private final float arrowsWidth = 75;
+    private final float dotHeight = 75;
+    private final float dotWidth = 75;
+
+    private final float arrowsMargin = 150;
+    private final float dotsMargin = 225;
+
+    private final float marginDivision = 3;
+
+
     public SecondLevelAdapter(Context context, MenuModel[] headers, List<MenuModel[]> data)
     {
         this.context = context;
@@ -78,6 +89,7 @@ public class SecondLevelAdapter extends BaseExpandableListAdapter {
 
         }
 
+        LinearLayout container = convertView.findViewById(R.id.menu_container);
         TextView tv = convertView.findViewById(R.id.child_id);
 
         tv.setText(model.name);
@@ -86,26 +98,29 @@ public class SecondLevelAdapter extends BaseExpandableListAdapter {
         if(model.drawableID != 0)
         {
             ImageView im = convertView.findViewById(R.id.child_image);
-            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams imageParam = new LinearLayout.LayoutParams(
                     im.getLayoutParams().width,
                     im.getLayoutParams().height
             );
+
+
             if(getChildrenCount(groupPosition) == 0)
             {
                 //Dot menu style
-                param.leftMargin = MainActivity.setPxToDP(125,context);
-                param.topMargin =MainActivity.setPxToDP(25,context);
-                param.height = MainActivity.setPxToDP(75,context);
-                param.width = MainActivity.setPxToDP(75,context);
+                container.setPadding((int) MainActivity.setPxToDP(dotsMargin,context),(int) MainActivity.setPxToDP(dotsMargin / marginDivision,context),0,0);
+                imageParam.topMargin = (int) MainActivity.setPxToDP((float) 25,context);
+                imageParam.height = (int) MainActivity.setPxToDP((float)dotHeight,context);
+                imageParam.width = (int) MainActivity.setPxToDP((float)dotWidth,context);
             }
             else
             {
-                param.leftMargin = MainActivity.setPxToDP(150,context);
-                param.topMargin =MainActivity.setPxToDP(25,context);
-                param.height = MainActivity.setPxToDP(100,context);
-                param.width = MainActivity.setPxToDP(100,context);
+                //arrow menu style
+                container.setPadding((int) MainActivity.setPxToDP(arrowsMargin,context),(int) MainActivity.setPxToDP(arrowsMargin / marginDivision,context),0,0);
+                imageParam.topMargin = (int) MainActivity.setPxToDP((float) 25,context);
+                imageParam.height = (int) MainActivity.setPxToDP((float)arrowsHeight,context);
+                imageParam.width = (int) MainActivity.setPxToDP((float)arrowsWidth,context);
             }
-            im.setLayoutParams(param);
+            im.setLayoutParams(imageParam);
             MainActivity.setIconToImageView(im,this.context,model.drawableID,true,false,50,model.colorID);
         }
 
@@ -131,20 +146,22 @@ public class SecondLevelAdapter extends BaseExpandableListAdapter {
         }
 
         TextView tv = convertView.findViewById(R.id.child_id);
+        LinearLayout container = convertView.findViewById(R.id.menu_container);
 
         tv.setText(model.name);
 
         ImageView childImage = convertView.findViewById(R.id.child_image);
         convertView.requestLayout();
-        LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+        LinearLayout.LayoutParams imageParam = new LinearLayout.LayoutParams(
                 childImage.getLayoutParams().width,
                 childImage.getLayoutParams().height
         );
-        param.leftMargin = MainActivity.setPxToDP(210,context);
-        param.topMargin =MainActivity.setPxToDP(25,context);
-        param.height = MainActivity.setPxToDP(75,context);
-        param.width = MainActivity.setPxToDP(75,context);
-        childImage.setLayoutParams(param);
+
+        container.setPadding((int) MainActivity.setPxToDP(dotsMargin,context),(int) MainActivity.setPxToDP(dotsMargin / marginDivision,context),0,0);
+        imageParam.topMargin = (int) MainActivity.setPxToDP((float) 25,context);
+        imageParam.height = (int) MainActivity.setPxToDP((float)dotHeight,context);
+        imageParam.width = (int) MainActivity.setPxToDP((float)dotWidth,context);
+        childImage.setLayoutParams(imageParam);
 
         if(model.drawableID != 0)
         {

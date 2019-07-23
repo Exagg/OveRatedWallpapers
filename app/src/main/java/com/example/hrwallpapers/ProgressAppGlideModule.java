@@ -140,6 +140,7 @@ public class ProgressAppGlideModule extends AppGlideModule {
             this.progressListener = progressListener;
         }
 
+
         @Override
         public MediaType contentType() {
             return responseBody.contentType();

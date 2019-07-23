@@ -1,6 +1,7 @@
 package com.example.hrwallpapers;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
@@ -44,6 +45,11 @@ public class BaseWallpaperPagerAdapter extends PagerAdapter {
         return model;
     }
 
+    public void addListToList(List<wallpaperModel> models)
+    {
+        this.wallpaperList.addAll(models);
+    }
+
 
     @Override
     public int getCount() {
@@ -67,6 +73,7 @@ public class BaseWallpaperPagerAdapter extends PagerAdapter {
 
         if(model != null)
         {
+            layout.setTag("container" +position);
             MainActivity.LoadImageFromURL(im,model.originalSrc,circleProgressBar,new RequestOptions(),model);
         }
 

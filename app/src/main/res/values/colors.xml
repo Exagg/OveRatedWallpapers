@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#000000</color>
+    <color name="colorPrimary">#00022E</color>
     <color name="colorPrimaryDark">#212429</color>
     <color name="colorAccent">#c0392b</color>
     <color name="white">#FFFFFF</color>
@@ -144,9 +144,9 @@
     <color name="navy">#000080</color>
     <color name="black">#000000</color>
 
-    <color name="black_overlay">#66000000</color>
+    <color name="black_overlay">#D7448BBA</color>
 
-    <color name="fullScreenActionBarBackground">#48141414</color>
+    <color name="fullScreenActionBarBackground">#99141414</color>
     <color name="fullScreenBackground">#0f0f0f</color>
 
     <color name="CircleLoadingBarPercentageColor">#D2691E</color>

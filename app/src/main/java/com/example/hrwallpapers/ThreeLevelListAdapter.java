@@ -125,7 +125,7 @@ public class ThreeLevelListAdapter extends BaseExpandableListAdapter {
                 }
             });
 
-            secondLevelELV.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            /*econdLevelELV.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
                 @Override
                 public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
                     MenuModel parentModel = header[groupPosition];
@@ -155,7 +155,7 @@ public class ThreeLevelListAdapter extends BaseExpandableListAdapter {
                     }
                     return false;
                 }
-            });
+            });*/
 
             return secondLevelELV;
         }

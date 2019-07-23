@@ -1,4 +1,9 @@
 package com.example.hrwallpapers;
+
+import android.util.Log;
+
+import static android.support.constraint.motion.MotionScene.TAG;
+
 public class queryModel {
 
     private boolean general,anime,people,sfw,sketchy,nsfw;
@@ -15,6 +20,7 @@ public class queryModel {
         this.people = people;
         this.sfw = sfw;
         this.nsfw = nsfw;
+        this.sketchy = sketchy;
         this.resolutionH = resolutionH;
         this.resolutionW = resolutionW;
         this.ratioX = ratioX;
@@ -44,6 +50,7 @@ public class queryModel {
         purity +=this.isSfw() ? "1" : "0";
         purity +=this.isSketchy() ? "1" : "0";
         purity +=this.isNsfw() ? "1" : "0";
+
 
         if(this.getResolutionH() != 0 && this.getResolutionW() != 0) atLeast = this.getResolutionW() + "x" + this.getResolutionH();
         if(this.getRatioY() != 0 & this.getRatioX() != 0) ratios = this.getRatioX() + "x" + this.getRatioY();

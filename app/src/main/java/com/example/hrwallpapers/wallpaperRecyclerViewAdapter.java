@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -36,12 +37,15 @@ import com.bumptech.glide.request.Request;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
+import com.google.android.flexbox.AlignItems;
+import com.google.android.flexbox.AlignSelf;
 import com.google.android.flexbox.FlexboxLayoutManager;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Random;
 import java.util.Timer;
 
 import info.androidhive.fontawesome.FontDrawable;
@@ -68,6 +72,9 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
     Fragment popupFragment;
     View mainContentView;
     CircleProgressBar progressBar;
+    Context context;
+    RecyclerView recyclerView;
+    queryModel queryModel;
     private int currentViewPosition;
 
     private RequestOptions requestOptions = new RequestOptions()
@@ -75,13 +82,14 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             .priority(Priority.HIGH)
             .centerCrop();
 
-    public wallpaperRecyclerViewAdapter(List<wallpaperModel> modelList, FrameLayout fragmentHolderLayout, Fragment popupFragment,View v)
+    public wallpaperRecyclerViewAdapter(List<wallpaperModel> modelList, FrameLayout fragmentHolderLayout, Fragment popupFragment,View v,Context context,queryModel queryModel)
     {
         this.modelList = modelList;
         this.fragmentHolder = fragmentHolderLayout;
         this.popupFragment = popupFragment;
-        mainContentView = v;
-        setHasStableIds(true);
+        this.mainContentView = v;
+        this.context = context;
+        this.queryModel = queryModel;
     }
 
     public int getCurrentViewPosition() {
@@ -91,19 +99,39 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
     @NonNull
     @Override
     public wallpaperViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        wallpaperModel model = modelList.get(i);
-        View itemView = LayoutInflater.from(mainContentView.getContext()).inflate(R.layout.wallpaper_list_model,null);
+        View itemView = LayoutInflater.from(context).inflate(R.layout.wallpaper_list_model,null);
         CircleProgressBar progressBar = itemView.findViewById(R.id.wallpaper_list_progressbar);
-        return new wallpaperViewHolder(itemView,progressBar,popupFragment);
+
+        wallpaperModel model = modelList.get(i);
+        wallpaperViewHolder holder = new wallpaperViewHolder(itemView,progressBar,popupFragment,this.context,model,this.queryModel);
+
+        if(popupFragment != null)
+        {
+            holder.setEventForModel();
+            MainActivity.LoadImageFromURL(holder.wallpaperImage,model.thumbSrc,holder.circleProgressBar,requestOptions,model);
+        }
+        else
+        {
+            MainActivity.LoadImageFromURL(holder.wallpaperImage,model.thumbSrc,holder.circleProgressBar,requestOptions,model,context);
+        }
+        return holder;
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
     }
 
     @Override
     public void onBindViewHolder(@NonNull wallpaperViewHolder holder, int i) {
-        wallpaperModel model = modelList.get(i);
-        holder.setEventForModel(model);
         this.currentViewPosition = i;
-        MainActivity.LoadImageFromURL(holder.wallpaperImage,model.thumbSrc,holder.circleProgressBar,requestOptions,model);
     }
+
 
     @Override
     public int getItemCount() {
@@ -114,18 +142,38 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
     {
         this.modelList = list;
     }
+
     public void addModelListToList(List<wallpaperModel> list)
     {
+        int lastIndex = this.modelList.size();
         this.modelList.addAll(list);
+        this.notifyItemRangeInserted(lastIndex,this.modelList.size() - 1);
     }
+
     public void addModelToList(wallpaperModel model)
     {
         this.modelList.add(model);
     }
 
+    public void clearModels()
+    {
+        if(this.recyclerView != null)
+        {
+            this.recyclerView.removeAllViews();
+            this.recyclerView.invalidate();
+            this.modelList.clear();
+            this.recyclerView.setAdapter(this);
+            this.notifyDataSetChanged();
+        }
+    }
+
+    public List<wallpaperModel> getModelList(){return this.modelList; }
+
+
     @Override
-    public void setHasStableIds(boolean hasStableIds) {
-        super.setHasStableIds(hasStableIds);
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        this.recyclerView = recyclerView;
+
     }
 
     public class wallpaperViewHolder extends RecyclerView.ViewHolder
@@ -136,6 +184,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         wallpaperModel model;
         CircleProgressBar circleProgressBar;
         Fragment fragment;
+        Context context;
 
         private OkHttpClient okHttpClient;
 
@@ -149,28 +198,87 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
         private int hoverSize = 100;
         private int standSize = 70;
+        private queryModel queryModel;
 
         private RequestOptions requestOptions = new RequestOptions()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .priority(Priority.HIGH)
                 .fitCenter();
 
-        public wallpaperViewHolder(View itemView,CircleProgressBar circleProgressBar,Fragment fragment)
+        public wallpaperViewHolder(View itemView, CircleProgressBar circleProgressBar, Fragment fragment, Context context, wallpaperModel mModel,queryModel queryModel)
         {
             super(itemView);
-            this.fragment = fragment;
-            wallpaperBaseContainer = itemView.findViewById(R.id.wallpaper_base_container);
+            this.model = mModel;
+            this.queryModel =queryModel;
             wallpaperImage = itemView.findViewById(R.id.wallpaper_imageview);
-            likeImageView = fragment.getView().findViewById(R.id.wallpaper_like_button);
-            shareImageView = fragment.getView().findViewById(R.id.wallpaper_share_button);
-            downloadImageView = fragment.getView().findViewById(R.id.wallpaper_download_button);
-            fragmentBaseImageView = fragment.getView().findViewById(R.id.wallpaper_popup_base_image);
+
+            if(fragment != null)
+            {
+                this.fragment = fragment;
+                wallpaperBaseContainer = itemView.findViewById(R.id.wallpaper_base_container);
+                likeImageView = fragment.getView().findViewById(R.id.wallpaper_like_button);
+                shareImageView = fragment.getView().findViewById(R.id.wallpaper_share_button);
+                downloadImageView = fragment.getView().findViewById(R.id.wallpaper_download_button);
+                fragmentBaseImageView = fragment.getView().findViewById(R.id.wallpaper_popup_base_image);
+
+
+                MainActivity.setIconToImageView(shareImageView,context,R.string.fa_share_solid,true,false,standSize);
+                MainActivity.setIconToImageView(downloadImageView,context,R.string.fa_download_solid,true,false,standSize);
+            }
+            else
+            {
+                circleProgressBar.setVisibility(View.INVISIBLE);
+                /*wallpaperImage.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+
+                    //Fit işlemi  yapılacak. Custom framelayout tasarlanacak
+                    int parentHeight;
+                    @Override
+                    public void onViewAttachedToWindow(View v) {
+                        View recyclerView = (View) v.getParent().getParent(); // this is recyclerview
+                        View containerParent = (View) v.getParent(); // this is imageviews container *framelayout*
+                        parentHeight = recyclerView.getHeight();
+                        ViewGroup.LayoutParams lp = v.getLayoutParams();
+
+                        int width = model.originalWidth;
+                        int height = model.originalHeight;
+                        if(width > height)
+                        {
+                            //this wallpaper's ratio must be 16-9 10-9 etc.
+                            // and this wallpaper will show like desktop wallpaper
+
+                            double ratio = width / height;
+                            int rowOfContainer = 2;
+                            int rowHeight = parentHeight / rowOfContainer;
+
+                            int newWidth = (int) ((int) rowHeight * ratio);
+
+                            lp.width = newWidth;
+                            lp.height = rowHeight;
+                        }
+                        else if( width < height)
+                        {
+                            // this wallpaper's ratio must be 9-16 9-10 3-4 etc.
+                            // and this wallpaer will show like mobile wallpaper
+                            double ratio = width / height;
+                            int columnWidth = (int) ((int) parentHeight * ratio);
+
+                            lp.width = columnWidth;
+                            lp.height = parentHeight;
+                        }
+                        Log.i(TAG, "onViewAttachedToWindow: " + model.originalWidth + " - " + model.originalHeight + " > " + parentHeight);
+                    }
+
+                    @Override
+                    public void onViewDetachedFromWindow(View v) {
+
+                    }
+                });*/
+            }
+            this.context = context;
 
             this.circleProgressBar = circleProgressBar;
 
 
-            MainActivity.setIconToImageView(shareImageView,itemView.getContext(),R.string.fa_share_solid,true,false,standSize);
-            MainActivity.setIconToImageView(downloadImageView,itemView.getContext(),R.string.fa_download_solid,true,false,standSize);
 
             okHttpClient = new OkHttpClient();
 
@@ -182,9 +290,8 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             });
         }
 
-        public void setEventForModel(wallpaperModel wallpaperModel)
+        public void setEventForModel()
         {
-            model = wallpaperModel;
             setLikeImageView();
 
             model.isFavorite.setListener(new booleanListeners.ChangeListener() {
@@ -193,11 +300,11 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
                     if (model.isFavorite.isTrue())
                     {
-                        MainActivity.setIconToImageView(likeImageView,itemView.getContext(),R.string.fa_heart,true,false,standSize);
+                        MainActivity.setIconToImageView(likeImageView,context,R.string.fa_heart,true,false,standSize);
                     }
                     else
                     {
-                        MainActivity.setIconToImageView(likeImageView,itemView.getContext(),R.string.fa_heart,false,false,standSize);
+                        MainActivity.setIconToImageView(likeImageView,context,R.string.fa_heart,false,false,standSize);
                     }
 
                 }
@@ -219,7 +326,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
                     BitmapDrawable dr = new BitmapDrawable(MainActivity.mainContentView.getResources(),bitmap);
                     ImageView backgroundBlur = fragment.getView().findViewById(R.id.fragment_blur_background);
 
-                    Glide.with(fragment.getContext())
+                    Glide.with(context)
                             .load(bitmap)
                             .fitCenter()
                             .apply(RequestOptions.bitmapTransform(new BlurTransformation(10,8)))
@@ -227,9 +334,9 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
 
 
-                    Glide.with(fragment.getContext())
+                    Glide.with(context)
                             .load(model.originalSrc)
-                            .thumbnail(Glide.with(fragment.getContext()).load(model.thumbSrc).apply(requestOptions))
+                            .thumbnail(Glide.with(context).load(model.thumbSrc).apply(requestOptions))
                             .apply(requestOptions)
                             .transition(DrawableTransitionOptions.withCrossFade(50))
                             .into(fragmentBaseImageView);
@@ -270,7 +377,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
                             if(event.getAction() == MotionEvent.ACTION_UP)
                             {
-                                MainActivity.ma.showFullScreenActivity(model,MainActivity.ma, BaseWallpaperActivity.class,modelList); //Tek dokunuş yapıldı.
+                                MainActivity.ma.showFullScreenActivity(model,MainActivity.ma, BaseWallpaperActivity.class,modelList,queryModel); //Tek dokunuş yapıldı.
                                 Log.i(TAG, "onTouch: " + model.id);
                             }
                         }
@@ -347,55 +454,60 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
         private void setVisibilityOfContainers(int action)
         {
-            itemView.getParent().requestDisallowInterceptTouchEvent(true);
-            if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL)
-            {
-                areaIsEnabled = false;
-                isTouchAreaVisible = false;
-                fragmentHolder.setVisibility(View.GONE);
+           if(this.fragment != null)
+           {
+               itemView.getParent().requestDisallowInterceptTouchEvent(true);
+               if(action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL)
+               {
+                   areaIsEnabled = false;
+                   isTouchAreaVisible = false;
+                   fragmentHolder.setVisibility(View.GONE);
 
-                if(isDownloadRaised || isLikeRaised || isTagRaised)
-                {
-                    if (isDownloadRaised)
-                    {
-                    }
-                    else if (isLikeRaised)
-                    {
-                        if(model.isFavorite.isTrue())
-                        {
-                            model.isFavorite.setValue(false);
-                        }
-                        else
-                        {
-                            model.isFavorite.setValue(true);
-                        }
-                    }
-                    else if (isTagRaised)
-                    {
-                    }
-                }
-            }
-            else if(action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE)
-            {
+                   if(isDownloadRaised || isLikeRaised || isTagRaised)
+                   {
+                       if (isDownloadRaised)
+                       {
+                       }
+                       else if (isLikeRaised)
+                       {
+                           if(model.isFavorite.isTrue())
+                           {
+                               model.isFavorite.setValue(false);
+                           }
+                           else
+                           {
+                               model.isFavorite.setValue(true);
+                           }
+                       }
+                       else if (isTagRaised)
+                       {
 
-                areaIsEnabled = true;
-                isTouchAreaVisible = true;
-                fragmentHolder.setVisibility(View.VISIBLE);
-            }
+                       }
+                   }
+               }
+               else if(action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE)
+               {
 
-
+                   areaIsEnabled = true;
+                   isTouchAreaVisible = true;
+                   fragmentHolder.setVisibility(View.VISIBLE);
+               }
+           }
         }
 
 
         private void setLikeImageView()
         {
-            if(model.isFavorite.isTrue())
+            if(this.fragment != null)
             {
-                MainActivity.setIconToImageView(likeImageView,mainContentView.getContext(),R.string.fa_heart,true,false,standSize);
-            }
-            else
-            {
-                MainActivity.setIconToImageView(likeImageView,mainContentView.getContext(),R.string.fa_heart,false,false,standSize);
+                if(model.isFavorite.isTrue())
+                {
+                    MainActivity.setIconToImageView(likeImageView,context,R.string.fa_heart,true,false,standSize);
+                }
+                else
+                {
+                    MainActivity.setIconToImageView(likeImageView,context,R.string.fa_heart,false,false,standSize);
+                }
             }
         }
     }

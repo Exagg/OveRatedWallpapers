@@ -131,6 +131,7 @@ public class CircleProgressBar extends View {
             max = typedArray.getInt(R.styleable.CircleProgressBar_max, max);
             percentageColor = typedArray.getInt(R.styleable.CircleProgressBar_progressbarPercentageColor, max);
             imageViewID = typedArray.getResourceId(R.styleable.CircleProgressBar_progressBarResponsibleObject,0);
+
         } finally {
             typedArray.recycle();
         }
@@ -170,9 +171,10 @@ public class CircleProgressBar extends View {
     @Override
     protected void onAttachedToWindow() {
 
-        if(imageViewID !=0)
+        if(imageViewID !=0 && responsibleImageView == null)
         {
             responsibleImageView = ((ViewGroup)this.getParent()).findViewById(imageViewID);
+            responsibleImageView.setVisibility(INVISIBLE);
 
         }
         super.onAttachedToWindow();

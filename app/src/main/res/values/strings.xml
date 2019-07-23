@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">HR. Wallpapers</string>
+    <string name="app_name">SPLICE</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">High Res. Wallpapers</string>
+    <string name="nav_header_title">Splice Wallpapers</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
@@ -12,10 +12,7 @@
 
     <string name="title_activity_base_wallpaper">Wallpaper</string>
 
-    <string name="title_activity_test">test</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>

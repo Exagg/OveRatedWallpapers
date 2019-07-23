@@ -10,6 +10,7 @@
         <attr name="progressBarResponsibleObject" format="reference" />
     </declare-styleable>
 
+
     <!-- Declare custom theme attributes that allow changing which styles are
          used for button bars depending on the API level.
          ?android:attr/buttonBarStyle is new as of API 11 so this is
@@ -17,6 +18,18 @@
     <declare-styleable name="ButtonBarContainerTheme">
         <attr name="metaButtonBarStyle" format="reference" />
         <attr name="metaButtonBarButtonStyle" format="reference" />
+    </declare-styleable>
+
+
+
+    <declare-styleable name="ExpandableLinearLayout">
+        <attr name="toggleColor" format="color"/>
+        <attr name="toggleWidth" format="dimension"/>
+        <attr name="toggleHeight" format="dimension"/>
+        <attr name="toggleDrawable" format="reference"/>
+        <attr name="toggleAnimatable" format="boolean"/>
+        <attr name="toggleDirection" format="integer"/>
+        <attr name="toggleDefaultState" format="integer"/>
     </declare-styleable>
 
 </resources>
