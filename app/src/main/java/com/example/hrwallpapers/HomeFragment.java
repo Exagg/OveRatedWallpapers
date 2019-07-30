@@ -1,8 +1,6 @@
 package com.example.hrwallpapers;
 
-import android.content.Context;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 

@@ -5,16 +5,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.transition.Slide;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
 import com.example.hrwallpapers.CircleProgressBar;
@@ -22,9 +20,6 @@ import com.example.hrwallpapers.DownloadImageAsync;
 import com.example.hrwallpapers.R;
 import com.example.hrwallpapers.wallpaperModel;
 import com.google.gson.Gson;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
 
@@ -79,8 +74,6 @@ public class ImageProcessActivity extends AppCompatActivity {
             selectedBitmap = BitmapFactory.decodeFile(activeModel.getFilePath());
             editorView.getSource().setImageBitmap(selectedBitmap);
             Log.i(TAG, "onCreate: This bitmap is loaded on " + activeModel.getFilePath());
-
-
         }
 
         else

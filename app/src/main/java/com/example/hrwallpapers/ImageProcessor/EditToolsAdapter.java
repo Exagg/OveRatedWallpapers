@@ -16,7 +16,7 @@ import java.util.List;
 
 import static android.support.constraint.motion.MotionScene.TAG;
 
-class EditToolsAdapter extends RecyclerView.Adapter<EditToolsAdapter.ToolsViewHolder>
+public class EditToolsAdapter extends RecyclerView.Adapter<EditToolsAdapter.ToolsViewHolder>
 {
     private ToolSelectedListener toolSelectedListener;
     List<ToolModel> toolModelList = new ArrayList();
@@ -31,11 +31,18 @@ class EditToolsAdapter extends RecyclerView.Adapter<EditToolsAdapter.ToolsViewHo
         Log.i(TAG, "EditToolsAdapter: Tools adapter is created");
     }
 
-    @NonNull
+    @Override
+    public void onBindViewHolder(@NonNull ToolsViewHolder holder, int position, @NonNull List<Object> payloads) {
+        Log.i(TAG, "onBindViewHolder: ");
+        super.onBindViewHolder(holder, position, payloads);
+    }
+
     @Override
     public ToolsViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.imageprocess_tool_layout,viewGroup,false);
-        return new ToolsViewHolder(view);
+        ToolsViewHolder holder = new ToolsViewHolder(view);
+        Log.i(TAG, "onCreateViewHolder: ");
+        return holder;
     }
 
     @Override
@@ -43,6 +50,7 @@ class EditToolsAdapter extends RecyclerView.Adapter<EditToolsAdapter.ToolsViewHo
         ToolModel toolModel = getToolModel(i);
         viewHolder.imageView.setImageResource(toolModel.drawableID);
         viewHolder.textview.setText(toolModel.name);
+        Log.i(TAG, "onBindViewHolder: ");
     }
 
     @Override

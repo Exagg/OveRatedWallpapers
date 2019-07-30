@@ -1,16 +1,9 @@
 package com.example.hrwallpapers;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
-import android.os.RecoverySystem;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,50 +11,20 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
-import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader;
-import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
-import com.bumptech.glide.request.Request;
-import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.Target;
-import com.google.android.flexbox.AlignItems;
-import com.google.android.flexbox.AlignSelf;
-import com.google.android.flexbox.FlexboxLayoutManager;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.Timer;
 
-import info.androidhive.fontawesome.FontDrawable;
-import info.androidhive.fontawesome.FontTextView;
 import jp.wasabeef.glide.transformations.BlurTransformation;
-import okhttp3.Interceptor;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okio.Buffer;
-import okio.BufferedSource;
-import okio.ForwardingSource;
-import okio.Okio;
-import okio.Source;
 
 import static android.support.constraint.motion.MotionScene.TAG;
 
@@ -109,7 +72,6 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
         wallpaperModel model = modelList.get(i);
         wallpaperViewHolder holder = new wallpaperViewHolder(itemView,progressBar,popupFragment,this.context,model,this.queryModel,this);
-
 
         return holder;
     }

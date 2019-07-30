@@ -11,7 +11,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
-import android.widget.ImageView;
 
 /**
  * A subclass of {@link android.view.View} class for creating a custom circular progressBar
@@ -42,7 +41,7 @@ public class CircleProgressBar extends View {
     private Paint backgroundPaint;
     private Paint foregroundPaint;
     private View responsibleView;
-    private int visibilityType;  //<!-- 1 = Set visibility is visible when percentage is 1f | 1 = set visibility is hide when percentage is 1f-->
+    private int visibilityType;  //<!-- 1 = Set visibility is visible when percentage is 1f | 0 = set visibility is hide when percentage is 1f-->
 
     public float getStrokeWidth() {
         return strokeWidth;
