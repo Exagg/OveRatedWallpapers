@@ -44,6 +44,7 @@ import com.google.android.flexbox.FlexboxLayoutManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Timer;
@@ -75,14 +76,17 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
     Context context;
     RecyclerView recyclerView;
     queryModel queryModel;
+    private static final int OUTOFRANGE = 4;
+    private boolean isLocked = false;
     private int currentViewPosition;
 
     private RequestOptions requestOptions = new RequestOptions()
-            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .skipMemoryCache(true)
+            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
             .priority(Priority.HIGH)
             .centerCrop();
 
-    public wallpaperRecyclerViewAdapter(List<wallpaperModel> modelList, FrameLayout fragmentHolderLayout, Fragment popupFragment,View v,Context context,queryModel queryModel)
+    public wallpaperRecyclerViewAdapter(List<wallpaperModel> modelList, FrameLayout fragmentHolderLayout, Fragment popupFragment,View v,Context context,queryModel queryModel,RecyclerView recyclerView)
     {
         this.modelList = modelList;
         this.fragmentHolder = fragmentHolderLayout;
@@ -90,6 +94,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         this.mainContentView = v;
         this.context = context;
         this.queryModel = queryModel;
+        this.recyclerView = recyclerView;
     }
 
     public int getCurrentViewPosition() {
@@ -103,17 +108,9 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         CircleProgressBar progressBar = itemView.findViewById(R.id.wallpaper_list_progressbar);
 
         wallpaperModel model = modelList.get(i);
-        wallpaperViewHolder holder = new wallpaperViewHolder(itemView,progressBar,popupFragment,this.context,model,this.queryModel);
+        wallpaperViewHolder holder = new wallpaperViewHolder(itemView,progressBar,popupFragment,this.context,model,this.queryModel,this);
 
-        if(popupFragment != null)
-        {
-            holder.setEventForModel();
-            MainActivity.LoadImageFromURL(holder.wallpaperImage,model.thumbSrc,holder.circleProgressBar,requestOptions,model);
-        }
-        else
-        {
-            MainActivity.LoadImageFromURL(holder.wallpaperImage,model.thumbSrc,holder.circleProgressBar,requestOptions,model,context);
-        }
+
         return holder;
     }
 
@@ -129,7 +126,19 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
     @Override
     public void onBindViewHolder(@NonNull wallpaperViewHolder holder, int i) {
+
         this.currentViewPosition = i;
+        if(holder.indexOf == 0) holder.indexOf = i;
+
+        if(popupFragment != null)
+        {
+            holder.setEventForModel();
+            MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model);
+        }
+        else
+        {
+            MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model,context);
+        }
     }
 
 
@@ -165,15 +174,83 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             this.recyclerView.setAdapter(this);
             this.notifyDataSetChanged();
         }
+        else
+        {
+            Log.i(TAG, "clearModels: models cant cleared because recyclerview is null");
+        }
+    }
+
+    public void unAttachAdapter()
+    {
+        if(this.recyclerView != null)
+        {
+            wallpaperRecyclerViewAdapter _tempAdapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),this.fragmentHolder,this.popupFragment,this.mainContentView,this.context,this.queryModel,this.recyclerView);
+
+            this.recyclerView.removeAllViews();
+            this.recyclerView.invalidate();
+            this.recyclerView.setAdapter(_tempAdapter);
+        }
     }
 
     public List<wallpaperModel> getModelList(){return this.modelList; }
 
+    @Override
+    public void onViewDetachedFromWindow(@NonNull wallpaperViewHolder holder) {
+
+        if(isReadyToClearOnGlide(holder.indexOf()))
+        {
+            Log.i(TAG, "onViewDetachedFromWindow: " + holder.indexOf() + " - " + getCurrentViewPosition());
+            Glide.with(this.context.getApplicationContext()).clear(holder.wallpaperImage); // OOM handler it must be in the detached!! dont delete
+        }
+        super.onViewDetachedFromWindow(holder);
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull wallpaperViewHolder holder) {
+        super.onViewRecycled(holder);
+
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
+        recyclerView.removeAllViewsInLayout();
+
+    }
 
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
-        this.recyclerView = recyclerView;
+        super.onAttachedToRecyclerView(recyclerView);
+    }
 
+    @Override
+    public void onViewAttachedToWindow(@NonNull wallpaperViewHolder holder) {
+
+        if(holder.wallpaperImage.getDrawable() == null && holder.circleProgressBar.getProgress() > 90)
+        {
+
+            if(popupFragment != null)
+            {
+                holder.setEventForModel();
+                MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model);
+            }
+            else
+            {
+                MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model,context);
+            }
+        }
+
+        super.onViewAttachedToWindow(holder);
+
+    }
+
+    private boolean isReadyToClearOnGlide(int viewHolderPosition)
+    {
+        int activePosition = getCurrentViewPosition();
+        int topRange = Math.abs(viewHolderPosition - activePosition);
+        int bottomRange = Math.abs(viewHolderPosition - activePosition);
+        if(bottomRange > OUTOFRANGE || topRange > OUTOFRANGE) return true;
+        else return false;
     }
 
     public class wallpaperViewHolder extends RecyclerView.ViewHolder
@@ -185,6 +262,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         CircleProgressBar circleProgressBar;
         Fragment fragment;
         Context context;
+        View mainView;
 
         private OkHttpClient okHttpClient;
 
@@ -198,19 +276,25 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
         private int hoverSize = 100;
         private int standSize = 70;
+        private int indexOf;
         private queryModel queryModel;
+        private wallpaperRecyclerViewAdapter currentAdapter;
 
         private RequestOptions requestOptions = new RequestOptions()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .skipMemoryCache(true)
                 .priority(Priority.HIGH)
                 .fitCenter();
 
-        public wallpaperViewHolder(View itemView, CircleProgressBar circleProgressBar, Fragment fragment, Context context, wallpaperModel mModel,queryModel queryModel)
+        public wallpaperViewHolder(View itemView, CircleProgressBar circleProgressBar, Fragment fragment, Context context, wallpaperModel mModel,queryModel queryModel,wallpaperRecyclerViewAdapter currentAdapter)
         {
             super(itemView);
+            this.mainView = itemView;
             this.model = mModel;
             this.queryModel =queryModel;
+            this.currentAdapter = currentAdapter;
             wallpaperImage = itemView.findViewById(R.id.wallpaper_imageview);
+
 
             if(fragment != null)
             {
@@ -277,9 +361,6 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             this.context = context;
 
             this.circleProgressBar = circleProgressBar;
-
-
-
             okHttpClient = new OkHttpClient();
 
             this.circleProgressBar.setOnLoaded(new onProgressBarLoaded() {
@@ -377,7 +458,8 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
                             if(event.getAction() == MotionEvent.ACTION_UP)
                             {
-                                MainActivity.ma.showFullScreenActivity(model,MainActivity.ma, BaseWallpaperActivity.class,modelList,queryModel); //Tek dokunuş yapıldı.
+                                //Start new full screen for the selected wallpaper
+                                startNewActivity();
                                 Log.i(TAG, "onTouch: " + model.id);
                             }
                         }
@@ -389,6 +471,11 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
         }
 
+        public int indexOf()
+        {
+            return indexOf;
+        }
+
         private Bitmap getScreenShot(View view)
         {
 
@@ -397,6 +484,15 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             view.setDrawingCacheEnabled(false);
 
             return screenShot;
+        }
+
+        private void startNewActivity()
+        {
+            MainActivity.ma.showFullScreenActivity(model,MainActivity.ma, BaseWallpaperActivity.class,modelList,queryModel);
+            if(currentAdapter != null)
+            {
+                recyclerView.setAdapter(null);
+            }
         }
 
 
@@ -510,5 +606,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
                 }
             }
         }
+
+
     }
 }

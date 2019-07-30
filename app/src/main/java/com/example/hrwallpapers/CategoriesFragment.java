@@ -51,39 +51,39 @@ public class CategoriesFragment extends Fragment {
     {
         queryModel AnimeMangaQueryModel = new queryModel(false,true,false,true,true,true,
                 0,0,0,0,0,
-                "","desc","","relevance");
+                "","desc","","relevance",null);
 
         queryModel ArtDesignQueryModel = new queryModel(true,false,true,true,true,true,
                 0,0,0,0,0,
-                "","desc","art+design+architecture+digitall+photography+traditional","relevance");
+                "","desc","art+design+architecture+digitall+photography+traditional","relevance",null);
 
         queryModel EntertainmentQueryModel = new queryModel(true,true,true,true,true,true,
                 0,0,0,0,0,
-                "","desc","entertainment+events+games+literature+movies+music+sports+television","relevance");
+                "","desc","entertainment+events+games+literature+movies+music+sports+television","relevance",null);
 
         queryModel KnowledgeQueryModel = new queryModel(true,true,true,true,true,true,
                 0,0,0,0,0,
-                "","desc","knowledge+science+history+lore+experience+news+notice","relevance");
+                "","desc","knowledge+science+history+lore+experience+news+notice","relevance",null);
 
         queryModel LocationQueryModel = new queryModel(true,false,false,true,true,true,
                 0,0,0,0,0,
-                "","desc","cities+countries+space","relevance");
+                "","desc","cities+countries+space","relevance",null);
 
         queryModel MiscellaneousQueryModel = new queryModel(true,false,true,true,true,false,
                 0,0,0,0,0,
-                "","desc","clothing+colors+companies+logos+food+technology","relevance");
+                "","desc","clothing+colors+companies+logos+food+technology","relevance",null);
 
         queryModel NatureQueryModel = new queryModel(true,false,false,true,true,false,
                 0,0,0,0,0,
-                "","desc","animals+landscapes+plants","relevance");
+                "","desc","animals+landscapes+plants","relevance",null);
 
         queryModel PeopleQueryModel = new queryModel(false,false,true,true,true,false,
                 0,0,0,0,0,
-                "","desc","artists+celebrities+fictional+characters+models+figures+pornstars","relevance");
+                "","desc","artists+celebrities+fictional+characters+models+figures+pornstars","relevance",null);
 
         queryModel VehiclesQueryModel = new queryModel(true,false,false,true,true,false,
                 0,0,0,0,0,
-                "","desc","aircraft+plane+car+motorcycle+ship+spacecrafts+train+f-35+f-16+apollo+space-x","relevance");
+                "","desc","aircraft+plane+car+motorcycle+ship+spacecrafts+train+f-35+f-16+apollo+space-x","relevance",null);
 
         MenuModel AnimeMangaModel = new MenuModel("ANIME & MANGA",true,true,false,R.string.fa_chevron_right_solid,AnimeMangaQueryModel);
         MenuModel ArtDesignModel = new MenuModel("ART & DESIGN",true,true,false,R.string.fa_chevron_right_solid,ArtDesignQueryModel);

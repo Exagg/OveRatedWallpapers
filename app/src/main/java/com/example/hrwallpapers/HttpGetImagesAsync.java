@@ -20,7 +20,7 @@ import java.util.List;
 
 import static android.support.constraint.motion.MotionScene.TAG;
 
-class HttpGetImagesAsync extends AsyncTask<Object,Integer, List<wallpaperModel>> {
+class HttpGetImagesAsync extends AsyncTask<Object,Object, List<wallpaperModel>> {
 
     private onAsyncTaskFisinhed taskFisinhed;
 
@@ -62,6 +62,8 @@ class HttpGetImagesAsync extends AsyncTask<Object,Integer, List<wallpaperModel>>
             Document doc = Jsoup.connect(url).get();
             Elements elems = doc.select("figure");
 
+            List<wallpaperModel> onePackageList = new ArrayList<>();
+
             for (int i = 0; i < elems.size() ; i++) {
                 String id = elems.get(i).attr("data-wallpaper-id");
                 Element figure = elems.get(i);
@@ -70,7 +72,7 @@ class HttpGetImagesAsync extends AsyncTask<Object,Integer, List<wallpaperModel>>
                 String originalUrl = String.format("https://w.wallhaven.cc/full/%s/wallhaven-%s.jpg",id.substring(0,2),id);
 
 
-
+                wallpaperModel packageModel = new wallpaperModel(thumbUrl,originalUrl,id);
                 wallpaperModel m = new wallpaperModel(thumbUrl,originalUrl,id);
 
 
@@ -93,8 +95,13 @@ class HttpGetImagesAsync extends AsyncTask<Object,Integer, List<wallpaperModel>>
                     m.isPng = true;
                 }
 
-                if(id != "") response.add(m);
+                if(id != "")
+                {
+                    response.add(m);
+                    onePackageList.add(m);
+                }
             }
+            publishProgress(onePackageList);
 
 
         } catch (MalformedURLException e) {
@@ -109,9 +116,24 @@ class HttpGetImagesAsync extends AsyncTask<Object,Integer, List<wallpaperModel>>
         taskFisinhed.taskFinished(collection);
     }
 
+    @Override
+    protected void onProgressUpdate(Object... values) {
+
+        if(values.length > 0)
+        {
+            if(values[0] instanceof ArrayList)
+            {
+                List<wallpaperModel> modelList = (List<wallpaperModel>) values[0];
+                taskFisinhed.onOneTagLoaded(modelList);
+            }
+        }
+        super.onProgressUpdate(values);
+    }
+
 
     public interface onAsyncTaskFisinhed
     {
         public void taskFinished(List<wallpaperModel> list);
+        public void onOneTagLoaded(List<wallpaperModel> list);
     }
 }

@@ -52,7 +52,7 @@ public class CategoriesRecyclerViewAdapter extends RecyclerView.Adapter<Categori
 
         textView.setText(menuModels.get(i).name);
 
-        wallpaperRecyclerViewAdapter adapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),null,null,view,context,getQueryModel(i));
+        wallpaperRecyclerViewAdapter adapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),null,null,view,context,getQueryModel(i),recyclerView);
 
         HttpGetImagesAsync task = new HttpGetImagesAsync();
         MainActivity.setMenuClickListenerForRecyclerView(getQueryModel(i),recyclerView,adapter,task);

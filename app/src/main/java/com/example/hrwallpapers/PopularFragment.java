@@ -59,7 +59,7 @@ public class PopularFragment extends Fragment {
         recyclerView.getItemAnimator().setChangeDuration(0);
         popupFragment = setFragment(new wallpaperPopupFragment());
 
-        recyclerViewAdapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),fragmentHolder,popupFragment,recyclerView,getActivity(),activeQueryModel);
+        recyclerViewAdapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),fragmentHolder,popupFragment,recyclerView,getActivity(),activeQueryModel,recyclerView);
         recyclerView.setAdapter(recyclerViewAdapter);
         MainActivity.setMenuClickListenerForRecyclerView(activeQueryModel,recyclerView,recyclerViewAdapter,task); // Load for the startup images (active page must be 1)
 
@@ -114,6 +114,17 @@ public class PopularFragment extends Fragment {
         if(recyclerView != null)
         {
             getActivity().getSupportFragmentManager().beginTransaction().detach(this).attach(this).commit();
+        }
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(recyclerView != null && recyclerViewAdapter != null)
+        {
+            recyclerView.setAdapter(recyclerViewAdapter);
         }
     }
 }

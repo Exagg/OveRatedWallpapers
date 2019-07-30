@@ -1,6 +1,7 @@
 package com.example.hrwallpapers;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
@@ -52,7 +53,7 @@ public class ExpandableLinearLayout extends LinearLayout {
 
     private View staticView;
     private View dynamicView;
-    private ImageView toggleButton;
+    private View toggleView;
 
     private int maxHeight;
 
@@ -68,6 +69,7 @@ public class ExpandableLinearLayout extends LinearLayout {
     private boolean toggleAnimatable;
     private int toggleDirection;
     private int toggleDefaultState;
+    private int toggleViewID;
 
 
     public ExpandableLinearLayout(Context context)
@@ -103,8 +105,10 @@ public class ExpandableLinearLayout extends LinearLayout {
             int drawableID = typedArray.getResourceId(R.styleable.ExpandableLinearLayout_toggleDrawable,R.drawable.ic_hot);
             toggleDrawable = ContextCompat.getDrawable(context,drawableID);
             toggleColor = typedArray.getResourceId(R.styleable.ExpandableLinearLayout_toggleColor,R.color.white);
-            toggleDirection = (int) typedArray.getInteger(R.styleable.ExpandableLinearLayout_toggleDirection,-1);
-            toggleDefaultState = (int) typedArray.getInteger(R.styleable.ExpandableLinearLayout_toggleDefaultState,0);
+            toggleDirection = typedArray.getInteger(R.styleable.ExpandableLinearLayout_toggleDirection,-1);
+            toggleDefaultState = typedArray.getInteger(R.styleable.ExpandableLinearLayout_toggleDefaultState,0);
+            toggleViewID = typedArray.getResourceId(R.styleable.ExpandableLinearLayout_toggleView,0);
+
 
         }
         finally {
@@ -163,6 +167,15 @@ public class ExpandableLinearLayout extends LinearLayout {
 
             setSTATE(toggleDefaultState);
         }
+
+
+
+        if(toggleViewID != 0)
+        {
+            View root = this;
+            toggleView = root.findViewById(toggleViewID);
+        }
+        else toggleView = null;
     }
 
     public void setSTATE(int STATE) {
@@ -173,6 +186,7 @@ public class ExpandableLinearLayout extends LinearLayout {
             {
                 maxHeight = dynamicView.getMeasuredHeight();
                 collapseArea(dynamicView);
+
             }
             else if(this.STATE == EXPANDED)
             {
@@ -201,6 +215,15 @@ public class ExpandableLinearLayout extends LinearLayout {
                     view.setLayoutParams(layoutParams);
                 }
             });
+            animator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    view.setVisibility(GONE);
+                    view.requestLayout();
+                    view.invalidate();
+                    super.onAnimationEnd(animation);
+                }
+            });
             animator.setDuration(ANIMATION_DURATION);
             animator.start();
         }
@@ -221,16 +244,25 @@ public class ExpandableLinearLayout extends LinearLayout {
                     view.setLayoutParams(layoutParams);
                 }
             });
-
+            animator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    view.setVisibility(GONE);
+                    view.requestLayout();
+                    view.invalidate();
+                    super.onAnimationEnd(animation);
+                }
+            });
             animator.setDuration(ANIMATION_DURATION);
             animator.start();
         }
 
-        /*if(toggleAnimatable)
+
+        if(toggleAnimatable && toggleView != null)
         {
-            animation = ObjectAnimator.ofFloat(toggleButton,View.ROTATION,toggleButton.getRotation(),90f).setDuration(ANIMATION_DURATION);
+            animation = ObjectAnimator.ofFloat(toggleView,View.ROTATION,toggleView.getRotation(),90f).setDuration(ANIMATION_DURATION);
             animation.start();
-        }*/
+        }
 
     }
     private void expandArea(final View view){
@@ -242,7 +274,19 @@ public class ExpandableLinearLayout extends LinearLayout {
         {
             animation.end();
         }
-        dynamicView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        view.setVisibility(VISIBLE);
+        view.requestLayout();
+        view.invalidate();
+
+        view.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        if(animation != null && animation.isRunning())
+        {
+            animation.end();
+        }
+        if(toggleView != null && toggleAnimatable)
+        {
+            toggleView.setRotation(0f);
+        }
 
     }
 

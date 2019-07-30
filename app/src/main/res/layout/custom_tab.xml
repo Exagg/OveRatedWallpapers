@@ -2,10 +2,20 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:gravity="center">
     <ImageView
         android:id="@+id/custom_tab_image"
         android:layout_width="25dp"
         android:layout_height="25dp"
+        android:layout_gravity="center"
         android:src="@drawable/ic_hot"/>
+    <TextView
+        android:id="@+id/custom_tab_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:padding="5dp"
+        android:fontFamily="@font/helvetica_light"
+        android:textSize="12dp"/>
 </LinearLayout>

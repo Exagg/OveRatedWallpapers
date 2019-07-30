@@ -8,12 +8,12 @@ public class queryModel {
 
     private boolean general,anime,people,sfw,sketchy,nsfw;
     private int resolutionW,resolutionH,ratioX,ratioY,id,activePage;
-    private String colorHex,orderBy,query,sorting,url;
+    private String colorHex,orderBy,query,sorting,url,topRange;
 
 
     public queryModel(boolean general, boolean anime, boolean people, boolean sfw, boolean sketchy, boolean nsfw,
                       int resolutionW, int resolutionH, int ratioX, int ratioY, int id,
-                      String colorHex, String orderBy, String query, String sorting)
+                      String colorHex, String orderBy, String query, String sorting,String topRange)
     {
         this.general = general;
         this.anime = anime;
@@ -30,6 +30,7 @@ public class queryModel {
         this.sorting = sorting;
         this.activePage = 1;
         this.query = query;
+        this.topRange = topRange;
 
         prepareUrl();
     }
@@ -37,6 +38,7 @@ public class queryModel {
 
     public void prepareUrl()
     {
+        if (activePage == 0) activePage = 1;
         this.url = "search?";
         String categories ="";
         String purity = "";
@@ -61,6 +63,7 @@ public class queryModel {
         this.url +=purity != "" ? "purity=" + purity + "&" : "";
         this.url +=atLeast != "" ? "atLeast=" + atLeast + "&" : "";
         this.url +=ratios != "" ? "ratios=" + ratios + "&" : "";
+        this.url +=this.topRange != null ? "topRange=" + topRange + "&" : "";
         this.url += this.getSorting() != "" ? "sorting=" + this.getSorting() + "&" : "";
         this.url += this.getOrderBy() != "" ? "order=" + this.getOrderBy() + "&" : "";
         this.url += this.getColorHex() != "" ? "colors=" + this.getColorHex() + "&" : "";

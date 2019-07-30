@@ -155,6 +155,7 @@
                                     <ImageView
                                         android:layout_width="40dp"
                                         android:layout_height="40dp"
+                                        android:id="@+id/base_wallpaper_download_as_highquality"
                                         android:src="@drawable/ic_high_quality"
                                         android:layout_marginBottom="15dp"
                                         android:layout_marginTop="15dp"
@@ -183,6 +184,7 @@
                                         android:layout_height="40dp"
                                         android:layout_weight="40"
                                         android:tint="@color/white"
+                                        android:id="@+id/base_wallpaper_download_as_actualsize"
                                         android:layout_marginBottom="15dp"
                                         android:layout_marginTop="15dp"
                                         android:padding="10dp"
@@ -235,6 +237,7 @@
                 app:toggleHeight="20dp"
                 app:toggleWidth="20dp"
                 app:toggleDirection="3"
+                app:toggleView="@+id/expandable_layout_button"
                 android:clickable="true">
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -292,5 +295,24 @@
         android:layout_height="match_parent"
         android:id="@+id/base_wallpaper_fragment_holder"
         android:visibility="gone"></FrameLayout>
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/base_wallpaper_progressing_area"
+        android:background="@color/fullScreenActionBarBackground"
+        android:visibility="gone">
+        <com.example.hrwallpapers.CircleProgressBar
+            android:id="@+id/base_wallpaper_progressing_area_circle"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            app:progressValue="0"
+            app:progressBarResponsibleObject="@+id/base_wallpaper_progressing_area"
+            app:progressbarPercentageColor="@color/CircleLoadingBarPercentageColor"
+            app:progressBarResponsibleObjectVisibilityType="0"
+            app:progressBarThickness="2dp"/>
+    </FrameLayout>
 
 </FrameLayout>

@@ -69,7 +69,7 @@ public class HomeFragment extends Fragment {
         recyclerView.getItemAnimator().setChangeDuration(0);
         popupFragment = setFragment(new wallpaperPopupFragment());
 
-        recyclerViewAdapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),fragmentHolder,popupFragment,recyclerView,getActivity(),activeQueryModel);
+        recyclerViewAdapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),fragmentHolder,popupFragment,recyclerView,getActivity(),activeQueryModel,recyclerView);
 
 
         recyclerView.setAdapter(recyclerViewAdapter);
@@ -138,6 +138,17 @@ public class HomeFragment extends Fragment {
 
         if(childFragment instanceof HomeFragment)
         {
+        }
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(recyclerView != null && recyclerViewAdapter != null)
+        {
+            recyclerView.setAdapter(recyclerViewAdapter);
         }
     }
 }

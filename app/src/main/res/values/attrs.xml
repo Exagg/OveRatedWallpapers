@@ -8,6 +8,7 @@
         <attr name="progressbarPercentageColor" format="color" />
         <attr name="progressBarThickness" format="dimension" />
         <attr name="progressBarResponsibleObject" format="reference" />
+        <attr name="progressBarResponsibleObjectVisibilityType" format="integer" /> <!-- 1 = Set visibility is visible when percentage is 1f | 1 = set visibility is hide when percentage is 1f-->
     </declare-styleable>
 
 
@@ -21,15 +22,15 @@
     </declare-styleable>
 
 
-
     <declare-styleable name="ExpandableLinearLayout">
-        <attr name="toggleColor" format="color"/>
-        <attr name="toggleWidth" format="dimension"/>
-        <attr name="toggleHeight" format="dimension"/>
-        <attr name="toggleDrawable" format="reference"/>
-        <attr name="toggleAnimatable" format="boolean"/>
-        <attr name="toggleDirection" format="integer"/>
-        <attr name="toggleDefaultState" format="integer"/>
+        <attr name="toggleColor" format="color" />
+        <attr name="toggleWidth" format="dimension" />
+        <attr name="toggleHeight" format="dimension" />
+        <attr name="toggleDrawable" format="reference" />
+        <attr name="toggleAnimatable" format="boolean" />
+        <attr name="toggleDirection" format="integer" />
+        <attr name="toggleView" format="reference" />
+        <attr name="toggleDefaultState" format="integer" />
     </declare-styleable>
 
 </resources>

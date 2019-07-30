@@ -16,6 +16,7 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.target.CustomViewTarget;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.bumptech.glide.request.target.Target;
@@ -64,7 +65,6 @@ public class GlideImageLoader {
         });
 
 
-
         //Get Image
         Glide.with(context)
                 .asBitmap()
@@ -92,10 +92,7 @@ public class GlideImageLoader {
 
                     @Override
                     public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                        if(mProgressBar.getProgress()< (float)100)
-                        {
-                            mProgressBar.setProgressWithAnimation((float) 100); // trigger the loaded event when the image cames from cache
-                        }
+                        mProgressBar.setProgress((float) 100); // trigger the loaded event when the image cames from cache
 
                         ProgressAppGlideModule.forget(url);
                         return false;
@@ -138,10 +135,7 @@ public class GlideImageLoader {
                     @Override
                     public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
                         ProgressAppGlideModule.forget(url);
-                        if(mProgressBar.getProgress() < (float)100)
-                        {
-                            mProgressBar.setProgressWithAnimation((float) 100); // trigger the loaded event when the image cames from cache
-                        }
+                        mProgressBar.setProgress((float) 100); // trigger the loaded event when the image cames from cache
                         return false;
                     }
 

@@ -67,47 +67,59 @@ public class ResultFragment extends Fragment {
     }
 
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(recyclerView != null && recyclerViewAdapter != null )
+        {
+            recyclerView.setAdapter(recyclerViewAdapter);
+        }
+    }
+
     public void load()
     {
-        if(recyclerView.getChildCount() >0)
+        if(recyclerView != null)
         {
-            recyclerView.removeAllViews();
-        }
-        recyclerViewAdapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),fragmentHolder,popupFragment,recyclerView,getActivity(),activeQueryModel);
-        recyclerView.setAdapter(recyclerViewAdapter);
-        MainActivity.setMenuClickListenerForRecyclerView(activeQueryModel,recyclerView,recyclerViewAdapter,task); // Load for the startup images (active page must be 1)
+            if(recyclerView.getChildCount() >0)
+            {
+                recyclerView.removeAllViews();
+            }
+            recyclerViewAdapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),fragmentHolder,popupFragment,recyclerView,getActivity(),activeQueryModel,recyclerView);
+            recyclerView.setAdapter(recyclerViewAdapter);
+            MainActivity.setMenuClickListenerForRecyclerView(activeQueryModel,recyclerView,recyclerViewAdapter,task); // Load for the startup images (active page must be 1)
 
-        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(),RECYCLER_VIEW_COLUMN));
+            recyclerView.setLayoutManager(new GridLayoutManager(getActivity(),RECYCLER_VIEW_COLUMN));
 
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            private int calculatedYPos = 0;
-            private int actualHeight = 0;
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                calculatedYPos = recyclerView.computeVerticalScrollOffset();
-                actualHeight = recyclerView.computeVerticalScrollRange();
+            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                private int calculatedYPos = 0;
+                private int actualHeight = 0;
+                @Override
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                    calculatedYPos = recyclerView.computeVerticalScrollOffset();
+                    actualHeight = recyclerView.computeVerticalScrollRange();
 
 
 
-                if(actualHeight - (recyclerView.computeVerticalScrollExtent() + calculatedYPos) < MainActivity.LOAD_MORE_SCROLL_RANGE)
-                {
-                    if(task == null) task = new HttpGetImagesAsync();
-                    if(task.getStatus() == AsyncTask.Status.FINISHED) task = new HttpGetImagesAsync();
-                    if(task.getStatus() != AsyncTask.Status.RUNNING)
+                    if(actualHeight - (recyclerView.computeVerticalScrollExtent() + calculatedYPos) < MainActivity.LOAD_MORE_SCROLL_RANGE)
                     {
-                        if(activeQueryModel != null)
+                        if(task == null) task = new HttpGetImagesAsync();
+                        if(task.getStatus() == AsyncTask.Status.FINISHED) task = new HttpGetImagesAsync();
+                        if(task.getStatus() != AsyncTask.Status.RUNNING)
                         {
-                            activeQueryModel.setActivePage(activeQueryModel.getActivePage() + 1);
-                            activeQueryModel.prepareUrl();
-                            MainActivity.setMenuClickListenerForRecyclerView(activeQueryModel,recyclerView,recyclerViewAdapter,task);
+                            if(activeQueryModel != null)
+                            {
+                                activeQueryModel.setActivePage(activeQueryModel.getActivePage() + 1);
+                                activeQueryModel.prepareUrl();
+                                MainActivity.setMenuClickListenerForRecyclerView(activeQueryModel,recyclerView,recyclerViewAdapter,task);
+                            }
                         }
                     }
+                    super.onScrolled(recyclerView, dx, dy);
+
                 }
-                super.onScrolled(recyclerView, dx, dy);
-
-            }
-
-        });
+            });
+        }
     }
     protected Fragment setFragment(Fragment fragment) {
         FragmentManager fragmentManager = this.getFragmentManager();

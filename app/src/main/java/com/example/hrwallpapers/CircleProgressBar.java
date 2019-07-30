@@ -8,14 +8,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
-
-import static android.support.constraint.motion.MotionScene.TAG;
-
 
 /**
  * A subclass of {@link android.view.View} class for creating a custom circular progressBar
@@ -35,7 +31,7 @@ public class CircleProgressBar extends View {
     private float progress = 0;
     private int min = 0;
     private int max = 100;
-    private int imageViewID = 0;
+    private int responsibleViewID = 0;
     /**
      * Start the progress at 12 o'clock
      */
@@ -45,7 +41,8 @@ public class CircleProgressBar extends View {
     private RectF rectF;
     private Paint backgroundPaint;
     private Paint foregroundPaint;
-    private ImageView responsibleImageView;
+    private View responsibleView;
+    private int visibilityType;  //<!-- 1 = Set visibility is visible when percentage is 1f | 1 = set visibility is hide when percentage is 1f-->
 
     public float getStrokeWidth() {
         return strokeWidth;
@@ -71,11 +68,32 @@ public class CircleProgressBar extends View {
             this.setVisibility(GONE);
             if (loadedEvent != null)
                 loadedEvent.progressBarLoaded(this);
-            if(responsibleImageView!= null)
+            if(responsibleView!= null)
             {
-                responsibleImageView.setVisibility(VISIBLE);
+                if (visibilityType == 1)
+                {
+                    responsibleView.setVisibility(VISIBLE);
+                }
+                else {
+                    responsibleView.setVisibility(INVISIBLE);
+                }
             }
         }
+        else
+        {
+            this.setVisibility(VISIBLE);
+            if(responsibleView!= null)
+            {
+                if (visibilityType == 1)
+                {
+                    responsibleView.setVisibility(INVISIBLE);
+                }
+                else {
+                    responsibleView.setVisibility(VISIBLE);
+                }
+            }
+        }
+
 
         invalidate();
         requestLayout();
@@ -130,7 +148,8 @@ public class CircleProgressBar extends View {
             min = typedArray.getInt(R.styleable.CircleProgressBar_min, min);
             max = typedArray.getInt(R.styleable.CircleProgressBar_max, max);
             percentageColor = typedArray.getInt(R.styleable.CircleProgressBar_progressbarPercentageColor, max);
-            imageViewID = typedArray.getResourceId(R.styleable.CircleProgressBar_progressBarResponsibleObject,0);
+            responsibleViewID = typedArray.getResourceId(R.styleable.CircleProgressBar_progressBarResponsibleObject,0);
+            visibilityType = typedArray.getInt(R.styleable.CircleProgressBar_progressBarResponsibleObjectVisibilityType,1);
 
         } finally {
             typedArray.recycle();
@@ -171,10 +190,11 @@ public class CircleProgressBar extends View {
     @Override
     protected void onAttachedToWindow() {
 
-        if(imageViewID !=0 && responsibleImageView == null)
+        if(responsibleViewID !=0 && responsibleView == null)
         {
-            responsibleImageView = ((ViewGroup)this.getParent()).findViewById(imageViewID);
-            responsibleImageView.setVisibility(INVISIBLE);
+            responsibleView = ((ViewGroup)this.getParent()).findViewById(responsibleViewID);
+            responsibleView.setVisibility(INVISIBLE);
+
 
         }
         super.onAttachedToWindow();
@@ -226,6 +246,5 @@ public class CircleProgressBar extends View {
         objectAnimator.setDuration(500);
         objectAnimator.setInterpolator(new DecelerateInterpolator());
         objectAnimator.start();
-
     }
 }

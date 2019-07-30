@@ -3,7 +3,9 @@ package com.example.hrwallpapers;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,15 +15,40 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static android.content.ContentValues.TAG;
+
 public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
 
+    private static final int FILE_ALREADY_CREATED = 1;
+    private static final int FILE_DOWNLOADING = 2;
+    private static final int FILE_DOWNLOADED = 3;
     private onTaskFinished taskFisinhed;
+    private String downloadedPath = "";
+    private double percentage = 0;
 
     public void setTaskFisinhed(onTaskFinished listener) { this.taskFisinhed = listener;}
 
     @Override
     protected void onPostExecute(String s) {
         taskFisinhed.Finished(s);
+    }
+
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        if(values[0] == FILE_ALREADY_CREATED)
+        {
+            MainActivity.showToast(String.format("This wallpaper is already created on %s.",downloadedPath),Toast.LENGTH_SHORT,MainActivity.context);
+
+        }
+        if(values[0] == FILE_DOWNLOADED)
+        {
+            MainActivity.showToast(String.format("This wallpaper is downloaded to %s.", downloadedPath),Toast.LENGTH_SHORT,MainActivity.context);
+        }
+        if(values[0] == FILE_DOWNLOADING)
+        {
+            taskFisinhed.Downloading((int) values[1]);
+        }
+        super.onProgressUpdate(values);
     }
 
     @Override
@@ -32,44 +59,70 @@ public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
             if(objects[0] instanceof wallpaperModel)
             {
                 wallpaperModel model = (wallpaperModel) objects[0]; // first item must be wallpapermodel
-                try {
-                    URL url = new URL(model.originalSrc);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("GET");
-                    connection.setDoInput(true);
-                    connection.connect();
-                    File SDCardRoot = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsoluteFile();
-                    String filename="HQ_" + model.id + (model.isPng ? ".png" : ".jpg");
-                    Log.i("Local filename:",""+filename);
-                    File file = new File(SDCardRoot,filename);
-                    if(file.createNewFile())
-                    {
-                        file.createNewFile();
-                    }
-                    FileOutputStream fileOutput = new FileOutputStream(file);
-                    InputStream inputStream = connection.getInputStream();
-                    int totalSize = connection.getContentLength();
-                    int downloadedSize = 0;
-                    byte[] buffer = new byte[1024];
-                    int bufferLength = 0;
-                    while ( (bufferLength = inputStream.read(buffer)) > 0 )
-                    {
-                        fileOutput.write(buffer, 0, bufferLength);
-                        downloadedSize += bufferLength;
-                        Log.i("Progress:","downloadedSize:"+downloadedSize+"totalSize:"+ totalSize) ;
-                    }
-                    fileOutput.close();
-                    if(downloadedSize==totalSize) return file.getPath();
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                File outputFolder = new File(Environment.getExternalStorageDirectory() + File.separator + MainActivity.DOWNLOAD_FILE_NAME);
+                if(!outputFolder.exists()) outputFolder.mkdirs();
+                if(outputFolder.exists())
+                {
+                    try {
+                        URL url = new URL(model.originalSrc);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("GET");
+                        connection.setDoInput(true);
+                        connection.connect();
+                        String filename = "HQ_" + model.id + (model.isPng ? ".png" : ".jpg");
+                        Log.i("Local filename:", "" + filename);
+                        File file = new File(outputFolder, filename);
 
+
+                        if (!file.exists()) {
+                            file.createNewFile();
+
+                            FileOutputStream fileOutput = new FileOutputStream(file);
+                            InputStream inputStream = connection.getInputStream();
+                            int totalSize = connection.getContentLength();
+                            int downloadedSize = 0;
+                            byte[] buffer = new byte[1024];
+                            int bufferLength = 0;
+                            while ((bufferLength = inputStream.read(buffer)) > 0) {
+                                fileOutput.write(buffer, 0, bufferLength);
+                                downloadedSize += bufferLength;
+                                percentage = ((double) (10 * downloadedSize)) / totalSize;
+                                percentage = percentage * 10;
+                                publishProgress(FILE_DOWNLOADING, (int) percentage);
+                            }
+                            fileOutput.close();
+                            if (downloadedSize == totalSize)
+                            {
+                                model.setFilePath(file);
+                                publishProgress(FILE_DOWNLOADED);
+                                this.downloadedPath = file.getPath();
+                                return this.downloadedPath;
+
+                            }
+                        }
+                        else
+                        {
+                            model.setFilePath(file);
+                            publishProgress(FILE_ALREADY_CREATED);
+                            this.downloadedPath = file.getPath();
+                            return this.downloadedPath;
+                        }
+
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
         return null;
     }
+
 
     @Override
     protected void onPreExecute() {
@@ -78,6 +131,8 @@ public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
 
     public interface onTaskFinished
     {
+        public void Downloading(int percentage);
         public void Finished(String imagePath);
     }
+
 }
