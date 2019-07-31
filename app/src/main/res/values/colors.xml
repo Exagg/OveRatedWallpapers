@@ -146,7 +146,7 @@
 
     <color name="black_overlay">#D7448BBA</color>
 
-    <color name="fullScreenActionBarBackground">#99141414</color>
+    <color name="fullScreenActionBarBackground">#75141414</color>
     <color name="fullScreenBackground">#0f0f0f</color>
 
     <color name="CircleLoadingBarPercentageColor">#D2691E</color>

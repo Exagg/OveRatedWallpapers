@@ -511,7 +511,6 @@ class mainViewPagerAdapter extends FragmentPagerAdapter
     }
 
 
-
     public void AddFragment(Fragment fragment,MenuModel menuModel)
     {
         fragmentList.add(fragment);

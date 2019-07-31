@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.transition.Slide;
 import android.util.Log;
@@ -21,17 +22,22 @@ import com.example.hrwallpapers.R;
 import com.example.hrwallpapers.wallpaperModel;
 import com.google.gson.Gson;
 
+import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
+import ja.burhanrashid52.photoeditor.PhotoFilter;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class ImageProcessActivity extends AppCompatActivity {
+public class ImageProcessActivity extends AppCompatActivity
+        implements FilterSelectedListener,
+        ToolSelectedListener{
 
     private static final String TAG = "ImagePROCESS";
     private View backButton;
     private View saveButton;
+    private PhotoEditor photoEditor;
     private PhotoEditorView editorView;
     private wallpaperModel activeModel;
     private Bitmap selectedBitmap;
@@ -41,6 +47,15 @@ public class ImageProcessActivity extends AppCompatActivity {
     private Context context;
 
     private RecyclerView toolRecyclerView;
+    private RecyclerView filterRecyclerView;
+
+    private FilterAdapter filterAdapter = new FilterAdapter(this);
+    private EditToolsAdapter toolsAdapter = new EditToolsAdapter(this);
+
+
+    private boolean filterIsVisible = false;
+
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,9 +80,22 @@ public class ImageProcessActivity extends AppCompatActivity {
         loadingBar = this.findViewById(R.id.process_loading_bar);
         loadingContainer = this.findViewById(R.id.process_loading_area);
         toolRecyclerView = this.findViewById(R.id.process_tool_recyclerview);
+        filterRecyclerView = this.findViewById(R.id.process_filter_recyclerview);
 
-        EditToolsAdapter adapter = new EditToolsAdapter();
-        toolRecyclerView.setAdapter(adapter);
+        toolRecyclerView.setAdapter(toolsAdapter);
+        LinearLayoutManager toolLayoutManager = new LinearLayoutManager(this);
+        toolLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        toolRecyclerView.setLayoutManager(toolLayoutManager);
+
+
+        filterRecyclerView.setAdapter(filterAdapter);
+        LinearLayoutManager filterLayoutManager = new LinearLayoutManager(this);
+        filterLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        filterRecyclerView.setLayoutManager(filterLayoutManager);
+
+
+        photoEditor = new PhotoEditor.Builder(this,editorView)
+                .setPinchTextScalable(true).build();
 
         if(activeModel.getFilePath() != null)
         {
@@ -119,5 +147,29 @@ public class ImageProcessActivity extends AppCompatActivity {
             getWindow().setExitTransition(slide);
             getWindow().setEnterTransition(slide);
         }
+    }
+
+    @Override
+    public void FilterSelected(PhotoFilter filter) {
+
+    }
+
+    @Override
+    public void onToolSelected(ToolModel toolModel) {
+        switch (toolModel.type)
+        {
+            case FILTER:
+                showFilter(true);
+
+        }
+    }
+
+
+
+    private void showFilter(boolean filterIsVisible)
+    {
+        this.filterIsVisible = filterIsVisible;
+
+        if(this.filterIsVisible) filterRecyclerView.setVisibility(View.VISIBLE);
     }
 }

@@ -20,20 +20,20 @@ public class EditToolsAdapter extends RecyclerView.Adapter<EditToolsAdapter.Tool
 {
     private ToolSelectedListener toolSelectedListener;
     List<ToolModel> toolModelList = new ArrayList();
-    public EditToolsAdapter()
+    public EditToolsAdapter(ToolSelectedListener listener)
     {
+        toolSelectedListener = listener;
         toolModelList.add(new ToolModel("Brush", R.drawable.ic_brush,ToolType.BRUSH));
-        toolModelList.add(new ToolModel("Text",R.drawable.ic_add_text,ToolType.BRUSH));
-        toolModelList.add(new ToolModel("Eraser",R.drawable.ic_eraser,ToolType.BRUSH));
-        toolModelList.add(new ToolModel("Filter",R.drawable.ic_photography,ToolType.BRUSH));
-        toolModelList.add(new ToolModel("Emoji",R.drawable.ic_cowboy,ToolType.BRUSH));
-        toolModelList.add(new ToolModel("Sticker",R.drawable.ic_mountains,ToolType.BRUSH));
+        toolModelList.add(new ToolModel("Text",R.drawable.ic_add_text,ToolType.TEXT));
+        toolModelList.add(new ToolModel("Eraser",R.drawable.ic_eraser,ToolType.ERASER));
+        toolModelList.add(new ToolModel("Filter",R.drawable.ic_photography,ToolType.FILTER));
+        toolModelList.add(new ToolModel("Emoji",R.drawable.ic_cowboy,ToolType.EMOJI));
+        toolModelList.add(new ToolModel("Sticker",R.drawable.ic_mountains,ToolType.STICKER));
         Log.i(TAG, "EditToolsAdapter: Tools adapter is created");
     }
 
     @Override
     public void onBindViewHolder(@NonNull ToolsViewHolder holder, int position, @NonNull List<Object> payloads) {
-        Log.i(TAG, "onBindViewHolder: ");
         super.onBindViewHolder(holder, position, payloads);
     }
 
@@ -41,7 +41,6 @@ public class EditToolsAdapter extends RecyclerView.Adapter<EditToolsAdapter.Tool
     public ToolsViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.imageprocess_tool_layout,viewGroup,false);
         ToolsViewHolder holder = new ToolsViewHolder(view);
-        Log.i(TAG, "onCreateViewHolder: ");
         return holder;
     }
 
@@ -50,7 +49,6 @@ public class EditToolsAdapter extends RecyclerView.Adapter<EditToolsAdapter.Tool
         ToolModel toolModel = getToolModel(i);
         viewHolder.imageView.setImageResource(toolModel.drawableID);
         viewHolder.textview.setText(toolModel.name);
-        Log.i(TAG, "onBindViewHolder: ");
     }
 
     @Override
