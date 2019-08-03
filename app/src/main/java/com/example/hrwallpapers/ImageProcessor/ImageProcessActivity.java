@@ -7,14 +7,20 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.ChangeBounds;
 import android.transition.Slide;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AnticipateOvershootInterpolator;
+import android.widget.TextView;
 
 import com.example.hrwallpapers.CircleProgressBar;
 import com.example.hrwallpapers.DownloadImageAsync;
@@ -25,6 +31,7 @@ import com.google.gson.Gson;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
 import ja.burhanrashid52.photoeditor.PhotoFilter;
+
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -37,8 +44,6 @@ public class ImageProcessActivity extends AppCompatActivity
     private static final String TAG = "ImagePROCESS";
     private View backButton;
     private View saveButton;
-    private PhotoEditor photoEditor;
-    private PhotoEditorView editorView;
     private wallpaperModel activeModel;
     private Bitmap selectedBitmap;
     private DownloadImageAsync downloadImageAsync= new DownloadImageAsync();
@@ -46,6 +51,8 @@ public class ImageProcessActivity extends AppCompatActivity
     private View loadingContainer;
     private Context context;
 
+    private PhotoEditor photoEditor;
+    private PhotoEditorView editorView;
     private RecyclerView toolRecyclerView;
     private RecyclerView filterRecyclerView;
 
@@ -55,8 +62,8 @@ public class ImageProcessActivity extends AppCompatActivity
 
     private boolean filterIsVisible = false;
 
-
-
+    private ConstraintLayout rootView;
+    private TextView currentSelectedTool;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,11 +83,19 @@ public class ImageProcessActivity extends AppCompatActivity
 
         backButton = this.findViewById(R.id.process_back_button);
         saveButton = this.findViewById(R.id.process_save_button);
-        editorView =this.findViewById(R.id.process_editor);
         loadingBar = this.findViewById(R.id.process_loading_bar);
         loadingContainer = this.findViewById(R.id.process_loading_area);
         toolRecyclerView = this.findViewById(R.id.process_tool_recyclerview);
         filterRecyclerView = this.findViewById(R.id.process_filter_recyclerview);
+        rootView = this.findViewById(R.id.process_root_view);
+        currentSelectedTool = this.findViewById(R.id.process_current_tool_textview);
+        editorView =this.findViewById(R.id.process_photo_editor_view);
+
+
+
+        photoEditor = new PhotoEditor.Builder(this,editorView)
+                .setPinchTextScalable(true).build();
+
 
         toolRecyclerView.setAdapter(toolsAdapter);
         LinearLayoutManager toolLayoutManager = new LinearLayoutManager(this);
@@ -88,19 +103,20 @@ public class ImageProcessActivity extends AppCompatActivity
         toolRecyclerView.setLayoutManager(toolLayoutManager);
 
 
+
+        filterAdapter = new FilterAdapter(this);
         filterRecyclerView.setAdapter(filterAdapter);
         LinearLayoutManager filterLayoutManager = new LinearLayoutManager(this);
         filterLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         filterRecyclerView.setLayoutManager(filterLayoutManager);
 
-
-        photoEditor = new PhotoEditor.Builder(this,editorView)
-                .setPinchTextScalable(true).build();
-
         if(activeModel.getFilePath() != null)
         {
             selectedBitmap = BitmapFactory.decodeFile(activeModel.getFilePath());
+            filterAdapter.setActiveBitmap(selectedBitmap);
+
             editorView.getSource().setImageBitmap(selectedBitmap);
+
             Log.i(TAG, "onCreate: This bitmap is loaded on " + activeModel.getFilePath());
         }
 
@@ -116,7 +132,11 @@ public class ImageProcessActivity extends AppCompatActivity
                         loadingContainer.setVisibility(View.GONE);
 
                         selectedBitmap = BitmapFactory.decodeFile(activeModel.getFilePath());
+
+                        filterAdapter.setActiveBitmap(selectedBitmap);
+
                         editorView.getSource().setImageBitmap(selectedBitmap);
+
                         Log.i(TAG, "onCreate: This bitmap is loaded after downloaded to " + activeModel.getFilePath());
                     }
 
@@ -151,25 +171,46 @@ public class ImageProcessActivity extends AppCompatActivity
 
     @Override
     public void FilterSelected(PhotoFilter filter) {
-
+        if (photoEditor != null)
+        {
+            photoEditor.setFilterEffect(filter);
+        }
     }
 
     @Override
     public void onToolSelected(ToolModel toolModel) {
+        currentSelectedTool.setText(toolModel.name);
         switch (toolModel.type)
         {
             case FILTER:
                 showFilter(true);
-
         }
     }
 
-
+    private ConstraintSet constraintSet = new ConstraintSet();
 
     private void showFilter(boolean filterIsVisible)
     {
         this.filterIsVisible = filterIsVisible;
+        constraintSet.clone(rootView);
 
-        if(this.filterIsVisible) filterRecyclerView.setVisibility(View.VISIBLE);
+        if (filterIsVisible) {
+            constraintSet.clear(filterRecyclerView.getId(), ConstraintSet.START);
+            constraintSet.connect(filterRecyclerView.getId(), ConstraintSet.START,
+                    ConstraintSet.PARENT_ID, ConstraintSet.START);
+            constraintSet.connect(filterRecyclerView.getId(), ConstraintSet.END,
+                    ConstraintSet.PARENT_ID, ConstraintSet.END);
+        } else {
+            constraintSet.connect(filterRecyclerView.getId(), ConstraintSet.START,
+                    ConstraintSet.PARENT_ID, ConstraintSet.END);
+            constraintSet.clear(filterRecyclerView.getId(), ConstraintSet.END);
+        }
+
+        ChangeBounds changeBounds = new ChangeBounds();
+        changeBounds.setDuration(350);
+        changeBounds.setInterpolator(new AnticipateOvershootInterpolator(1.0f));
+        TransitionManager.beginDelayedTransition(rootView, changeBounds);
+
+        constraintSet.applyTo(rootView);
     }
 }

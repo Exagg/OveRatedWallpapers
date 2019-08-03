@@ -1,22 +1,16 @@
 package com.example.hrwallpapers.ImageProcessor;
 
-import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.hrwallpapers.R;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +19,11 @@ import ja.burhanrashid52.photoeditor.PhotoFilter;
 public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.FilterViewHolder> {
 
     private FilterSelectedListener filterSelectedListener;
-    List<Pair<String, PhotoFilter>> mFilterList = new ArrayList<>();
+    private RecyclerView recyclerView;
+    List <PhotoFilter> mFilterList = new ArrayList<>();
+    private Bitmap activeBitmap;
+    public int bitmapActualHeight = 200;
+    public int bitmapActualWidth = 200;
 
     public FilterAdapter(FilterSelectedListener listener)
     {
@@ -33,19 +31,26 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.FilterView
         setupFilters();
     }
 
+    public void setActiveBitmap(Bitmap activeBitmap) {
+        this.activeBitmap = activeBitmap;
+        this.notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public FilterViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.imageprocess_filter_layout,viewGroup,false);
-        return new FilterViewHolder(view);
-
+        FilterViewHolder viewHolder = new FilterViewHolder(view);
+        viewHolder.setIsRecyclable(false);
+        return viewHolder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull FilterViewHolder filterViewHolder, int i) {
-        Pair<String,PhotoFilter> pair = getPair(i);
-        filterViewHolder.textView.setText(pair.second.name().replace("-",""));
-        filterViewHolder.imageView.setImageBitmap(getBitmapFromAsset(filterViewHolder.itemView.getContext(),pair.first));
+        PhotoFilter filter = getFilter(i);
+        filterViewHolder.textView.setText(filter.name());
+
+        if(this.activeBitmap != null && filterViewHolder.activeBitmap == null) filterViewHolder.setActiveBitmap(this.activeBitmap,filter);
     }
 
     @Override
@@ -53,14 +58,18 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.FilterView
         return mFilterList.size();
     }
 
-    public Pair<String,PhotoFilter> getPair(int posiiton)
+    public PhotoFilter getFilter(int posiiton)
     {
         return mFilterList.get(posiiton);
     }
 
+
     public class FilterViewHolder extends RecyclerView.ViewHolder{
-        ImageView imageView;
+        FilterView imageView;
         TextView textView;
+        Bitmap activeBitmap;
+        private boolean isBitmapScaled = false;
+        boolean filterIsDrawed = false;
 
         public FilterViewHolder(@NonNull View view) {
             super(view);
@@ -71,50 +80,70 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.FilterView
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    filterSelectedListener.FilterSelected(getPair(getLayoutPosition()).second);
+                    filterSelectedListener.FilterSelected(getFilter(getLayoutPosition()));
                 }
             });
         }
 
-    }
+        public void setActiveBitmap(Bitmap bmp,PhotoFilter filter)
+        {
+            if(!isBitmapScaled)
+            {
+                this.activeBitmap = bmp;
+                this.activeBitmap = getScaledBitmap(activeBitmap);
+                imageView.setSourceBitmap(activeBitmap);
+                imageView.setFilterEffect(filter);
+            }
+        }
 
+        private Bitmap getScaledBitmap(Bitmap bmp)
+        {
+            isBitmapScaled = true;
+            int width = bmp.getWidth();
+            int height = bmp.getHeight();
+            float scaleWidth = ((float) bitmapActualWidth) / width;
+            float scaleHeight = ((float) bitmapActualHeight) / height;
+            // CREATE A MATRIX FOR THE MANIPULATION
+            Matrix matrix = new Matrix();
+            // RESIZE THE BIT MAP
+            matrix.postScale(scaleWidth, scaleHeight);
 
-    private Bitmap getBitmapFromAsset(Context context, String strName) {
-        AssetManager assetManager = context.getAssets();
-        InputStream istr = null;
-        try {
-            istr = assetManager.open(strName);
-            return BitmapFactory.decodeStream(istr);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            // "RECREATE" THE NEW BITMAP
+            Bitmap resizedBitmap = Bitmap.createBitmap(
+                    bmp, 0, 0, width, height, matrix, false);
+            return resizedBitmap;
         }
     }
 
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        this.recyclerView = recyclerView;
+    }
     private void setupFilters() {
-        mFilterList.add(new Pair<>("filters/original.jpg", PhotoFilter.NONE));
-        mFilterList.add(new Pair<>("filters/auto_fix.png", PhotoFilter.AUTO_FIX));
-        mFilterList.add(new Pair<>("filters/brightness.png", PhotoFilter.BRIGHTNESS));
-        mFilterList.add(new Pair<>("filters/contrast.png", PhotoFilter.CONTRAST));
-        mFilterList.add(new Pair<>("filters/documentary.png", PhotoFilter.DOCUMENTARY));
-        mFilterList.add(new Pair<>("filters/dual_tone.png", PhotoFilter.DUE_TONE));
-        mFilterList.add(new Pair<>("filters/fill_light.png", PhotoFilter.FILL_LIGHT));
-        mFilterList.add(new Pair<>("filters/fish_eye.png", PhotoFilter.FISH_EYE));
-        mFilterList.add(new Pair<>("filters/grain.png", PhotoFilter.GRAIN));
-        mFilterList.add(new Pair<>("filters/gray_scale.png", PhotoFilter.GRAY_SCALE));
-        mFilterList.add(new Pair<>("filters/lomish.png", PhotoFilter.LOMISH));
-        mFilterList.add(new Pair<>("filters/negative.png", PhotoFilter.NEGATIVE));
-        mFilterList.add(new Pair<>("filters/posterize.png", PhotoFilter.POSTERIZE));
-        mFilterList.add(new Pair<>("filters/saturate.png", PhotoFilter.SATURATE));
-        mFilterList.add(new Pair<>("filters/sepia.png", PhotoFilter.SEPIA));
-        mFilterList.add(new Pair<>("filters/sharpen.png", PhotoFilter.SHARPEN));
-        mFilterList.add(new Pair<>("filters/temprature.png", PhotoFilter.TEMPERATURE));
-        mFilterList.add(new Pair<>("filters/tint.png", PhotoFilter.TINT));
-        mFilterList.add(new Pair<>("filters/vignette.png", PhotoFilter.VIGNETTE));
-        mFilterList.add(new Pair<>("filters/cross_process.png", PhotoFilter.CROSS_PROCESS));
-        mFilterList.add(new Pair<>("filters/b_n_w.png", PhotoFilter.BLACK_WHITE));
-        mFilterList.add(new Pair<>("filters/flip_horizental.png", PhotoFilter.FLIP_HORIZONTAL));
-        mFilterList.add(new Pair<>("filters/flip_vertical.png", PhotoFilter.FLIP_VERTICAL));
-        mFilterList.add(new Pair<>("filters/rotate.png", PhotoFilter.ROTATE));
+        mFilterList.add(PhotoFilter.NONE);
+        mFilterList.add(PhotoFilter.AUTO_FIX);
+        mFilterList.add(PhotoFilter.BRIGHTNESS);
+        mFilterList.add(PhotoFilter.CONTRAST);
+        mFilterList.add(PhotoFilter.DOCUMENTARY);
+        mFilterList.add(PhotoFilter.DUE_TONE);
+        mFilterList.add(PhotoFilter.FILL_LIGHT);
+        mFilterList.add(PhotoFilter.FISH_EYE);
+        mFilterList.add(PhotoFilter.GRAIN);
+        mFilterList.add(PhotoFilter.GRAY_SCALE);
+        mFilterList.add(PhotoFilter.LOMISH);
+        mFilterList.add(PhotoFilter.NEGATIVE);
+        mFilterList.add(PhotoFilter.POSTERIZE);
+        mFilterList.add(PhotoFilter.SATURATE);
+        mFilterList.add(PhotoFilter.SEPIA);
+        mFilterList.add(PhotoFilter.SHARPEN);
+        mFilterList.add(PhotoFilter.TEMPERATURE);
+        mFilterList.add( PhotoFilter.TINT);
+        mFilterList.add(PhotoFilter.VIGNETTE);
+        mFilterList.add(PhotoFilter.CROSS_PROCESS);
+        mFilterList.add(PhotoFilter.BLACK_WHITE);
+        mFilterList.add(PhotoFilter.FLIP_HORIZONTAL);
+        mFilterList.add(PhotoFilter.FLIP_VERTICAL);
+        mFilterList.add(PhotoFilter.ROTATE);
     }
 }
