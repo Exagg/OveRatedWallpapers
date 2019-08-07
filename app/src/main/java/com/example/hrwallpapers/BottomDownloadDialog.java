@@ -11,7 +11,6 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,8 +20,6 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
-import static android.support.constraint.motion.MotionScene.TAG;
 
 public class BottomDownloadDialog extends BottomSheetDialogFragment implements View.OnClickListener,DownloadImageAsync.onTaskFinished {
 
@@ -106,21 +103,6 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
 
             if(downloadImageAsync.getStatus() != AsyncTask.Status.RUNNING)
             {
-                downloadImageAsync.setTaskFisinhed(new DownloadImageAsync.onTaskFinished() {
-                    @Override
-                    public void Finished(String imagePath) {
-                        if(imagePath != null)
-                        {
-                            activeBitmap = BitmapFactory.decodeFile(imagePath);
-                            doEvent();
-                            dismiss();
-                        }
-                    }
-
-                    @Override
-                    public void Downloading(int percentage) {
-                    }
-                });
                 downloadImageAsync.setTaskFisinhed(this);
                 downloadImageAsync.execute(this.activeModel);
             }
@@ -193,12 +175,14 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
 
     @Override
     public void Downloading(int percentage) {
-        Log.i(TAG, "Downloading: " + percentage);
     }
 
     @Override
     public void Finished(String imagePath) {
-        Log.i(TAG, "Finished: ");
+
+        activeBitmap = BitmapFactory.decodeFile(imagePath);
+        doEvent();
+        dismiss();
     }
 
     public enum BottomDownloadDialogType

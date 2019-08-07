@@ -376,8 +376,27 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 final wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
-                final CircleProgressBar bar = progressingAreaCircleBar;
+                View view = viewPager.findViewWithTag("container" + viewPager.getCurrentItem());
 
+                if(view != null)
+                {
+                    ImageView im = view.findViewById(R.id.base_wallpaper_main_image);
+                    if(im !=null)
+                    {
+                        BitmapDrawable drawable = (BitmapDrawable) im.getDrawable();
+                        if (drawable != null)
+                        {
+                            downloadDialog.setActiveBitmap(drawable.getBitmap());
+                            downloadDialog.setActiveModel(model);
+                            downloadDialog.setDialogType(BottomDownloadDialog.BottomDownloadDialogType.SETASWALLPAPER);
+                            downloadDialog.show(getSupportFragmentManager(),"Set As Wallpaper");
+                        }
+                        else
+                        {
+                            Toast.makeText(thisActivity, "Please wait for the load", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
             }
         });
 
