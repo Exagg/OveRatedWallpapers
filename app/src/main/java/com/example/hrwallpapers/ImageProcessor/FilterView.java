@@ -9,6 +9,8 @@ import android.media.effect.EffectFactory;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 
@@ -30,8 +32,9 @@ class FilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
     private boolean mInitialized = false;
     private PhotoFilter mCurrentEffect;
     private Bitmap mSourceBitmap;
-    private boolean isSaveImage = false;
     private boolean isEffectApplied = false;
+
+    public OnSaveBitmap mOnSaveBitmap = null;
 
     public FilterView(Context context) {
         super(context);
@@ -45,6 +48,8 @@ class FilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
     private void init() {
         mTexRenderer = new TextureRenderer(glToolBox);
+
+
         setEGLContextClientVersion(2);
         setRenderer(this);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
@@ -67,10 +72,14 @@ class FilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
         }
     }
 
+    public void setOnSaveBitmapListener(OnSaveBitmap listener)
+    {
+        this.mOnSaveBitmap = listener;
+        requestRender();
+    }
+
     @Override
     public void onDrawFrame(GL10 gl) {
-
-        Log.i(TAG, "onDrawFrame: " + mCurrentEffect);
         if (!mInitialized) {
             //Only need to do this once
             mEffectContext = EffectContext.createWithCurrentGlContext();
@@ -84,6 +93,20 @@ class FilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
             applyEffect();
         }
         renderResult();
+
+
+        if (mOnSaveBitmap != null) {
+            final Bitmap mFilterBitmap = BitmapConverter.createBitmapFromGLSurface(this, gl);
+            Log.e(TAG, "onDrawFrame: " + mFilterBitmap);
+            if (mOnSaveBitmap != null) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mOnSaveBitmap.OnBitmapReady(mFilterBitmap);
+                    }
+                });
+            }
+        }
     }
 
     void setFilterEffect(PhotoFilter effect) {
@@ -231,4 +254,10 @@ class FilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
             mTexRenderer.renderTexture(mTextures[0]);
         }
     }
+
+    public interface OnSaveBitmap
+    {
+        void OnBitmapReady(Bitmap bitmap);
+    }
+
 }

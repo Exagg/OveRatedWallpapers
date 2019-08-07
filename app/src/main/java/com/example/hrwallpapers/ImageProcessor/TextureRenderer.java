@@ -1,9 +1,13 @@
 package com.example.hrwallpapers.ImageProcessor;
 
 import android.opengl.GLES20;
+import android.util.Log;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+
+import static android.support.constraint.motion.MotionScene.TAG;
 
 
 public class TextureRenderer {
@@ -76,34 +80,42 @@ public class TextureRenderer {
         computeOutputVertices();
     }
     public void renderTexture(int texId) {
-        // Bind default FBO
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-        // Use our shader program
-        GLES20.glUseProgram(mProgram);
-        glToolBox.checkGlError("glUseProgram");
-        // Set viewport
-        GLES20.glViewport(0, 0, mViewWidth, mViewHeight);
-        glToolBox.checkGlError("glViewport");
-        // Disable blending
-        GLES20.glDisable(GLES20.GL_BLEND);
-        // Set the vertex attributes
-        GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false,
-                0, mTexVertices);
-        GLES20.glEnableVertexAttribArray(mTexCoordHandle);
-        GLES20.glVertexAttribPointer(mPosCoordHandle, 2, GLES20.GL_FLOAT, false,
-                0, mPosVertices);
-        GLES20.glEnableVertexAttribArray(mPosCoordHandle);
-        glToolBox.checkGlError("vertex attribute setup");
-        // Set the input texture
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        glToolBox.checkGlError("glActiveTexture");
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId);
-        glToolBox.checkGlError("glBindTexture");
-        GLES20.glUniform1i(mTexSamplerHandle, 0);
-        // Draw
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        try
+        {
+            // Bind default FBO
+            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+            // Use our shader program
+            GLES20.glUseProgram(mProgram);
+            glToolBox.checkGlError("glUseProgram");
+            // Set viewport
+            GLES20.glViewport(0, 0, mViewWidth, mViewHeight);
+            glToolBox.checkGlError("glViewport");
+            // Disable blending
+            GLES20.glDisable(GLES20.GL_BLEND);
+            // Set the vertex attributes
+            GLES20.glVertexAttribPointer(mTexCoordHandle, 2, GLES20.GL_FLOAT, false,
+                    0, mTexVertices);
+            GLES20.glEnableVertexAttribArray(mTexCoordHandle);
+            GLES20.glVertexAttribPointer(mPosCoordHandle, 2, GLES20.GL_FLOAT, false,
+                    0, mPosVertices);
+            GLES20.glEnableVertexAttribArray(mPosCoordHandle);
+            glToolBox.checkGlError("vertex attribute setup");
+            // Set the input texture
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            glToolBox.checkGlError("glActiveTexture");
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId);
+            glToolBox.checkGlError("glBindTexture");
+            GLES20.glUniform1i(mTexSamplerHandle, 0);
+            // Draw
+            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            Log.i(TAG, "renderTexture: " +ex.getMessage());
+        }
     }
     private void computeOutputVertices() {
         if (mPosVertices != null) {

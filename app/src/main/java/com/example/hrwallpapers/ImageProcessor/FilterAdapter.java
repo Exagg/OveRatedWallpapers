@@ -4,9 +4,11 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.hrwallpapers.R;
@@ -15,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ja.burhanrashid52.photoeditor.PhotoFilter;
+
+import static android.support.constraint.motion.MotionScene.TAG;
 
 public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.FilterViewHolder> {
 
@@ -50,7 +54,12 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.FilterView
         PhotoFilter filter = getFilter(i);
         filterViewHolder.textView.setText(filter.name());
 
-        if(this.activeBitmap != null && filterViewHolder.activeBitmap == null) filterViewHolder.setActiveBitmap(this.activeBitmap,filter);
+        if(this.activeBitmap != null && filterViewHolder.activeBitmap == null)
+        {
+            filterViewHolder.setActiveBitmap(this.activeBitmap,filter);
+        }
+
+        if(filterViewHolder.filteredBitmap != null) filterViewHolder.imageView.setImageBitmap(filterViewHolder.filteredBitmap);
     }
 
     @Override
@@ -65,14 +74,28 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.FilterView
 
 
     public class FilterViewHolder extends RecyclerView.ViewHolder{
-        FilterView imageView;
+        ImageView imageView;
         TextView textView;
         Bitmap activeBitmap;
         private boolean isBitmapScaled = false;
         boolean filterIsDrawed = false;
 
+        Bitmap filteredBitmap;
+
+        FilterView filterCreator;
+
+        private FilterView.OnSaveBitmap bitmapListener = null;
+
         public FilterViewHolder(@NonNull View view) {
             super(view);
+            this.bitmapListener = new FilterView.OnSaveBitmap() {
+                @Override
+                public void OnBitmapReady(Bitmap bitmap) {
+                    Log.i(TAG, "OnBitmapReady: Filtered image converted succesfully");
+                }
+            };
+
+            this.filterCreator = new FilterView(recyclerView.getContext());
 
             this.imageView = view.findViewById(R.id.filter_imageview);
             this.textView = view.findViewById(R.id.filter_textview);
@@ -83,6 +106,9 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.FilterView
                     filterSelectedListener.FilterSelected(getFilter(getLayoutPosition()));
                 }
             });
+            this.filterCreator.setOnSaveBitmapListener(this.bitmapListener);
+
+
         }
 
         public void setActiveBitmap(Bitmap bmp,PhotoFilter filter)
@@ -91,10 +117,11 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.FilterView
             {
                 this.activeBitmap = bmp;
                 this.activeBitmap = getScaledBitmap(activeBitmap);
-                imageView.setSourceBitmap(activeBitmap);
-                imageView.setFilterEffect(filter);
+                filterCreator.setSourceBitmap(activeBitmap);
+                filterCreator.setFilterEffect(filter);
             }
         }
+
 
         private Bitmap getScaledBitmap(Bitmap bmp)
         {

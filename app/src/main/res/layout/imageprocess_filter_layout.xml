@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:paddingLeft="10dp"
     android:orientation="vertical">
-    <com.example.hrwallpapers.ImageProcessor.FilterView
+    <ImageView
         android:id="@+id/filter_imageview"
         android:layout_width="75dp"
         android:layout_height="75dp"

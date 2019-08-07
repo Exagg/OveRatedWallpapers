@@ -4,14 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -47,9 +43,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -112,9 +105,11 @@ public class BaseWallpaperActivity extends AppCompatActivity {
 
     private HttpGetTagsAsync getTagsAsync = new HttpGetTagsAsync();
     private HttpGetImagesAsync getSimiliarAsync = new HttpGetImagesAsync();
-    private DownloadImageAsync downloadImageAsync = new DownloadImageAsync();
     private final Context baseWallpaperContext = this;
     private static HttpGetImagesAsync task = new HttpGetImagesAsync();
+
+
+    BottomDownloadDialog downloadDialog= new BottomDownloadDialog();
 
 
     @Override
@@ -351,7 +346,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         shareImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
                 View view = viewPager.findViewWithTag("container" + viewPager.getCurrentItem());
                 if(view != null)
                 {
@@ -361,10 +356,15 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                         BitmapDrawable drawable = (BitmapDrawable) im.getDrawable();
                         if (drawable != null)
                         {
-                            Bitmap bitmap = drawable.getBitmap();
-                            share(saveAs(bitmap));
+                            downloadDialog.setActiveBitmap(drawable.getBitmap());
+                            downloadDialog.setActiveModel(model);
+                            downloadDialog.setDialogType(BottomDownloadDialog.BottomDownloadDialogType.SHARE);
+                            downloadDialog.show(getSupportFragmentManager(),"Share");
                         }
-                        else Log.i(TAG, "onClick: Drawable is null");
+                        else
+                        {
+                            Toast.makeText(thisActivity, "Please wait for the load", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
             }
@@ -375,61 +375,16 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
+                final wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
                 final CircleProgressBar bar = progressingAreaCircleBar;
 
-                if(model != null)
-                {
-                    if(downloadImageAsync.getStatus() == AsyncTask.Status.FINISHED)downloadImageAsync = new DownloadImageAsync();
-
-                    if(downloadImageAsync.getStatus() != AsyncTask.Status.RUNNING)
-                    {
-                        downloadImageAsync.setTaskFisinhed(new DownloadImageAsync.onTaskFinished() {
-                            @Override
-                            public void Finished(String imagePath) {
-                                if(imagePath != null)
-                                {
-                                    Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
-                                    setAs(saveAs(bitmap));
-                                }
-                            }
-
-                            @Override
-                            public void Downloading(int percentage) {
-                                bar.setProgressWithAnimation(percentage);
-                            }
-                        });
-                        downloadImageAsync.execute(model);
-                    }
-                }
             }
         });
 
         downloadAsHighQuality.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
 
-                if(model != null)
-                {
-                    if(downloadImageAsync.getStatus() == AsyncTask.Status.FINISHED)downloadImageAsync = new DownloadImageAsync();
-
-                    if(downloadImageAsync.getStatus() != AsyncTask.Status.RUNNING)
-                    {
-                        downloadImageAsync.setTaskFisinhed(new DownloadImageAsync.onTaskFinished() {
-                            @Override
-                            public void Finished(String imagePath) {
-                            }
-
-                            @Override
-                            public void Downloading(int percentage) {
-                                progressingAreaCircleBar.setProgressWithAnimation(percentage);
-                                Log.i(TAG, "Downloading: " + percentage);
-                            }
-                        });
-                        downloadImageAsync.execute(model);
-                    }
-                }
             }
         });
 
@@ -446,7 +401,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                         if (drawable != null)
                         {
                             Bitmap bitmap = drawable.getBitmap();
-                            saveAs(bitmap);
+
                         }
                         else Log.i(TAG, "onClick: Drawable is null");
                     }
@@ -803,72 +758,6 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         }
     }
 
-    private void share(File file)
-    {
-        Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
-        String bitmapPath = MediaStore.Images.Media.insertImage(getContentResolver(),bitmap,"test",null);
-        Uri bitmapUri = Uri.parse(bitmapPath);
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setType("image/jpeg");
-        shareIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        shareIntent.putExtra(Intent.EXTRA_STREAM, bitmapUri);
-        shareIntent.putExtra(Intent.EXTRA_TEXT,"Hey please check this application " + "https://play.google.com/store/apps/details?id=" +getPackageName());
-        shareIntent.setType("image/png");
-        startActivity(Intent.createChooser(shareIntent,"Share"));
-    }
-
-    private void setAs(File file)
-    {
-        Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
-        String bitmapPath =MediaStore.Images.Media.insertImage(getContentResolver(),bitmap,"test","null");
-        Uri bitmapUri =Uri.parse(bitmapPath);
-        Intent setAsIntent = new Intent(Intent.ACTION_ATTACH_DATA);
-        setAsIntent.addCategory(Intent.CATEGORY_DEFAULT);
-        setAsIntent.setDataAndType(bitmapUri,"image/*");
-        setAsIntent.putExtra("mimeType","image/*");
-        setAsIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        this.startActivity(Intent.createChooser(setAsIntent,"Set As:"));
-
-    }
-
-    private File saveAs(Bitmap bitmap)
-    {
-        File outputFolder = new File(Environment.getExternalStorageDirectory() + File.separator + MainActivity.DOWNLOAD_FILE_NAME);
-
-        FileOutputStream fileOutputStream = null;
-        wallpaperModel activeModel = wallpaperModelList.get(viewPager.getCurrentItem());
-
-
-        String filename = "LQ_" + activeModel.id + (activeModel.isPng ? ".png" : ".jpg");
-        File file = new File(outputFolder, filename);
-        try {
-            if (!file.exists()) {
-                file.createNewFile();
-                fileOutputStream = new FileOutputStream(file);
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
-                activeModel.setFilePath(file);
-                MainActivity.showToast(String.format("This wallpaper is saved to %s",file.getPath()),Toast.LENGTH_SHORT,this);
-            }
-            else
-            {
-                if(activeModel.getFilePath() == null) activeModel.setFilePath(file);
-                MainActivity.showToast(String.format("This wallpaper is already saved to %s",file.getPath()),Toast.LENGTH_SHORT,this);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (fileOutputStream != null) {
-                    fileOutputStream.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return file;
-        }
-    }
 
     private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
 

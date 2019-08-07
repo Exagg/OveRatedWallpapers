@@ -56,7 +56,7 @@ public class GLToolBox {
     }
     public void checkGlError(String op) {
         int error;
-        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR && (error = GLES20.glGetError()) != GLES20.GL_INVALID_VALUE) {
             throw new RuntimeException(op + ": glError " + error);
         }
     }
