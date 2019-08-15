@@ -39,14 +39,15 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
     Context context;
     RecyclerView recyclerView;
     queryModel queryModel;
-    private static final int OUTOFRANGE = 4;
+    private static final int OUTOFRANGE = 10;
     private boolean isLocked = false;
     private int currentViewPosition;
+    private int clickedItemPosition = 0;
 
     private RequestOptions requestOptions = new RequestOptions()
             .skipMemoryCache(true)
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-            .priority(Priority.HIGH)
+            .priority(Priority.NORMAL)
             .centerCrop();
 
     public wallpaperRecyclerViewAdapter(List<wallpaperModel> modelList, FrameLayout fragmentHolderLayout, Fragment popupFragment,View v,Context context,queryModel queryModel,RecyclerView recyclerView)
@@ -58,10 +59,21 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         this.context = context;
         this.queryModel = queryModel;
         this.recyclerView = recyclerView;
+        this.recyclerView.setItemViewCacheSize(0);
     }
 
     public int getCurrentViewPosition() {
         return currentViewPosition;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
     }
 
     @NonNull
@@ -74,16 +86,6 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         wallpaperViewHolder holder = new wallpaperViewHolder(itemView,progressBar,popupFragment,this.context,model,this.queryModel,this);
 
         return holder;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return position;
     }
 
     @Override
@@ -101,6 +103,8 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         {
             MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model,context);
         }
+        Glide.with(this.context.getApplicationContext()).resumeRequests();
+
     }
 
 
@@ -109,22 +113,6 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         return this.modelList.size();
     }
 
-    public void setModelList(List<wallpaperModel> list)
-    {
-        this.modelList = list;
-    }
-
-    public void addModelListToList(List<wallpaperModel> list)
-    {
-        int lastIndex = this.modelList.size();
-        this.modelList.addAll(list);
-        this.notifyItemRangeInserted(lastIndex,this.modelList.size() - 1);
-    }
-
-    public void addModelToList(wallpaperModel model)
-    {
-        this.modelList.add(model);
-    }
 
     public void clearModels()
     {
@@ -156,63 +144,49 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
     public List<wallpaperModel> getModelList(){return this.modelList; }
 
+    public int getClickedItemPosition() { return clickedItemPosition;}
     @Override
     public void onViewDetachedFromWindow(@NonNull wallpaperViewHolder holder) {
-
-        if(isReadyToClearOnGlide(holder.indexOf()))
-        {
-            Log.i(TAG, "onViewDetachedFromWindow: " + holder.indexOf() + " - " + getCurrentViewPosition());
-            Glide.with(this.context.getApplicationContext()).clear(holder.wallpaperImage); // OOM handler it must be in the detached!! dont delete
-        }
         super.onViewDetachedFromWindow(holder);
-    }
-
-    @Override
-    public void onViewRecycled(@NonNull wallpaperViewHolder holder) {
-        super.onViewRecycled(holder);
-
+        Glide.with(this.context.getApplicationContext()).pauseAllRequests();
+        Glide.with(this.context.getApplicationContext()).clear(holder.wallpaperImage); // OOM handler it must be in the detached!! dont delete
     }
 
     @Override
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onDetachedFromRecyclerView(recyclerView);
         recyclerView.removeAllViewsInLayout();
-
-    }
-
-    @Override
-    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
-        super.onAttachedToRecyclerView(recyclerView);
     }
 
     @Override
     public void onViewAttachedToWindow(@NonNull wallpaperViewHolder holder) {
-
-        if(holder.wallpaperImage.getDrawable() == null && holder.circleProgressBar.getProgress() > 90)
+        if(popupFragment != null)
         {
-
-            if(popupFragment != null)
-            {
-                holder.setEventForModel();
-                MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model);
-            }
-            else
-            {
-                MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model,context);
-            }
+            holder.setEventForModel();
+            MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model);
         }
-
+        else
+        {
+            MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model,context);
+        }
         super.onViewAttachedToWindow(holder);
-
     }
 
-    private boolean isReadyToClearOnGlide(int viewHolderPosition)
+    public void setModelList(List<wallpaperModel> list)
     {
-        int activePosition = getCurrentViewPosition();
-        int topRange = Math.abs(viewHolderPosition - activePosition);
-        int bottomRange = Math.abs(viewHolderPosition - activePosition);
-        if(bottomRange > OUTOFRANGE || topRange > OUTOFRANGE) return true;
-        else return false;
+        this.modelList = list;
+    }
+
+    public void addModelListToList(List<wallpaperModel> list)
+    {
+        int lastIndex = this.modelList.size();
+        this.modelList.addAll(list);
+        this.notifyItemRangeInserted(lastIndex,this.modelList.size() - 1);
+    }
+
+    public void addModelToList(wallpaperModel model)
+    {
+        this.modelList.add(model);
     }
 
     public class wallpaperViewHolder extends RecyclerView.ViewHolder
@@ -325,7 +299,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             this.circleProgressBar = circleProgressBar;
             okHttpClient = new OkHttpClient();
 
-            this.circleProgressBar.setOnLoaded(new onProgressBarLoaded() {
+            this.circleProgressBar.setOnLoaded(new CircleProgressBar.onProgressBarLoaded() {
                 @Override
                 public void progressBarLoaded(View view) {
                     wallpaperImage.setVisibility(View.VISIBLE);
@@ -421,7 +395,9 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
                             if(event.getAction() == MotionEvent.ACTION_UP)
                             {
                                 //Start new full screen for the selected wallpaper
+                                clickedItemPosition = modelList.indexOf(model);
                                 startNewActivity();
+
                                 Log.i(TAG, "onTouch: " + model.id);
                             }
                         }

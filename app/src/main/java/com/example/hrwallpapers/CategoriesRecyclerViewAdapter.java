@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,13 +13,8 @@ import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
-import javax.xml.transform.Result;
 
 
 public class CategoriesRecyclerViewAdapter extends RecyclerView.Adapter<CategoriesRecyclerViewAdapter.containerRecyclerView> {
@@ -40,9 +34,8 @@ public class CategoriesRecyclerViewAdapter extends RecyclerView.Adapter<Categori
         View view = LayoutInflater.from(context)
                 .inflate(R.layout.categories_container_template,viewGroup,false);
 
+        View container = view.findViewById(R.id.categories_container);
         TextView textView = view.findViewById(R.id.categories_header_textview);
-
-
         RecyclerView recyclerView = view.findViewById(R.id.categories_container_recyclerview);
 
         FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(context);
@@ -59,7 +52,7 @@ public class CategoriesRecyclerViewAdapter extends RecyclerView.Adapter<Categori
 
         recyclerView.setAdapter(adapter);
 
-        textView.setOnClickListener(new View.OnClickListener() {
+        container.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 MainActivity.toggleResultTab(View.VISIBLE);

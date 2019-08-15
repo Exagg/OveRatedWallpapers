@@ -1,8 +1,6 @@
 package com.example.hrwallpapers;
 
-import android.content.Context;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -29,6 +27,7 @@ public class PopularFragment extends Fragment {
     private static Fragment popupFragment;
     private static FrameLayout fragmentHolder;
     private static HttpGetImagesAsync task = new HttpGetImagesAsync();
+    private int onPausePosition = 0;
 
 
     private static queryModel activeQueryModel;
@@ -116,7 +115,15 @@ public class PopularFragment extends Fragment {
             getActivity().getSupportFragmentManager().beginTransaction().detach(this).attach(this).commit();
         }
     }
+    @Override
+    public void onPause() {
+        super.onPause();
 
+        if(recyclerView != null && recyclerViewAdapter != null)
+        {
+            this.onPausePosition = recyclerViewAdapter.getClickedItemPosition();
+        }
+    }
 
     @Override
     public void onResume() {
@@ -125,6 +132,7 @@ public class PopularFragment extends Fragment {
         if(recyclerView != null && recyclerViewAdapter != null)
         {
             recyclerView.setAdapter(recyclerViewAdapter);
+            recyclerView.scrollToPosition(this.onPausePosition);
         }
     }
 }

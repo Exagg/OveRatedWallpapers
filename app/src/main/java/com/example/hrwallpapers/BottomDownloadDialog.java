@@ -3,6 +3,7 @@ package com.example.hrwallpapers;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,22 +15,25 @@ import android.support.design.widget.BottomSheetDialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class BottomDownloadDialog extends BottomSheetDialogFragment implements View.OnClickListener,DownloadImageAsync.onTaskFinished {
+public class BottomDownloadDialog extends BottomSheetDialogFragment implements View.OnClickListener,DownloadImageAsync.onTaskFinished,CircleProgressBar.onProgressBarLoaded {
 
     private wallpaperModel activeModel;
     private Bitmap activeBitmap;
     private BottomDownloadDialogType dialogType;
     private DownloadImageAsync downloadImageAsync = new DownloadImageAsync();
+    private CircleProgressBar circleProgressBar;
 
-
-
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        ((View) getView().getParent()).setBackgroundColor(Color.TRANSPARENT);
+    }
 
     public void setDialogType(BottomDownloadDialogType dialogType) {
         this.dialogType = dialogType;
@@ -47,14 +51,15 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_save_layout,container,false);
-        if(view instanceof LinearLayout)
-        {
-            for (int index = 0; index< ((LinearLayout) view).getChildCount(); index++){
-                View childView = ((LinearLayout) view).getChildAt(index);
-                childView.setOnClickListener(this);
-            }
-        }
+        View HqView = view.findViewById(R.id.download_dialog_high_quality_container);
+        View Aqview = view.findViewById(R.id.download_dialog_actual_quality_container);
+        circleProgressBar = view.findViewById(R.id.download_dialog_circlebar);
+
+        HqView.setOnClickListener(this);
+        Aqview.setOnClickListener(this);
+
         downloadImageAsync.setTaskFisinhed(this);
+        circleProgressBar.setOnLoaded(this);
         return  view;
     }
 
@@ -66,7 +71,16 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
             {
                 if(this.activeBitmap != null && this.activeModel != null && dialogType != null)
                 {
-                    downloadWallpaper();
+                    if(this.activeModel.getFilePath() == null)
+                    {
+                        circleProgressBar.setVisibility(View.VISIBLE);
+                        downloadWallpaper();
+                    }
+                    else
+                    {
+                        doEvent();
+                        dismiss();
+                    }
                 }
                 break;
             }
@@ -175,14 +189,21 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
 
     @Override
     public void Downloading(int percentage) {
+        circleProgressBar.setProgressWithAnimation(percentage);
     }
 
     @Override
     public void Finished(String imagePath) {
-
         activeBitmap = BitmapFactory.decodeFile(imagePath);
-        doEvent();
-        dismiss();
+    }
+
+    @Override
+    public void progressBarLoaded(View view) {
+        if(this.activeBitmap != null)
+        {
+            doEvent();
+            dismiss();
+        }
     }
 
     public enum BottomDownloadDialogType

@@ -3,7 +3,6 @@ package com.example.hrwallpapers;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -37,7 +36,6 @@ import android.widget.Toast;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.hrwallpapers.ImageProcessor.ImageProcessActivity;
 import com.google.android.flexbox.FlexboxLayout;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -50,6 +48,7 @@ import java.util.List;
 public class BaseWallpaperActivity extends AppCompatActivity {
 
     private int ANIMATION_DURATION = 250;
+    private int onPausedPosition = 0;
 
     private static final String TAG ="BaseWallpaperTAG";
     private static final int VIEW_PAGER_LOAD_LIMIT = 5;
@@ -74,8 +73,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     private ImageView backImageView;
     private ImageView wizardImageView;
     private ImageView setAsImageView;
-    private ImageView downloadAsHighQuality;
-    private ImageView downloadAsActualSize;
+    private ImageView downloadImageView;
     public wallpaperModel model;
 
 
@@ -100,7 +98,6 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     private FrameLayout fragmentHolder;
     public wallpaperRecyclerViewAdapter similiarAdapter;
     private ExpandableLinearLayout expandableArea;
-    private ExpandableLinearLayout downloadExpandableContainer;
     private CircleProgressBar progressingAreaCircleBar;
 
     private HttpGetTagsAsync getTagsAsync = new HttpGetTagsAsync();
@@ -168,11 +165,9 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         customActionBar = findViewById(R.id.base_wallpaper_custom_actionbar);
         likeImageView = findViewById(R.id.base_wallpaper_like);
         backImageView = findViewById(R.id.base_wallpaper_back_button);
-        downloadExpandableContainer =findViewById(R.id.base_wallpaper_download_expandable);
+        downloadImageView =findViewById(R.id.fullscreen_download_button);
         wizardImageView =findViewById(R.id.base_wallpaper_wizard_button);
         setAsImageView = findViewById(R.id.base_wallpaper_setas);
-        downloadAsActualSize = findViewById(R.id.base_wallpaper_download_as_actualsize);
-        downloadAsHighQuality = findViewById(R.id.base_wallpaper_download_as_highquality);
         progressingArea = findViewById(R.id.base_wallpaper_progressing_area);
         progressingAreaCircleBar = findViewById(R.id.base_wallpaper_progressing_area_circle);
 
@@ -184,7 +179,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         else MainActivity.changeImageViewAsUnliked(likeImageView);
 
 
-        adapter = new BaseWallpaperPagerAdapter(this,wallpaperModelList);
+        adapter = new BaseWallpaperPagerAdapter(this,wallpaperModelList,viewPager);
         viewPager.setAdapter(adapter);
         viewPager.setCurrentItem(wallpaperModelList.indexOf(model));
         viewPager.setOffscreenPageLimit(2);
@@ -400,33 +395,6 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             }
         });
 
-        downloadAsHighQuality.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
-
-        downloadAsActualSize.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                View view = viewPager.findViewWithTag("container" + viewPager.getCurrentItem());
-                if(view != null)
-                {
-                    ImageView im = view.findViewById(R.id.base_wallpaper_main_image);
-                    if(im !=null)
-                    {
-                        BitmapDrawable drawable = (BitmapDrawable) im.getDrawable();
-                        if (drawable != null)
-                        {
-                            Bitmap bitmap = drawable.getBitmap();
-
-                        }
-                        else Log.i(TAG, "onClick: Drawable is null");
-                    }
-                }
-            }
-        });
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -440,7 +408,9 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                 model.tagsCurrentPage = 0;
                 resolutionTextView.setText("");
                 similiarAdapter.clearModels();
+                tagsContainer.removeAllViews();
                 getSimiliarAsync.cancel(true);
+                getTagsAsync.cancel(true);
                 loadTags(model);
 
                 if(wallpaperModelList.size() - i < VIEW_PAGER_LOAD_LIMIT)
@@ -479,18 +449,6 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             }
         });
 
-
-        wizardImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final wallpaperModel activeModel = getModelOnViewPager();
-
-                if(activeModel != null)
-                {
-                    MainActivity.ma.showFullScreenActivity(activeModel,baseWallpaperContext, ImageProcessActivity.class,null,null);
-                }
-            }
-        });
     }
 
     private void cleanSimiliars()
@@ -499,6 +457,24 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         similiarAdapter.notifyDataSetChanged();
         wallpaperModel activeModel = this.wallpaperModelList.get(viewPager.getCurrentItem());
         activeModel.tagsCurrentPage = 0;
+    }
+
+    @Override
+    protected void onPause() {
+
+        this.onPausedPosition = viewPager.getCurrentItem();
+        if(adapter != null) viewPager.setAdapter(null);
+        if(similiarAdapter != null) popupRecyclerView.setAdapter(null);
+
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        if(adapter != null && viewPager.getAdapter() == null) viewPager.setAdapter(adapter);
+        if(similiarAdapter != null && popupRecyclerView.getAdapter() == null) popupRecyclerView.setAdapter(similiarAdapter);
+        if(onPausedPosition != 0)viewPager.setCurrentItem(this.onPausedPosition);
+        super.onResume();
     }
 
     @Override
@@ -579,17 +555,16 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         if(mVisible)
         {
             Animations.slideDown(wizardImageView,1,Animations.TOGGLE_HIDE);
-            Animations.slideDown(downloadExpandableContainer,1,Animations.TOGGLE_HIDE);
+            Animations.slideDown(downloadImageView,1,Animations.TOGGLE_HIDE);
             Animations.slideDown(shareImageView,1,Animations.TOGGLE_HIDE);
             Animations.slideLeft(leftArea,-1,Animations.TOGGLE_HIDE);
             Animations.slideLeft(rightArea,1,Animations.TOGGLE_HIDE);
             Animations.slideDown(customActionBar,-1,Animations.TOGGLE_HIDE);
-            if(downloadExpandableContainer != null) downloadExpandableContainer.setSTATE(ExpandableLinearLayout.COLLAPSED);
         }
         else {
 
             Animations.slideUp(wizardImageView,1,Animations.TOGGLE_SHOW);
-            Animations.slideUp(downloadExpandableContainer,1,Animations.TOGGLE_SHOW);
+            Animations.slideUp(downloadImageView,1,Animations.TOGGLE_SHOW);
             Animations.slideUp(shareImageView,1,Animations.TOGGLE_SHOW);
             Animations.slideRight(leftArea, -1,Animations.TOGGLE_SHOW);
             Animations.slideRight(rightArea, 1,Animations.TOGGLE_SHOW);

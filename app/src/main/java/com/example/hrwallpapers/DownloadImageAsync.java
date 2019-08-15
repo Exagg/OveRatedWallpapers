@@ -1,9 +1,7 @@
 package com.example.hrwallpapers;
 
-import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -14,8 +12,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import static android.content.ContentValues.TAG;
 
 public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
 
@@ -38,11 +34,13 @@ public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
         if(values[0] == FILE_ALREADY_CREATED)
         {
             MainActivity.showToast(String.format("This wallpaper is already created on %s.",downloadedPath),Toast.LENGTH_SHORT,MainActivity.context);
+            taskFisinhed.Downloading(100);
 
         }
         if(values[0] == FILE_DOWNLOADED)
         {
             MainActivity.showToast(String.format("This wallpaper is downloaded to %s.", downloadedPath),Toast.LENGTH_SHORT,MainActivity.context);
+            taskFisinhed.Downloading(100);
         }
         if(values[0] == FILE_DOWNLOADING)
         {
@@ -94,8 +92,8 @@ public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
                             if (downloadedSize == totalSize)
                             {
                                 model.setFilePath(file);
-                                publishProgress(FILE_DOWNLOADED);
                                 this.downloadedPath = file.getPath();
+                                publishProgress(FILE_DOWNLOADED);
                                 return this.downloadedPath;
 
                             }
@@ -103,8 +101,8 @@ public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
                         else
                         {
                             model.setFilePath(file);
-                            publishProgress(FILE_ALREADY_CREATED);
                             this.downloadedPath = file.getPath();
+                            publishProgress(FILE_ALREADY_CREATED);
                             return this.downloadedPath;
                         }
 

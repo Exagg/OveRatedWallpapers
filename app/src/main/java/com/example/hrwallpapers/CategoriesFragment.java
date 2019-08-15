@@ -1,7 +1,6 @@
 package com.example.hrwallpapers;
 
 import android.content.res.Configuration;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -51,19 +50,19 @@ public class CategoriesFragment extends Fragment {
     {
         queryModel AnimeMangaQueryModel = new queryModel(false,true,false,true,true,true,
                 0,0,0,0,0,
-                "","desc","","relevance",null);
+                "","desc","","date_added",null);
 
         queryModel ArtDesignQueryModel = new queryModel(true,false,true,true,true,true,
                 0,0,0,0,0,
-                "","desc","art+design+architecture+digitall+photography+traditional","relevance",null);
+                "","desc","art+design+architecture+digitall+photography+traditional","date_added",null);
 
         queryModel EntertainmentQueryModel = new queryModel(true,true,true,true,true,true,
                 0,0,0,0,0,
-                "","desc","entertainment+events+games+literature+movies+music+sports+television","relevance",null);
+                "","desc","entertainment+events+games+literature+movies+music+sports+television","date_added",null);
 
         queryModel KnowledgeQueryModel = new queryModel(true,true,true,true,true,true,
                 0,0,0,0,0,
-                "","desc","knowledge+science+history+lore+experience+news+notice","relevance",null);
+                "","desc","knowledge+science+history+lore+experience+news+notice","date_added",null);
 
         queryModel LocationQueryModel = new queryModel(true,false,false,true,true,true,
                 0,0,0,0,0,
@@ -71,7 +70,7 @@ public class CategoriesFragment extends Fragment {
 
         queryModel MiscellaneousQueryModel = new queryModel(true,false,true,true,true,false,
                 0,0,0,0,0,
-                "","desc","clothing+colors+companies+logos+food+technology","relevance",null);
+                "","desc","clothing+colors+companies+logos+food+technology","date_added",null);
 
         queryModel NatureQueryModel = new queryModel(true,false,false,true,true,false,
                 0,0,0,0,0,
@@ -79,11 +78,11 @@ public class CategoriesFragment extends Fragment {
 
         queryModel PeopleQueryModel = new queryModel(false,false,true,true,true,false,
                 0,0,0,0,0,
-                "","desc","artists+celebrities+fictional+characters+models+figures+pornstars","relevance",null);
+                "","desc","artists+celebrities+fictional+characters+models+figures+pornstars","date_added",null);
 
         queryModel VehiclesQueryModel = new queryModel(true,false,false,true,true,false,
                 0,0,0,0,0,
-                "","desc","aircraft+plane+car+motorcycle+ship+spacecrafts+train+f-35+f-16+apollo+space-x","relevance",null);
+                "","desc","aircraft+plane+car+motorcycle+ship+spacecrafts+train+f-35+f-16+apollo","date_added",null);
 
         MenuModel AnimeMangaModel = new MenuModel("ANIME & MANGA",true,true,false,R.string.fa_chevron_right_solid,AnimeMangaQueryModel);
         MenuModel ArtDesignModel = new MenuModel("ART & DESIGN",true,true,false,R.string.fa_chevron_right_solid,ArtDesignQueryModel);

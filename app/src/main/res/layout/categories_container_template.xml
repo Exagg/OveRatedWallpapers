@@ -14,7 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:layout_gravity="center"
-        android:background="@color/fullScreenActionBarBackground">
+        android:background="@color/fullScreenActionBarBackground"
+        android:id="@+id/categories_container">
 
         <TextView
             android:id="@+id/categories_header_textview"

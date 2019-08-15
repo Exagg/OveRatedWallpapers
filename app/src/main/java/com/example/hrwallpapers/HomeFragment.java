@@ -25,6 +25,7 @@ public class HomeFragment extends Fragment {
 
     private static final int RECYCLER_VIEW_COLUMN = 2;
     private static final String TAG = "HomeFragment";
+    private int onPausePosition = 0;
 
 
     public wallpaperRecyclerViewAdapter recyclerViewAdapter;
@@ -131,13 +132,14 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
-    public void onAttachFragment(Fragment childFragment) {
+    public void onPause() {
+        super.onPause();
 
-        if(childFragment instanceof HomeFragment)
+        if(recyclerView != null && recyclerViewAdapter != null)
         {
+            this.onPausePosition = recyclerViewAdapter.getClickedItemPosition();
         }
     }
-
 
     @Override
     public void onResume() {
@@ -146,6 +148,7 @@ public class HomeFragment extends Fragment {
         if(recyclerView != null && recyclerViewAdapter != null)
         {
             recyclerView.setAdapter(recyclerViewAdapter);
+            recyclerView.scrollToPosition(this.onPausePosition);
         }
     }
 }

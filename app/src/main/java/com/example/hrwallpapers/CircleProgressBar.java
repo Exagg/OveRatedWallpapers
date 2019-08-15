@@ -19,11 +19,13 @@ import android.view.animation.DecelerateInterpolator;
  */
 public class CircleProgressBar extends View {
 
+    private static final String TAG = "CircleProgressBar";
     private onProgressBarLoaded loadedEvent;
 
     public void setOnLoaded(onProgressBarLoaded listener)
     {
         this.loadedEvent = listener;
+        isLoaded = true;
     }
 
     private float strokeWidth = 1;
@@ -41,6 +43,9 @@ public class CircleProgressBar extends View {
     private Paint backgroundPaint;
     private Paint foregroundPaint;
     private View responsibleView;
+    public boolean isLoaded = false;
+    public boolean isLoading = false;
+
     private int visibilityType;  //<!-- 1 = Set visibility is visible when percentage is 1f | 0 = set visibility is hide when percentage is 1f-->
 
     public float getStrokeWidth() {
@@ -61,9 +66,9 @@ public class CircleProgressBar extends View {
 
     public void setProgress(float progress) {
         this.progress = progress;
-
         if(progress >= (float)100)
         {
+            this.isLoaded = true;
             this.setVisibility(GONE);
             if (loadedEvent != null)
                 loadedEvent.progressBarLoaded(this);
@@ -80,6 +85,9 @@ public class CircleProgressBar extends View {
         }
         else
         {
+            this.isLoaded = false;
+            this.isLoading = false;
+            if (progress > 0) this.isLoading = true;
             this.setVisibility(VISIBLE);
             if(responsibleView!= null)
             {
@@ -93,9 +101,10 @@ public class CircleProgressBar extends View {
             }
         }
 
-
+        postInvalidate();
         invalidate();
         requestLayout();
+
     }
 
     public int getMin() {
@@ -193,8 +202,6 @@ public class CircleProgressBar extends View {
         {
             responsibleView = ((ViewGroup)this.getParent()).findViewById(responsibleViewID);
             responsibleView.setVisibility(INVISIBLE);
-
-
         }
         super.onAttachedToWindow();
     }
@@ -245,5 +252,10 @@ public class CircleProgressBar extends View {
         objectAnimator.setDuration(500);
         objectAnimator.setInterpolator(new DecelerateInterpolator());
         objectAnimator.start();
+    }
+
+    public interface onProgressBarLoaded
+    {
+        public void progressBarLoaded(View view);
     }
 }

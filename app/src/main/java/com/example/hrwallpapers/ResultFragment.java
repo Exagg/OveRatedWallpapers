@@ -1,8 +1,6 @@
 package com.example.hrwallpapers;
 
-import android.content.Context;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,7 +10,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +27,7 @@ public class ResultFragment extends Fragment {
     private static Fragment popupFragment;
     private static FrameLayout fragmentHolder;
     private static HttpGetImagesAsync task = new HttpGetImagesAsync();
+    private int onPausePosition = 0;
 
 
     private static queryModel activeQueryModel;
@@ -40,7 +38,6 @@ public class ResultFragment extends Fragment {
 
     public void setActiveQueryModel(queryModel activeQueryModel) {
         ResultFragment.activeQueryModel = activeQueryModel;
-
     }
 
     @Override
@@ -66,22 +63,11 @@ public class ResultFragment extends Fragment {
         return view;
     }
 
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        if(recyclerView != null && recyclerViewAdapter != null )
-        {
-            recyclerView.setAdapter(recyclerViewAdapter);
-        }
-    }
-
     public void load()
     {
         if(recyclerView != null)
         {
-            if(recyclerView.getChildCount() >0)
+            if(recyclerView.getChildCount() > 0)
             {
                 recyclerView.removeAllViews();
             }
@@ -138,6 +124,27 @@ public class ResultFragment extends Fragment {
         if(recyclerView != null)
         {
             getActivity().getSupportFragmentManager().beginTransaction().detach(this).attach(this).commit();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if(recyclerView != null && recyclerViewAdapter != null)
+        {
+            this.onPausePosition = recyclerViewAdapter.getClickedItemPosition();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(recyclerView != null && recyclerViewAdapter != null)
+        {
+            recyclerView.setAdapter(recyclerViewAdapter);
+            recyclerView.scrollToPosition(this.onPausePosition);
         }
     }
 }
