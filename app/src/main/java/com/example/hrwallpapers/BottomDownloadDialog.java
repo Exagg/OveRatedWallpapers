@@ -71,13 +71,16 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
             {
                 if(this.activeBitmap != null && this.activeModel != null && dialogType != null)
                 {
-                    if(this.activeModel.getFilePath() == null)
+                    File file = new File(DownloadImageAsync.outputFolder,this.activeModel.HQFileName);
+                    if(this.activeModel.getFilePath() == null && !file.exists())
                     {
                         circleProgressBar.setVisibility(View.VISIBLE);
                         downloadWallpaper();
                     }
                     else
                     {
+                        if (dialogType == BottomDownloadDialogType.DOWNLOAD) MainActivity.showToast(String.format("This wallpaper is already downloaded to %s",this.activeModel.getFilePath()), Toast.LENGTH_SHORT,((View)getView().getParent()).getContext());
+
                         doEvent();
                         dismiss();
                     }
@@ -88,6 +91,7 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
             {
                 if(this.activeBitmap != null && this.activeModel != null && dialogType != null)
                 {
+                    if (dialogType == BottomDownloadDialogType.DOWNLOAD) saveAs(activeBitmap);
                     doEvent();
                     dismiss();
                 }
@@ -105,6 +109,8 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
                 break;
             case SETASWALLPAPER:
                 setAs(saveAs(activeBitmap));
+                break;
+            case DOWNLOAD:
                 break;
         }
     }
@@ -170,6 +176,8 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
             else
             {
                 if(activeModel.getFilePath() == null) activeModel.setFilePath(file);
+                MainActivity.showToast(String.format("This wallpaper is already save to %s",file.getPath()), Toast.LENGTH_SHORT,getContext());
+
             }
 
         } catch (Exception e) {
@@ -209,6 +217,7 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
     public enum BottomDownloadDialogType
     {
         SHARE,
-        SETASWALLPAPER
+        SETASWALLPAPER,
+        DOWNLOAD
     }
 }

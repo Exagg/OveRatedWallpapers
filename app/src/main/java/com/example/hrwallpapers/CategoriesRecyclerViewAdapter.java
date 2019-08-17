@@ -2,7 +2,6 @@ package com.example.hrwallpapers;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,7 +54,7 @@ public class CategoriesRecyclerViewAdapter extends RecyclerView.Adapter<Categori
         container.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity.toggleResultTab(View.VISIBLE);
+                /*MainActivity.toggleResultTab(View.VISIBLE);
                 MainActivity.viewPager.setCurrentItem(0);
                 Fragment fragment = MainActivity.viewPagerAdapter.getFragment(0);
                 if(fragment.getClass() == ResultFragment.class)
@@ -63,7 +62,7 @@ public class CategoriesRecyclerViewAdapter extends RecyclerView.Adapter<Categori
                     ResultFragment resultFragment = (ResultFragment) fragment;
                     resultFragment.setActiveQueryModel(getQueryModel(i));
                     resultFragment.load();
-                }
+                }*/
             }
         });
 

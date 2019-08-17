@@ -8,5 +8,8 @@
 
     <string name="title_activity_base_wallpaper">Wallpaper</string>
     <string name="title_activity_image_process">Filter</string>
-s    <!-- Filter headers -->
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    s    <!-- Filter headers -->
 </resources>

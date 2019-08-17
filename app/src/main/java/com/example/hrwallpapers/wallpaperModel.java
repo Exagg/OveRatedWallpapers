@@ -3,14 +3,13 @@ package com.example.hrwallpapers;
 import android.util.Log;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 
 import static android.support.constraint.motion.MotionScene.TAG;
 
 public class wallpaperModel {
 
-    String thumbSrc,originalSrc,id;
+    String thumbSrc,originalSrc,id,HQFileName,LQFileName;
     booleanListeners isFavorite;
     ArrayList<String> tagList;
     public String resolution;
@@ -28,6 +27,9 @@ public class wallpaperModel {
         this.id = id;
         isFavorite = new booleanListeners();
         this.tagList = new ArrayList<>();
+
+        this.HQFileName = "HQ_" + this.id + ".jpg";
+        this.HQFileName = "LQ_" + this.id + ".jpg";
     }
 
     public queryModel getTagQueryModel(int tagPosition)

@@ -2,9 +2,6 @@ package com.example.hrwallpapers;
 
 import android.os.AsyncTask;
 import android.util.Log;
-import android.view.View;
-
-import com.google.gson.reflect.TypeToken;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,8 +11,6 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import static android.support.constraint.motion.MotionScene.TAG;
@@ -89,6 +84,8 @@ class HttpGetImagesAsync extends AsyncTask<Object,Object, List<wallpaperModel>> 
 
 
                 }
+
+                if (MainActivity.wallpaperInFavorites.contains(id)) m.isFavorite.setValue(true);
                 if(pngElement.size() > 0)
                 {
                     m.originalSrc = m.originalSrc.replace(".jpg",".png");

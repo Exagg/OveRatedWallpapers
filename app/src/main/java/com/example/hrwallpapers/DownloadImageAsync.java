@@ -15,6 +15,7 @@ import java.net.URL;
 
 public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
 
+    public static final File outputFolder = new File(Environment.getExternalStorageDirectory() + File.separator + MainActivity.DOWNLOAD_FILE_NAME);
     private static final int FILE_ALREADY_CREATED = 1;
     private static final int FILE_DOWNLOADING = 2;
     private static final int FILE_DOWNLOADED = 3;
@@ -33,13 +34,13 @@ public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
     protected void onProgressUpdate(Integer... values) {
         if(values[0] == FILE_ALREADY_CREATED)
         {
-            MainActivity.showToast(String.format("This wallpaper is already created on %s.",downloadedPath),Toast.LENGTH_SHORT,MainActivity.context);
+            MainActivity.showToast(String.format("This wallpaper is already created on %s.",downloadedPath),Toast.LENGTH_SHORT,MainActivity.ma);
             taskFisinhed.Downloading(100);
 
         }
         if(values[0] == FILE_DOWNLOADED)
         {
-            MainActivity.showToast(String.format("This wallpaper is downloaded to %s.", downloadedPath),Toast.LENGTH_SHORT,MainActivity.context);
+            MainActivity.showToast(String.format("This wallpaper is downloaded to %s.", downloadedPath),Toast.LENGTH_SHORT,MainActivity.ma);
             taskFisinhed.Downloading(100);
         }
         if(values[0] == FILE_DOWNLOADING)
@@ -57,7 +58,6 @@ public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
             if(objects[0] instanceof wallpaperModel)
             {
                 wallpaperModel model = (wallpaperModel) objects[0]; // first item must be wallpapermodel
-                File outputFolder = new File(Environment.getExternalStorageDirectory() + File.separator + MainActivity.DOWNLOAD_FILE_NAME);
                 if(!outputFolder.exists()) outputFolder.mkdirs();
                 if(outputFolder.exists())
                 {
@@ -67,7 +67,7 @@ public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
                         connection.setRequestMethod("GET");
                         connection.setDoInput(true);
                         connection.connect();
-                        String filename = "HQ_" + model.id + (model.isPng ? ".png" : ".jpg");
+                        String filename = "HQ_" + model.id + ".jpg";
                         Log.i("Local filename:", "" + filename);
                         File file = new File(outputFolder, filename);
 

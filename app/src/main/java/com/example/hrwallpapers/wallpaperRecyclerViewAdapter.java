@@ -20,7 +20,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import jp.wasabeef.glide.transformations.BlurTransformation;
@@ -123,22 +122,11 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             this.modelList.clear();
             this.recyclerView.setAdapter(this);
             this.notifyDataSetChanged();
+            Log.i(TAG, "clearModels: models is cleared");
         }
         else
         {
             Log.i(TAG, "clearModels: models cant cleared because recyclerview is null");
-        }
-    }
-
-    public void unAttachAdapter()
-    {
-        if(this.recyclerView != null)
-        {
-            wallpaperRecyclerViewAdapter _tempAdapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),this.fragmentHolder,this.popupFragment,this.mainContentView,this.context,this.queryModel,this.recyclerView);
-
-            this.recyclerView.removeAllViews();
-            this.recyclerView.invalidate();
-            this.recyclerView.setAdapter(_tempAdapter);
         }
     }
 
@@ -170,6 +158,11 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model,context);
         }
         super.onViewAttachedToWindow(holder);
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
     }
 
     public void setModelList(List<wallpaperModel> list)
@@ -248,51 +241,6 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             else
             {
                 circleProgressBar.setVisibility(View.INVISIBLE);
-                /*wallpaperImage.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-
-                    //Fit işlemi  yapılacak. Custom framelayout tasarlanacak
-                    int parentHeight;
-                    @Override
-                    public void onViewAttachedToWindow(View v) {
-                        View recyclerView = (View) v.getParent().getParent(); // this is recyclerview
-                        View containerParent = (View) v.getParent(); // this is imageviews container *framelayout*
-                        parentHeight = recyclerView.getHeight();
-                        ViewGroup.LayoutParams lp = v.getLayoutParams();
-
-                        int width = model.originalWidth;
-                        int height = model.originalHeight;
-                        if(width > height)
-                        {
-                            //this wallpaper's ratio must be 16-9 10-9 etc.
-                            // and this wallpaper will show like desktop wallpaper
-
-                            double ratio = width / height;
-                            int rowOfContainer = 2;
-                            int rowHeight = parentHeight / rowOfContainer;
-
-                            int newWidth = (int) ((int) rowHeight * ratio);
-
-                            lp.width = newWidth;
-                            lp.height = rowHeight;
-                        }
-                        else if( width < height)
-                        {
-                            // this wallpaper's ratio must be 9-16 9-10 3-4 etc.
-                            // and this wallpaer will show like mobile wallpaper
-                            double ratio = width / height;
-                            int columnWidth = (int) ((int) parentHeight * ratio);
-
-                            lp.width = columnWidth;
-                            lp.height = parentHeight;
-                        }
-                        Log.i(TAG, "onViewAttachedToWindow: " + model.originalWidth + " - " + model.originalHeight + " > " + parentHeight);
-                    }
-
-                    @Override
-                    public void onViewDetachedFromWindow(View v) {
-
-                    }
-                });*/
             }
             this.context = context;
 

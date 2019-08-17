@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.util.List;
@@ -47,7 +48,6 @@ public class BaseWallpaperPagerAdapter extends PagerAdapter {
 
     @Override
     public void setPrimaryItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
-        Log.i(TAG, "setPrimaryItem: " + position);
         View currentView = (View) object;
         if(currentView != null) {
             ImageView im = currentView.findViewById(R.id.base_wallpaper_main_image);
@@ -56,7 +56,11 @@ public class BaseWallpaperPagerAdapter extends PagerAdapter {
             if (lastActiveObject != object) {
                 if (model != null) {
                     container.setTag("container" + position);
-                    MainActivity.LoadImageFromURL(im, model.originalSrc, circleProgressBar, new RequestOptions(), model);
+
+                    RequestOptions requestOptions = new RequestOptions();
+                    requestOptions.priority(Priority.HIGH);
+                    MainActivity.LoadImageFromURL(im, model.originalSrc, circleProgressBar, requestOptions, model);
+                    Log.i(TAG, "setPrimaryItem: " + model.id + " load event is called");
                 }
             }
         }
@@ -101,7 +105,11 @@ public class BaseWallpaperPagerAdapter extends PagerAdapter {
         {
             layout.setTag("container" +position);
             circleProgressBar.setProgress(0);
-            MainActivity.LoadImageFromURL(im,model.originalSrc,circleProgressBar,new RequestOptions(),model);
+
+            RequestOptions requestOptions = new RequestOptions();
+            if (position == 0) requestOptions.priority(Priority.HIGH);
+            else requestOptions.priority(Priority.NORMAL);
+            MainActivity.LoadImageFromURL(im,model.originalSrc,circleProgressBar,requestOptions,model);
         }
 
         container.addView(layout);

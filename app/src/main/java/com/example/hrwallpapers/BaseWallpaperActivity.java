@@ -129,6 +129,9 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             int index = getIntent().getIntExtra("listIndex",0);
             if(index == -1) index = 0;
             model = wallpaperModelList.get(index);
+            if (MainActivity.wallpaperInFavorites.contains(model.id)) model.isFavorite.setValue(true);
+
+
 
         }
         if(this.getIntent().getExtras().containsKey("queryData"))
@@ -192,6 +195,13 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         List<wallpaperModel> similiarList =new ArrayList<>();
         similiarAdapter = new wallpaperRecyclerViewAdapter(similiarList,fragmentHolder,popupFragment,mainView,this,queryModel,popupRecyclerView);
         popupRecyclerView.setAdapter(similiarAdapter);
+
+
+
+
+        //Eğer liked olarak geldiyse likeimageview ona göre şekillenecek.
+        if(model.isFavorite.isTrue()) MainActivity.changeImageViewAsLiked(likeImageView);
+        else MainActivity.changeImageViewAsUnliked(likeImageView); // Eğer bir önceki wallpaper liked durumda ise yeni görüntü unliked olarak açılacak.
 
 
         popupRecyclerView.setOnTouchListener(new View.OnTouchListener() {
@@ -366,6 +376,35 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         });
 
 
+
+        downloadImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
+                View view = viewPager.findViewWithTag("container" + viewPager.getCurrentItem());
+                if(view != null)
+                {
+                    ImageView im = view.findViewById(R.id.base_wallpaper_main_image);
+                    if(im !=null)
+                    {
+                        BitmapDrawable drawable = (BitmapDrawable) im.getDrawable();
+                        if (drawable != null)
+                        {
+                            downloadDialog.setActiveBitmap(drawable.getBitmap());
+                            downloadDialog.setActiveModel(model);
+                            downloadDialog.setDialogType(BottomDownloadDialog.BottomDownloadDialogType.DOWNLOAD);
+                            downloadDialog.show(getSupportFragmentManager(),"Share");
+                        }
+                        else
+                        {
+                            Toast.makeText(thisActivity, "Please wait for the load", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            }
+        });
+
+
         setAsImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -404,14 +443,18 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             @Override
             public void onPageSelected(int i) {
 
-                wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
-                model.tagsCurrentPage = 0;
-                resolutionTextView.setText("");
-                similiarAdapter.clearModels();
-                tagsContainer.removeAllViews();
-                getSimiliarAsync.cancel(true);
-                getTagsAsync.cancel(true);
-                loadTags(model);
+                wallpaperModel selectedModel = wallpaperModelList.get(viewPager.getCurrentItem());
+                if(model != selectedModel)
+                {
+                    model = selectedModel;
+                    model.tagsCurrentPage = 0;
+                    resolutionTextView.setText("");
+                    similiarAdapter.clearModels();
+                    tagsContainer.removeAllViews();
+                    getSimiliarAsync.cancel(true);
+                    getTagsAsync.cancel(true);
+                    loadTags(selectedModel);
+                }
 
                 if(wallpaperModelList.size() - i < VIEW_PAGER_LOAD_LIMIT)
                 {
@@ -423,6 +466,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                     }
                 }
 
+                if (MainActivity.wallpaperInFavorites.contains(model.id)) model.isFavorite.setValue(true);
                 //Eğer liked olarak geldiyse likeimageview ona göre şekillenecek.
                 if(model.isFavorite.isTrue()) MainActivity.changeImageViewAsLiked(likeImageView);
                 else MainActivity.changeImageViewAsUnliked(likeImageView); // Eğer bir önceki wallpaper liked durumda ise yeni görüntü unliked olarak açılacak.
@@ -449,6 +493,8 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             }
         });
 
+        Log.i(TAG, "onCreate:  on create event is triggered");
+
     }
 
     private void cleanSimiliars()
@@ -465,6 +511,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         this.onPausedPosition = viewPager.getCurrentItem();
         if(adapter != null) viewPager.setAdapter(null);
         if(similiarAdapter != null) popupRecyclerView.setAdapter(null);
+        Log.i(TAG, "onPause: " + popupRecyclerView.getAdapter());
 
         super.onPause();
     }
@@ -472,7 +519,14 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         if(adapter != null && viewPager.getAdapter() == null) viewPager.setAdapter(adapter);
-        if(similiarAdapter != null && popupRecyclerView.getAdapter() == null) popupRecyclerView.setAdapter(similiarAdapter);
+        Log.i(TAG, "onResume: " + popupRecyclerView.getAdapter());
+        if(similiarAdapter != null && popupRecyclerView.getAdapter() == null)
+        {
+            popupRecyclerView.setAdapter(similiarAdapter);
+        }
+
+        Log.i(TAG, "onResume: " + popupRecyclerView.getAdapter());
+
         if(onPausedPosition != 0)viewPager.setCurrentItem(this.onPausedPosition);
         super.onResume();
     }
@@ -509,12 +563,8 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     @Override
     public void onActivityReenter(int resultCode, Intent data) {
         super.onActivityReenter(resultCode, data);
-        if(this.popupRecyclerView.getChildCount() == 0 && this.similiarAdapter.getModelList().size() > 0)
-        {
-            // Bu alan yeni full screen activity açılınca recyclerviewin ve adapterin childlarının temizlenmesinden dolayı reload amacıyla kullanılmaktadır.
-            final wallpaperModel activeModel = wallpaperModelList.get(viewPager.getCurrentItem());
-            loadSimiliars(activeModel);
-        }
+
+        popupRecyclerView.setAdapter(similiarAdapter);
     }
 
 
@@ -719,8 +769,6 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             }
 
             if (mModel != null) {
-
-
                 if (mModel.tagList.size() > 0 ) {
                     if(popupRecyclerView.getAdapter() == null) popupRecyclerView.setAdapter(similiarAdapter);
                     expandableArea.setSTATE(ExpandableLinearLayout.EXPANDED);

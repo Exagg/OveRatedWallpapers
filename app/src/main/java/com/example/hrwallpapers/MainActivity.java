@@ -4,60 +4,54 @@ import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
-import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.support.v4.view.GravityCompat;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.view.MenuItem;
-import android.support.design.widget.NavigationView;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.view.Menu;
-import android.view.ViewGroup;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.request.RequestOptions;
+import com.example.hrwallpapers.DataAccessLayer.SqliteConnection;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-
-import javax.xml.transform.Result;
 
 import info.androidhive.fontawesome.FontDrawable;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener{
+
+    public static SqliteConnection database;
+
 
     public static final int LOAD_TO_RECYCLERVIEW = 1;
     public static final int LOAD_TO_PAGEVIEWER = 2;
@@ -65,51 +59,70 @@ public class MainActivity extends AppCompatActivity
     public static final String DOWNLOAD_FILE_NAME = "Splice Wallpapers";
     public static String DOWNLOAD_FILE_PATH;
 
-
     public static final int LOAD_MORE_SCROLL_RANGE = 3000;
-
     public static final int FULLSCREEN_REQUEST_CODE = 1;
-
 
     private static final String TAG = "Mainactivity";
 
-    private static final queryModel homeQueryModel = new queryModel(true,true,true,true,true,false,
-            0,0,0,0,0,
-            "","desc","","toplist","3d");
-    private static final queryModel popularQueryModel = new queryModel(true,true,true,true,true,false,
-            0,0,0,0,0,
-            "","desc","","date_added",null);
+    public static List<String> wallpaperInFavorites = new ArrayList<>();
 
+
+    public static View menuFragmentHolder; //This holder will use DrawerLayout menus
+    public static View mainFragmentHolder; //This holder will use only MainFragment
+
+    public static Toast toast;
 
     ExpandableListAdapter menuAdapter;
     public static MainActivity ma;
-    ExpandableListView expandableListView;
-    HashMap<MenuModel,List<MenuModel>> menuHashmap = new HashMap<>();
+    HashMap<MenuModel, List<MenuModel>> menuHashmap = new HashMap<>();
     List<MenuModel> menuHeaderList = new ArrayList<>();
     public static View mainContentView;
-    public static mainViewPagerAdapter viewPagerAdapter;
-    public static ViewPager viewPager;
-    public static TabLayout tabLayout;
-    public static Context context;
-    public static Toast toast;
+    DrawerLayout drawer;
 
+    private HistoryFragment.OnFragmentInteractionListener historyListener = new HistoryFragment.OnFragmentInteractionListener() {
+        @Override
+        public void onFragmentInteraction(Uri uri) {
+
+        }
+    };
+    private MainFragment.OnFragmentInteractionListener mainListener = new MainFragment.OnFragmentInteractionListener() {
+        @Override
+        public void onFragmentInteraction(Uri uri) {
+
+        }
+    };
+    private FavoritesFragment.OnFragmentInteractionListener favoritesListener = new FavoritesFragment.OnFragmentInteractionListener() {
+        @Override
+        public void onFragmentInteraction(Uri uri) {
+
+        }
+    };
+    public HistoryFragment historyFragment = new HistoryFragment();
+    public MainFragment mainFragment = new MainFragment();
+    public FavoritesFragment favoritesFragment = new FavoritesFragment();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ma = this;
+        database = new SqliteConnection(MainActivity.this);
+        wallpaperInFavorites =database.getFavorites();
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mainContentView = findViewById(R.id.main_content);
-        context = getApplicationContext();
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+
+
+        mainFragmentHolder = this.findViewById(R.id.main_fragment_holder);
+        menuFragmentHolder = this.findViewById(R.id.main_menu_fragment_holder);
 
         File folder = new File(Environment.getExternalStorageDirectory() + File.separator + DOWNLOAD_FILE_NAME);
         boolean created = false;
@@ -119,77 +132,14 @@ public class MainActivity extends AppCompatActivity
         }
         else created = true;
 
+
         if(created)DOWNLOAD_FILE_PATH = folder.getAbsolutePath();
         else  DOWNLOAD_FILE_PATH = null;
 
-        MenuModel categoriesMenuModel = new MenuModel("Categories",false,false,true,R.drawable.ic_list,null);
-        MenuModel resultMenuModel = new MenuModel("Result",false,false,true,R.drawable.ic_search,null);
-        MenuModel homeMenuModel = new MenuModel("Popular",false,false,true,R.drawable.ic_home,null);
-        MenuModel popularMenuModel = new MenuModel("Latest",false,false,true,R.drawable.ic_hot,null);
 
-        HomeFragment homeFragment= new HomeFragment();
-        homeFragment.setActiveQueryModel(homeQueryModel);
+        mainFragment.setInteractionListener(mainListener);
+        setFragment(mainFragment,mainFragmentHolder,getSupportFragmentManager());
 
-        CategoriesFragment categoriesFragment = new CategoriesFragment();
-        PopularFragment popularFragment = new PopularFragment();
-        popularFragment.setActiveQueryModel(popularQueryModel);
-
-        ResultFragment resultFragment = new ResultFragment();
-
-        tabLayout= findViewById(R.id.tab_layout);
-        viewPager = findViewById(R.id.main_view_pager);
-        viewPagerAdapter = new mainViewPagerAdapter(getSupportFragmentManager());
-
-        viewPagerAdapter.AddFragment(resultFragment,resultMenuModel);
-        viewPagerAdapter.AddFragment(categoriesFragment,categoriesMenuModel);
-        viewPagerAdapter.AddFragment(homeFragment,homeMenuModel);
-        viewPagerAdapter.AddFragment(popularFragment,popularMenuModel);
-
-        viewPager.setAdapter(viewPagerAdapter);
-
-
-        tabLayout.setupWithViewPager(viewPager);
-        drawTabMenu(this,tabLayout,viewPagerAdapter.getFragmentMenuList());
-
-        expandableListView = findViewById(R.id.menu_expandable);
-
-        toast = Toast.makeText(this,"",Toast.LENGTH_SHORT);
-
-    }
-
-
-    public static void drawTabMenu(Context context,TabLayout tabLayout,List<MenuModel> menuModels)
-    {
-        for (MenuModel model:menuModels
-             ) {
-            int index = menuModels.indexOf(model);
-            LinearLayout view =(LinearLayout) LayoutInflater.from(context).inflate(R.layout.custom_tab,null);
-            tabLayout.getTabAt(index).setCustomView(view);
-
-            ImageView imageView = view.findViewById(R.id.custom_tab_image);
-            TextView textview = view.findViewById(R.id.custom_tab_textview);
-
-
-            textview.setText(model.name);
-
-            Drawable listDrawable = context.getDrawable(model.drawableID);
-            imageView.setImageDrawable(listDrawable);
-
-
-        }
-        if(tabLayout.getChildCount() > 0)
-        {
-            toggleResultTab(View.GONE);
-        }
-        if(tabLayout.getTabCount() > 1)
-        {
-            tabLayout.getTabAt(1).select();
-        }
-    }
-
-    public static void toggleResultTab(int visibility)
-    {
-        ((LinearLayout) tabLayout.getChildAt(0)).getChildAt(0).setVisibility(visibility);
     }
 
     @Override
@@ -197,7 +147,24 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else {
+        }
+        else if (historyFragment.isAdded())
+        {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(historyFragment);
+            transaction.commit();
+
+            mainFragmentHolder.setVisibility(View.VISIBLE);
+        }
+        else if (favoritesFragment.isAdded())
+        {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(favoritesFragment);
+            transaction.commit();
+
+            mainFragmentHolder.setVisibility(View.VISIBLE);
+        }
+        else {
             super.onBackPressed();
         }
     }
@@ -216,17 +183,28 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        /*if (id == R.id.nav_home) {
-            // Handle the camera action
-            new getRequestOnPage().execute();
-        } else if (id == R.id.nav_gallery) {
+        if (id == R.id.menu_favorites)
+        {
+            //Favoriye atılanlar getirilecek
+            if (menuFragmentHolder != null)
+            {
+                favoritesFragment.setInteractionListener(favoritesListener);
+                setFragment(favoritesFragment,menuFragmentHolder,MainActivity.this.getSupportFragmentManager());
+                drawer.closeDrawers();
+                mainFragmentHolder.setVisibility(View.GONE);
+            }
+        }
+        else if (id == R.id.menu_history)
+        {
+            //Daha once göz atılanlar getirilecek.
 
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }*/
-
+            if (menuFragmentHolder != null) {
+                historyFragment.setInteractionListener(historyListener);
+                setFragment(historyFragment, menuFragmentHolder, MainActivity.this.getSupportFragmentManager());
+                drawer.closeDrawers();
+                mainFragmentHolder.setVisibility(View.GONE);
+            }
+        }
         return true;
     }
 
@@ -289,7 +267,7 @@ public class MainActivity extends AppCompatActivity
                     List<wallpaperModel> modelList = new Gson().fromJson(listData,listType);
 
 
-                    Fragment activeFragment = viewPagerAdapter.getFragment(viewPager.getCurrentItem());
+                    /*Fragment activeFragment = viewPagerAdapter.getFragment(viewPager.getCurrentItem());
                     RecyclerView activeRecyclerview = null;
                     wallpaperRecyclerViewAdapter activeAdapter= null;
 
@@ -325,13 +303,18 @@ public class MainActivity extends AppCompatActivity
                         }
                         activeRecyclerview.scrollToPosition(index + 1);
 
-                    }
+                    }*/
                 }
             }
         }
     }
 
-
+    protected void setFragment(Fragment fragment,View fragmentHolder,FragmentManager fragmentManager) {
+        FragmentTransaction fragmentTransaction =
+                fragmentManager.beginTransaction();
+        fragmentTransaction.replace(fragmentHolder.getId(), fragment);
+        fragmentTransaction.commit();
+    }
 
     public static void setIconToImageView(ImageView imageView, Context context,int resource ,boolean isSolid,boolean isBrand,int size)
     {
@@ -450,26 +433,38 @@ public class MainActivity extends AppCompatActivity
         if(!model.isFavorite.isTrue())
         {
             model.isFavorite.setValue(true);
+            wallpaperInFavorites.add(model.id);
+            String pictureType = model.isPng ? ".png" : "jpg";
+            database.addFavorite(model.id, getCurrentDateTime(),pictureType);
             changeImageViewAsLiked(toggleImage);
         }
         else
         {
             model.isFavorite.setValue(false);
+            wallpaperInFavorites.remove(model.id);
+            database.removeFavorite(model.id);
             changeImageViewAsUnliked(toggleImage);
         }
 
     }
 
+    public static String getCurrentDateTime()
+    {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss z");
+        String currentDateandTime = sdf.format(new Date());
+        return  currentDateandTime;
+    }
+
     public static void changeImageViewAsLiked(@NonNull ImageView im)
     {
         im.setImageResource(R.drawable.ic_favorites_liked);
-        ((Drawable) im.getDrawable()).setTint(MainActivity.context.getResources().getColor(R.color.red));
+        ((Drawable) im.getDrawable()).setTint(MainActivity.ma.getResources().getColor(R.color.red));
     }
 
     public static void changeImageViewAsUnliked(@NonNull ImageView im)
     {
         im.setImageResource(R.drawable.ic_favorites_unlike);
-        ((Drawable) im.getDrawable()).setTint(MainActivity.context.getResources().getColor(R.color.white));
+        ((Drawable) im.getDrawable()).setTint(MainActivity.ma.getResources().getColor(R.color.white));
 
     }
     // This could be moved into an abstract BaseActivity
@@ -478,6 +473,11 @@ public class MainActivity extends AppCompatActivity
 
     public static void showToast(String message,int duration,Context context)
     {
+        if (toast == null)
+        {
+            toast = new Toast(context);
+        }
+
         toast.cancel();
         toast = toast.makeText(context,message,duration);
         toast.show();

@@ -6,7 +6,8 @@
     android:clickable="true"
     android:focusable="true"
     android:orientation="vertical"
-    android:id="@+id/wallpaper_base_container">
+    android:id="@+id/wallpaper_base_container"
+    android:foreground="@drawable/frame_borders">
 
 
     <com.example.hrwallpapers.CircleProgressBar
