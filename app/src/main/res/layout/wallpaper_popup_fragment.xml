@@ -17,7 +17,8 @@
         <ImageView
             android:id="@+id/wallpaper_popup_base_image"
             android:layout_width="match_parent"
-            android:layout_height="300dp"/>
+            android:layout_height="400dp"
+            android:scaleType="center"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="50dp"

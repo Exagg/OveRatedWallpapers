@@ -72,14 +72,21 @@ public class MainActivity extends AppCompatActivity
 
     public static Toast toast;
 
-    ExpandableListAdapter menuAdapter;
     public static MainActivity ma;
+    public static View mainContentView;
+    ExpandableListAdapter menuAdapter;
     HashMap<MenuModel, List<MenuModel>> menuHashmap = new HashMap<>();
     List<MenuModel> menuHeaderList = new ArrayList<>();
-    public static View mainContentView;
     DrawerLayout drawer;
+    ImageView searchButton;
 
     private HistoryFragment.OnFragmentInteractionListener historyListener = new HistoryFragment.OnFragmentInteractionListener() {
+        @Override
+        public void onFragmentInteraction(Uri uri) {
+
+        }
+    };
+    private SearchFragment.OnFragmentInteractionListener searchFragmentListener = new SearchFragment.OnFragmentInteractionListener() {
         @Override
         public void onFragmentInteraction(Uri uri) {
 
@@ -97,9 +104,10 @@ public class MainActivity extends AppCompatActivity
 
         }
     };
-    public HistoryFragment historyFragment = new HistoryFragment();
-    public MainFragment mainFragment = new MainFragment();
-    public FavoritesFragment favoritesFragment = new FavoritesFragment();
+    public static HistoryFragment historyFragment = new HistoryFragment();
+    public static MainFragment mainFragment = new MainFragment();
+    public static FavoritesFragment favoritesFragment = new FavoritesFragment();
+    public static SearchFragment searchFragment = new SearchFragment();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,6 +131,7 @@ public class MainActivity extends AppCompatActivity
 
         mainFragmentHolder = this.findViewById(R.id.main_fragment_holder);
         menuFragmentHolder = this.findViewById(R.id.main_menu_fragment_holder);
+        searchButton = this.findViewById(R.id.main_search_button);
 
         File folder = new File(Environment.getExternalStorageDirectory() + File.separator + DOWNLOAD_FILE_NAME);
         boolean created = false;
@@ -139,6 +148,17 @@ public class MainActivity extends AppCompatActivity
 
         mainFragment.setInteractionListener(mainListener);
         setFragment(mainFragment,mainFragmentHolder,getSupportFragmentManager());
+
+
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchFragment.setInteractionListener(searchFragmentListener);
+                setFragment(searchFragment,menuFragmentHolder,MainActivity.this.getSupportFragmentManager());
+                drawer.closeDrawers();
+                mainFragmentHolder.setVisibility(View.GONE);
+            }
+        });
 
     }
 
@@ -157,6 +177,14 @@ public class MainActivity extends AppCompatActivity
             mainFragmentHolder.setVisibility(View.VISIBLE);
         }
         else if (favoritesFragment.isAdded())
+        {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(favoritesFragment);
+            transaction.commit();
+
+            mainFragmentHolder.setVisibility(View.VISIBLE);
+        }
+        else if(searchFragment.isAdded())
         {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.remove(favoritesFragment);

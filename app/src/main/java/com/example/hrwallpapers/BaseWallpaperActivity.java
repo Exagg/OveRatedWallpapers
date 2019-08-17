@@ -198,7 +198,8 @@ public class BaseWallpaperActivity extends AppCompatActivity {
 
 
 
-
+        if (MainActivity.wallpaperInFavorites.contains(model.id))model.isFavorite.setValue(true);
+        else model.isFavorite.setValue(false);
         //Eğer liked olarak geldiyse likeimageview ona göre şekillenecek.
         if(model.isFavorite.isTrue()) MainActivity.changeImageViewAsLiked(likeImageView);
         else MainActivity.changeImageViewAsUnliked(likeImageView); // Eğer bir önceki wallpaper liked durumda ise yeni görüntü unliked olarak açılacak.
@@ -459,7 +460,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                 if(wallpaperModelList.size() - i < VIEW_PAGER_LOAD_LIMIT)
                 {
                     if(task == null) task = new HttpGetImagesAsync();
-                    if(task.getStatus() != AsyncTask.Status.RUNNING)
+                    if(task.getStatus() != AsyncTask.Status.RUNNING && queryModel != null)
                     {
                        queryModel.setActivePage(queryModel.getActivePage() + 1);
                        MainActivity.setMenuClickListenerForViewPager(queryModel,viewPager,adapter,task);
@@ -604,7 +605,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     {
         if(mVisible)
         {
-            Animations.slideDown(wizardImageView,1,Animations.TOGGLE_HIDE);
+            //Animations.slideDown(wizardImageView,1,Animations.TOGGLE_HIDE);
             Animations.slideDown(downloadImageView,1,Animations.TOGGLE_HIDE);
             Animations.slideDown(shareImageView,1,Animations.TOGGLE_HIDE);
             Animations.slideLeft(leftArea,-1,Animations.TOGGLE_HIDE);
@@ -613,7 +614,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         }
         else {
 
-            Animations.slideUp(wizardImageView,1,Animations.TOGGLE_SHOW);
+            //Animations.slideUp(wizardImageView,1,Animations.TOGGLE_SHOW);
             Animations.slideUp(downloadImageView,1,Animations.TOGGLE_SHOW);
             Animations.slideUp(shareImageView,1,Animations.TOGGLE_SHOW);
             Animations.slideRight(leftArea, -1,Animations.TOGGLE_SHOW);

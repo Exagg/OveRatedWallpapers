@@ -4,11 +4,17 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.support.constraint.motion.MotionScene.TAG;
@@ -33,6 +39,14 @@ public class FavoritesFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+    private static final int RECYCLER_VIEW_COLUMN = 2;
+
+    private View noContentContainer;
+    private RecyclerView favoritesRecyclerView;
+    private wallpaperRecyclerViewAdapter favoritesAdapter;
+    private FrameLayout favoritesPopupFragmentHolder;
+    private Fragment popupFragment;
 
     public FavoritesFragment() {
         // Required empty public constructor
@@ -69,23 +83,56 @@ public class FavoritesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_favorites, container, false);
 
 
-        List<String> favorites = MainActivity.database.getFavorites();
-        for (String favorite :
-                favorites) {
-            Log.i(TAG, "onCreateView: " + favorite);
+        noContentContainer = view.findViewById(R.id.favorites_no_content_container);
+        favoritesRecyclerView = view.findViewById(R.id.favorites_recyclerview);
+        favoritesPopupFragmentHolder = view.findViewById(R.id.favorites_fragment_holder);
 
-        }
 
-        return inflater.inflate(R.layout.fragment_favorites, container, false);
+        popupFragment = setFragment(new wallpaperPopupFragment());
+        return view;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        List<String> favorites = MainActivity.database.getFavorites();
+
+        if (favorites.size() > 0)
+        {
+            List<wallpaperModel> wallpaperModelList = new ArrayList<>();
+            for (String id :
+                    favorites) {
+                Log.i(TAG, "onCreateView: " + id);
+                String thumbUrl = String.format("https://th.wallhaven.cc/small/%s/%s.jpg",id.substring(0,2),id);
+                String originalUrl = String.format("https://w.wallhaven.cc/full/%s/wallhaven-%s.jpg",id.substring(0,2),id);
+
+                wallpaperModel m = new wallpaperModel(thumbUrl,originalUrl,id);
+
+                wallpaperModelList.add(m);
+            }
+
+            favoritesRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(),RECYCLER_VIEW_COLUMN));
+            this.favoritesAdapter = new wallpaperRecyclerViewAdapter(wallpaperModelList,favoritesPopupFragmentHolder,popupFragment,favoritesRecyclerView,getContext(),null,favoritesRecyclerView);
+            this.favoritesRecyclerView.setAdapter(favoritesAdapter);
         }
+        else
+        {
+            noContentContainer.setVisibility(View.VISIBLE);
+        }
+
+    }
+
+    protected Fragment setFragment(Fragment fragment) {
+        FragmentManager fragmentManager = this.getFragmentManager();
+        FragmentTransaction fragmentTransaction =
+                fragmentManager.beginTransaction();
+        fragmentTransaction.replace(favoritesPopupFragmentHolder.getId(), fragment);
+        fragmentTransaction.commit();
+        return fragment;
     }
 
 
