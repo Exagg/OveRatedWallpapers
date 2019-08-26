@@ -7,7 +7,7 @@
 
 
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/result_recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
@@ -21,4 +21,12 @@
         android:orientation="horizontal"
         android:layout_gravity="center"
         android:visibility="gone"/>
+    <FrameLayout
+        android:id="@+id/result_no_content"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:background="@drawable/ic_empty_box"
+        android:visibility="gone"
+        android:layout_gravity="center|top"/>
+
 </FrameLayout>

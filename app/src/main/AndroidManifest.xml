@@ -14,16 +14,10 @@
         android:supportsRtl="true"
         android:hardwareAccelerated="false"
         android:theme="@style/AppTheme">
-        <activity
-            android:name=".ImageProcessor.ImageProcessActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_image_process"
-            android:parentActivityName=".BaseWallpaperActivity"
-            android:theme="@style/FullscreenTheme">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.hrwallpapers.BaseWallpaperActivity" />
-        </activity>
+
+
+
+
         <activity
             android:name=".BaseWallpaperActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -49,6 +43,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
+        <meta-data
+            android:name="com.google.android.gms.ads.AD_MANAGER_APP"
+            android:value="true"/>
     </application>
 
 </manifest>

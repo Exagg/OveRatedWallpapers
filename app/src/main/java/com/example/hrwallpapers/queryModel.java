@@ -1,14 +1,26 @@
 package com.example.hrwallpapers;
 
-import android.util.Log;
-
-import static android.support.constraint.motion.MotionScene.TAG;
-
 public class queryModel {
 
-    private boolean general,anime,people,sfw,sketchy,nsfw;
-    private int resolutionW,resolutionH,ratioX,ratioY,id,activePage;
-    private String colorHex,orderBy,query,sorting,url,topRange;
+    private boolean general = false;
+    private boolean anime = false;
+    private boolean people = false;
+    private boolean sfw = false;
+    private boolean nsfw = false;
+    private boolean sketchy = false;
+    private boolean nsf = false;
+    private int resolutionW = 0;
+    private int resolutionH = 0;
+    private int ratioX = 0;
+    private int ratioY = 0;
+    private int id = 0;
+    private int activePage = 0;
+    private String colorHex = "";
+    private String orderBy = "";
+    private String query = "";
+    private String sorting = "";
+    private String url = "";
+    private String topRange = "";
 
 
     public queryModel(boolean general, boolean anime, boolean people, boolean sfw, boolean sketchy, boolean nsfw,
@@ -34,43 +46,52 @@ public class queryModel {
 
         prepareUrl();
     }
+    public queryModel()
+    {
+
+    }
 
 
     public void prepareUrl()
     {
-        if (activePage == 0) activePage = 1;
-        this.url = "search?";
-        String categories ="";
-        String purity = "";
-        String atLeast = "";
-        String ratios = "";
-        categories += this.isGeneral() ? "1" : "0";
-        categories += this.isAnime() ? "1" : "0";
-        categories += this.isPeople() ? "1" : "0";
+        try
+        {
+            if (activePage == 0) activePage = 1;
+            this.url = "search?";
+            String categories ="";
+            String purity = "";
+            String resolutions = "";
+            String ratios = "";
+            categories += this.isGeneral() ? "1" : "0";
+            categories += this.isAnime() ? "1" : "0";
+            categories += this.isPeople() ? "1" : "0";
 
 
-        purity +=this.isSfw() ? "1" : "0";
-        purity +=this.isSketchy() ? "1" : "0";
-        purity +=this.isNsfw() ? "1" : "0";
+            purity +=this.isSfw() ? "1" : "0";
+            purity +=this.isSketchy() ? "1" : "0";
+            purity +=this.isNsfw() ? "1" : "1";
 
 
-        if(this.getResolutionH() != 0 && this.getResolutionW() != 0) atLeast = this.getResolutionW() + "x" + this.getResolutionH();
-        if(this.getRatioY() != 0 & this.getRatioX() != 0) ratios = this.getRatioX() + "x" + this.getRatioY();
+            if(this.getResolutionH() != 0 && this.getResolutionW() != 0) resolutions = this.getResolutionW() + "x" + this.getResolutionH();
+            if(this.getRatioY() != 0 & this.getRatioX() != 0) ratios = this.getRatioX() + "x" + this.getRatioY();
 
 
-        this.url +=this.getQuery() != "" ? "q=" + this.getQuery().replace(" ","%20") + "&" : "";
-        this.url +=categories != "" ? "categories=" + categories + "&" : "";
-        this.url +=purity != "" ? "purity=" + purity + "&" : "";
-        this.url +=atLeast != "" ? "atLeast=" + atLeast + "&" : "";
-        this.url +=ratios != "" ? "ratios=" + ratios + "&" : "";
-        this.url +=this.topRange != null ? "topRange=" + topRange + "&" : "";
-        this.url += this.getSorting() != "" ? "sorting=" + this.getSorting() + "&" : "";
-        this.url += this.getOrderBy() != "" ? "order=" + this.getOrderBy() + "&" : "";
-        this.url += this.getColorHex() != "" ? "colors=" + this.getColorHex() + "&" : "";
-        this.url +="page=" + this.getActivePage();
-
-
-        this.url = "https://wallhaven.cc/" + this.url;
+            this.url += this.getQuery().length() > 0 ? "q=" + this.getQuery().replace(" ","%20") + "&" : "";
+            this.url +=categories.length() > 0 ? "categories=" + categories + "&" : "";
+            this.url +=purity.length() > 0 ? "purity=" + purity + "&" : "";
+            this.url +=resolutions.length() > 0 ? "resolutions=" + resolutions + "&" : "";
+            this.url +=ratios.length() > 0 ? "ratios=" + ratios + "&" : "";
+            this.url +=this.getTopRange().length() > 0 ? "topRange=" + topRange + "&" : "";
+            this.url +=this.getSorting().length() > 0 ? "sorting=" + this.getSorting() + "&" : "";
+            this.url +=this.getOrderBy().length() > 0 ? "order=" + this.getOrderBy() + "&" : "";
+            this.url +=this.getColorHex().length() > 0 ? "colors=" + this.getColorHex() + "&" : "";
+            this.url +="page=" + this.getActivePage();
+            this.url = "https://wallhaven.cc/" + this.url;
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
     }
 
     public int getActivePage() {
@@ -82,16 +103,16 @@ public class queryModel {
     }
 
     public String getSorting() {
-        return sorting;
+        return sorting != null ? sorting : "";
     }
 
     public void setSorting(String sorting) {
-        this.sorting = sorting;
+        this.sorting = sorting.toLowerCase();
     }
 
     public String getUrl() {
         prepareUrl();
-        return url;
+        return url!= null ? url: "";
     }
 
     public void setUrl(String url) {
@@ -187,7 +208,7 @@ public class queryModel {
     }
 
     public String getColorHex() {
-        return colorHex;
+        return colorHex!= null ? colorHex: "";
     }
 
     public void setColorHex(String colorHex) {
@@ -195,7 +216,7 @@ public class queryModel {
     }
 
     public String getOrderBy() {
-        return orderBy;
+        return orderBy != null ? orderBy: "";
     }
 
     public void setOrderBy(String orderBy) {
@@ -203,10 +224,18 @@ public class queryModel {
     }
 
     public String getQuery() {
-        return query;
+        return query != null ? query: "";
     }
 
     public void setQuery(String query) {
         this.query = query;
+    }
+
+    public String getTopRange() {
+        return topRange != null ? topRange: "";
+    }
+    public void setTopRange(String topRange)
+    {
+        this.topRange = topRange;
     }
 }

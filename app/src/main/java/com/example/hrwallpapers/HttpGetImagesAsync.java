@@ -13,11 +13,10 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.support.constraint.motion.MotionScene.TAG;
-
 class HttpGetImagesAsync extends AsyncTask<Object,Object, List<wallpaperModel>> {
 
-    private onAsyncTaskFisinhed taskFisinhed;
+    private static final String TAG = "HttpGetImages";
+    private onAsyncTaskFisinhed taskFisinhed = null;
 
     public void setTaskFisinhed(onAsyncTaskFisinhed listener) { this.taskFisinhed = listener;}
 
@@ -31,22 +30,6 @@ class HttpGetImagesAsync extends AsyncTask<Object,Object, List<wallpaperModel>> 
             String url = (String) objects[0];
             loadImage(url,response);
         }
-        else if (objects.length > 1)
-        {
-            if(objects[0].getClass() == ArrayList.class && objects[1].getClass()== wallpaperModel.class)
-            {
-            List<String> tagList = (List<String>) objects[0];
-            wallpaperModel model = (wallpaperModel) objects[1];
-            model.tagsCurrentPage++;
-            if(objects.length > 1)
-                for (String s : tagList)
-                {
-                    queryModel queryModel = model.getTagQueryModel(tagList.indexOf(s));
-                    response = loadImage(queryModel.getUrl(),response);
-                }
-            }
-        }
-
         return response;
     }
 
@@ -63,12 +46,10 @@ class HttpGetImagesAsync extends AsyncTask<Object,Object, List<wallpaperModel>> 
                 String id = elems.get(i).attr("data-wallpaper-id");
                 Element figure = elems.get(i);
 
-                String thumbUrl = String.format("https://th.wallhaven.cc/small/%s/%s.jpg",id.substring(0,2),id);
-                String originalUrl = String.format("https://w.wallhaven.cc/full/%s/wallhaven-%s.jpg",id.substring(0,2),id);
 
 
-                wallpaperModel packageModel = new wallpaperModel(thumbUrl,originalUrl,id);
-                wallpaperModel m = new wallpaperModel(thumbUrl,originalUrl,id);
+                wallpaperModel packageModel = new wallpaperModel(id);
+                wallpaperModel m = new wallpaperModel(id);
 
 
                 Elements resElement = doc.getElementsByClass("wall-res");
@@ -88,8 +69,7 @@ class HttpGetImagesAsync extends AsyncTask<Object,Object, List<wallpaperModel>> 
                 if (MainActivity.wallpaperInFavorites.contains(id)) m.isFavorite.setValue(true);
                 if(pngElement.size() > 0)
                 {
-                    m.originalSrc = m.originalSrc.replace(".jpg",".png");
-                    m.isPng = true;
+                    m.setIsPng(true);
                 }
 
                 if(id != "")
@@ -125,6 +105,10 @@ class HttpGetImagesAsync extends AsyncTask<Object,Object, List<wallpaperModel>> 
             }
         }
         super.onProgressUpdate(values);
+    }
+
+    public onAsyncTaskFisinhed getTaskFinished() {
+        return taskFisinhed;
     }
 
 

@@ -3,9 +3,6 @@ package com.example.hrwallpapers;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -14,18 +11,22 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 
+import java.io.File;
 import java.util.List;
 
 import jp.wasabeef.glide.transformations.BlurTransformation;
 import okhttp3.OkHttpClient;
 
-import static android.support.constraint.motion.MotionScene.TAG;
+import static androidx.constraintlayout.widget.Constraints.TAG;
 
 class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecyclerViewAdapter.wallpaperViewHolder> {
 
@@ -93,15 +94,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         this.currentViewPosition = i;
         if(holder.indexOf == 0) holder.indexOf = i;
 
-        if(popupFragment != null)
-        {
-            holder.setEventForModel();
-            MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model);
-        }
-        else
-        {
-            MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model,context);
-        }
+        loadImage(holder);
         Glide.with(this.context.getApplicationContext()).resumeRequests();
 
     }
@@ -132,6 +125,12 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
     public List<wallpaperModel> getModelList(){return this.modelList; }
 
+    public void updateAdapter(List<wallpaperModel> modelList)
+    {
+        this.modelList = modelList;
+        this.notifyDataSetChanged();
+    }
+
     public int getClickedItemPosition() { return clickedItemPosition;}
     @Override
     public void onViewDetachedFromWindow(@NonNull wallpaperViewHolder holder) {
@@ -148,16 +147,33 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
     @Override
     public void onViewAttachedToWindow(@NonNull wallpaperViewHolder holder) {
+        loadImage(holder);
+        super.onViewAttachedToWindow(holder);
+    }
+
+    private void loadImage(@NonNull wallpaperViewHolder holder)
+    {
+
         if(popupFragment != null)
         {
             holder.setEventForModel();
-            MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model);
+            if(holder.model.getFilePath() == null){
+                MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model);
+            }
+            else {
+                MainActivity.LoadImageFromDisk(holder.wallpaperImage,new File(holder.model.getFilePath()),holder.circleProgressBar,requestOptions,holder.model);
+            }
         }
         else
         {
-            MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model,context);
+            if(holder.model.getFilePath() == null)
+            {
+                MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model,context);
+            }
+            else {
+                MainActivity.LoadImageFromDisk(holder.wallpaperImage,new File(holder.model.getFilePath()),holder.circleProgressBar,requestOptions,holder.model,context);
+            }
         }
-        super.onViewAttachedToWindow(holder);
     }
 
     @Override
@@ -229,6 +245,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             {
                 this.fragment = fragment;
                 wallpaperBaseContainer = itemView.findViewById(R.id.wallpaper_base_container);
+                View fragmentView = fragment.getView();
                 likeImageView = fragment.getView().findViewById(R.id.wallpaper_like_button);
                 shareImageView = fragment.getView().findViewById(R.id.wallpaper_share_button);
                 downloadImageView = fragment.getView().findViewById(R.id.wallpaper_download_button);
@@ -299,13 +316,7 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
 
 
-                    Glide.with(context)
-                            .load(model.originalSrc)
-                            .thumbnail(Glide.with(context).load(model.thumbSrc).apply(requestOptions))
-                            .apply(requestOptions)
-                            .transition(DrawableTransitionOptions.withCrossFade(50))
-                            .into(fragmentBaseImageView);
-
+                    loadImage(wallpaperViewHolder.this);
                     setVisibilityOfContainers(0);
                     return false;
                 }

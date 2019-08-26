@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SPLICE</string>
+    <string name="app_name">Splice Wallpaper</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Splice Wallpapers</string>
@@ -9,7 +9,77 @@
     <string name="title_activity_base_wallpaper">Wallpaper</string>
     <string name="title_activity_image_process">Filter</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    s    <!-- Filter headers -->
+    <string name="arrayDefaultALL"></string>
+
+    <string-array name="resolutionArray">
+        <item>@string/arrayDefaultALL</item>
+        <item>1280x720</item>
+        <item>1280x800</item>
+        <item>1280x960</item>
+        <item>1280x1024</item>
+        <item>1600x900</item>
+        <item>1600x1000</item>
+        <item>1600x1200</item>
+        <item>1600x1280</item>
+        <item>1920x1080</item>
+        <item>1920x1200</item>
+        <item>1920x1440</item>
+        <item>1920x1536</item>
+        <item>2560x1080</item>
+        <item>2560x1440</item>
+        <item>2560x1600</item>
+        <item>2560x1920</item>
+        <item>2560x2048</item>
+        <item>3440x1440</item>
+        <item>3840x1600</item>
+        <item>3840x2160</item>
+        <item>3840x2400</item>
+        <item>3840x2880</item>
+        <item>3840x3072</item>
+    </string-array>
+
+
+    <string-array name="sortingArray">
+        <item>@string/arrayDefaultALL</item>
+        <item>Date Added</item>
+        <item>Relevance</item>
+        <item>Random</item>
+        <item>Views</item>
+        <item>Favorites</item>
+        <item>Toplist</item>
+    </string-array>
+
+    <string-array name="colorArray">
+        <item></item>
+        <item>#cc0000</item>
+        <item>#cc3333</item>
+        <item>#660000</item>
+        <item>#ea4c88</item>
+        <item>#993399</item>
+        <item>#663399</item>
+        <item>#333399</item>
+        <item>#0066cc</item>
+        <item>#0099cc</item>
+        <item>#66cccc</item>
+        <item>#77cc33</item>
+        <item>#669900</item>
+        <item>#336600</item>
+        <item>#666600</item>
+        <item>#999900</item>
+        <item>#cccc33</item>
+        <item>#ffff00</item>
+        <item>#ffcc33</item>
+        <item>#ff9900</item>
+        <item>#ff6600</item>
+        <item>#cc6633</item>
+        <item>#996633</item>
+        <item>#663300</item>
+        <item>#000000</item>
+        <item>#999999</item>
+        <item>#cccccc</item>
+        <item>#ffffff</item>
+        <item>#424153</item>
+    </string-array>
+
+
 </resources>

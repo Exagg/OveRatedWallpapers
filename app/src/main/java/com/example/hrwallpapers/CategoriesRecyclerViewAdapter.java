@@ -1,12 +1,13 @@
 package com.example.hrwallpapers;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexboxLayoutManager;
@@ -54,15 +55,15 @@ public class CategoriesRecyclerViewAdapter extends RecyclerView.Adapter<Categori
         container.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*MainActivity.toggleResultTab(View.VISIBLE);
-                MainActivity.viewPager.setCurrentItem(0);
-                Fragment fragment = MainActivity.viewPagerAdapter.getFragment(0);
-                if(fragment.getClass() == ResultFragment.class)
+                if(MainActivity.mainFragment != null)
                 {
-                    ResultFragment resultFragment = (ResultFragment) fragment;
-                    resultFragment.setActiveQueryModel(getQueryModel(i));
-                    resultFragment.load();
-                }*/
+                    if (context instanceof MainActivity)
+                    {
+                        MainActivity activity = (MainActivity) context;
+
+                        activity.showResultTab(getQueryModel(i));
+                    }
+                }
             }
         });
 

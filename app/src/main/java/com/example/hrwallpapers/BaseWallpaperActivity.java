@@ -7,16 +7,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SimpleItemAnimator;
 import android.transition.Slide;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -25,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -33,9 +24,24 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
+import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.github.chrisbanes.photoview.PhotoView;
+import com.github.chrisbanes.photoview.PhotoViewAttacher;
 import com.google.android.flexbox.FlexboxLayout;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -104,9 +110,12 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     private HttpGetImagesAsync getSimiliarAsync = new HttpGetImagesAsync();
     private final Context baseWallpaperContext = this;
     private static HttpGetImagesAsync task = new HttpGetImagesAsync();
+    private GestureDetector tapDetector;
 
 
-    BottomDownloadDialog downloadDialog= new BottomDownloadDialog();
+
+
+    BottomDownloadDialog downloadDialog;
 
 
     @Override
@@ -173,7 +182,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         setAsImageView = findViewById(R.id.base_wallpaper_setas);
         progressingArea = findViewById(R.id.base_wallpaper_progressing_area);
         progressingAreaCircleBar = findViewById(R.id.base_wallpaper_progressing_area_circle);
-
+        downloadDialog = new BottomDownloadDialog(this.getContentResolver());
 
         mSlidingPanel.setAnchorPoint(0.7f); // it will up to %70 of screen size
 
@@ -188,7 +197,6 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         viewPager.setOffscreenPageLimit(2);
         loadTags(model);
 
-
         popupRecyclerView = findViewById(R.id.base_Wallpaper_similiar_recyclerView);
         fragmentHolder = findViewById(R.id.base_wallpaper_fragment_holder);
 
@@ -196,6 +204,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         similiarAdapter = new wallpaperRecyclerViewAdapter(similiarList,fragmentHolder,popupFragment,mainView,this,queryModel,popupRecyclerView);
         popupRecyclerView.setAdapter(similiarAdapter);
 
+        tapDetector = new GestureDetector(this, new GestureListener());
 
 
         if (MainActivity.wallpaperInFavorites.contains(model.id))model.isFavorite.setValue(true);
@@ -291,20 +300,6 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         popupRecyclerView.setLayoutManager(layoutManager);
         ((SimpleItemAnimator) popupRecyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
 
-        final GestureDetector tapDetector = new GestureDetector(this, new GestureListener());
-
-
-        viewPager.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event)
-            {
-                if(tapDetector.onTouchEvent(event))
-                {
-                    return true;
-                }
-                else return false;
-            }
-        });
 
 
         if(wallpaperModelList != null && model != null)
@@ -312,7 +307,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             if(wallpaperModelList.size() - wallpaperModelList.indexOf(model) < VIEW_PAGER_LOAD_LIMIT)
             {
 
-                if(task.getStatus() == AsyncTask.Status.FINISHED)
+                if(task.getStatus() == AsyncTask.Status.FINISHED && queryModel != null)
                 {
                     queryModel.setActivePage(queryModel.getActivePage() + 1);
                     queryModel.prepareUrl();
@@ -353,7 +348,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
-                View view = viewPager.findViewWithTag("container" + viewPager.getCurrentItem());
+                View view = adapter.getLastActiveView();
                 if(view != null)
                 {
                     ImageView im = view.findViewById(R.id.base_wallpaper_main_image);
@@ -362,10 +357,17 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                         BitmapDrawable drawable = (BitmapDrawable) im.getDrawable();
                         if (drawable != null)
                         {
-                            downloadDialog.setActiveBitmap(drawable.getBitmap());
-                            downloadDialog.setActiveModel(model);
-                            downloadDialog.setDialogType(BottomDownloadDialog.BottomDownloadDialogType.SHARE);
-                            downloadDialog.show(getSupportFragmentManager(),"Share");
+                            if (MainActivity.isFileExists(model.HQFileName))
+                            {
+                                downloadDialog.share(MainActivity.findExistFie(model.HQFileName),BaseWallpaperActivity.this);
+                            }
+                            else
+                            {
+                                downloadDialog.setActiveBitmap(drawable.getBitmap());
+                                downloadDialog.setActiveModel(model);
+                                downloadDialog.setDialogType(BottomDownloadDialog.BottomDownloadDialogType.SHARE);
+                                downloadDialog.show(getSupportFragmentManager(),"Share");
+                            }
                         }
                         else
                         {
@@ -382,7 +384,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
-                View view = viewPager.findViewWithTag("container" + viewPager.getCurrentItem());
+                View view = adapter.getLastActiveView();
                 if(view != null)
                 {
                     ImageView im = view.findViewById(R.id.base_wallpaper_main_image);
@@ -391,10 +393,14 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                         BitmapDrawable drawable = (BitmapDrawable) im.getDrawable();
                         if (drawable != null)
                         {
-                            downloadDialog.setActiveBitmap(drawable.getBitmap());
-                            downloadDialog.setActiveModel(model);
-                            downloadDialog.setDialogType(BottomDownloadDialog.BottomDownloadDialogType.DOWNLOAD);
-                            downloadDialog.show(getSupportFragmentManager(),"Share");
+                            if (!MainActivity.isFileExists(model.HQFileName) || !MainActivity.isFileExists(model.LQFileName))
+                            {
+                                downloadDialog.setActiveBitmap(drawable.getBitmap());
+                                downloadDialog.setActiveModel(model);
+                                downloadDialog.setDialogType(BottomDownloadDialog.BottomDownloadDialogType.DOWNLOAD);
+                                downloadDialog.show(getSupportFragmentManager(),"Share");
+                            }
+                            else MainActivity.showToast("This wallpaper is already downloaded..", Toast.LENGTH_SHORT,BaseWallpaperActivity.this);
                         }
                         else
                         {
@@ -411,7 +417,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 final wallpaperModel model = wallpaperModelList.get(viewPager.getCurrentItem());
-                View view = viewPager.findViewWithTag("container" + viewPager.getCurrentItem());
+                View view = adapter.getLastActiveView();
 
                 if(view != null)
                 {
@@ -421,10 +427,19 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                         BitmapDrawable drawable = (BitmapDrawable) im.getDrawable();
                         if (drawable != null)
                         {
-                            downloadDialog.setActiveBitmap(drawable.getBitmap());
-                            downloadDialog.setActiveModel(model);
                             downloadDialog.setDialogType(BottomDownloadDialog.BottomDownloadDialogType.SETASWALLPAPER);
-                            downloadDialog.show(getSupportFragmentManager(),"Set As Wallpaper");
+                            if (MainActivity.isFileExists(model.HQFileName))
+                            {
+                                // Dont call show function when this image is loaded as hqfilename
+                                downloadDialog.setAs(MainActivity.findExistFie(model.HQFileName),BaseWallpaperActivity.this);
+                            }
+                            else {
+                                //Call show function include exists LQ file. Cause user must want download as HQ
+                                downloadDialog.setActiveBitmap(drawable.getBitmap());
+                                downloadDialog.setActiveModel(model);
+                                downloadDialog.show(getSupportFragmentManager(),"Set As Wallpaper");
+                            }
+
                         }
                         else
                         {
@@ -495,6 +510,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         });
 
         Log.i(TAG, "onCreate:  on create event is triggered");
+
 
     }
 
@@ -581,6 +597,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
     }
+
     protected Fragment setFragment(Fragment fragment, int layoutID) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction =
@@ -668,7 +685,6 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     }
 
     public void onSwipeUp() {
-        Log.i(TAG, "onSwipeUp: " + mSlidingPanel.getPanelState());
         if (mSlidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED) {
             final wallpaperModel activeModel = wallpaperModelList.get(viewPager.getCurrentItem());
             if(activeModel.resolution != null)
@@ -780,8 +796,6 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                     if ((getSimiliarAsync != null || getSimiliarAsync.getStatus() != AsyncTask.Status.RUNNING)) {
                         getSimiliarAsync = new HttpGetImagesAsync();
 
-                        Object[] container = new Object[]{mModel.tagList, mModel};
-
                         (getSimiliarAsync).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {
                             @Override
                             public void taskFinished(List<wallpaperModel> list) {
@@ -794,7 +808,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                                 similiarAdapter.notifyItemRangeChanged(firstIndex,list.size());
                             }
                         });
-                        getSimiliarAsync.execute(container);
+                        getSimiliarAsync.execute(mModel.similiarsUrl);
                     }
                 }
             }
@@ -810,13 +824,12 @@ public class BaseWallpaperActivity extends AppCompatActivity {
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            toogleUI();
-            return true;
+            return false;
         }
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
-            return super.onDoubleTap(e);
+            return true;
         }
 
         @Override
@@ -863,6 +876,160 @@ public class BaseWallpaperActivity extends AppCompatActivity {
 
 
     }
+    public class BaseWallpaperPagerAdapter extends PagerAdapter {
 
+        private static final String TAG = "BaseWallpaperPagerAdap";
+        private Context mContext;
+        private List<wallpaperModel> wallpaperList;
+        private ViewPager viewPager;
+        private View lastActiveView;
+        public BaseWallpaperPagerAdapter(Context context, List<wallpaperModel> wallpaperList, ViewPager viewPager)
+        {
+            this.wallpaperList = wallpaperList;
+            this.mContext = context;
+            this.viewPager = viewPager;
+        }
+
+        @Override
+        public void destroyItem(@NonNull final ViewGroup container, final int position, @NonNull final Object object) {
+            final ImageView im = container.findViewById(R.id.base_wallpaper_main_image);
+            final CircleProgressBar circleProgressBar = container.findViewById(R.id.base_wallpaper_circleProgressBar);
+
+            ProgressAppGlideModule.forget(getWallpaperModel(position).originalSrc);
+            Glide.with(mContext).clear(im); // OOM handler it must be in the detached!! dont delete
+            circleProgressBar.setProgress(0);
+            container.removeView((View)object);
+
+            Log.i(TAG, "destroyItem: " + position);
+
+        }
+
+        @Override
+        public void setPrimaryItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+            View currentView = (View) object;
+            ImageView im = currentView.findViewById(R.id.base_wallpaper_main_image);
+            CircleProgressBar circleProgressBar = currentView.findViewById(R.id.base_wallpaper_circleProgressBar);
+
+            lastActiveView = currentView;
+
+            if(im.getDrawable() == null && !circleProgressBar.isLoading)
+            {
+                wallpaperModel model = getWallpaperModel(position);
+
+                circleProgressBar.setProgress(1);
+
+                RequestOptions requestOptions = new RequestOptions();
+                if (position == 0) requestOptions.priority(Priority.HIGH);
+                else requestOptions.priority(Priority.NORMAL);
+                MainActivity.LoadImageFromURL(im,model.originalSrc,circleProgressBar,requestOptions,model);
+            }
+            super.setPrimaryItem(container, position, object);
+        }
+
+        @Nullable
+        @Override
+        public CharSequence getPageTitle(int position) {
+            wallpaperModel model = (wallpaperModel)wallpaperList.get(position);
+            return super.getPageTitle(position);
+        }
+
+        public wallpaperModel getWallpaperModel(int position)
+        {
+            wallpaperModel model = (wallpaperModel)wallpaperList.get(position);
+            return model;
+        }
+
+        @Override
+        public int getCount() {
+            return wallpaperList.size();
+        }
+
+        @Override
+        public boolean isViewFromObject(@NonNull View view, @NonNull Object o) {
+            return view == o;
+        }
+
+
+        public View getLastActiveView()
+        {
+            return this.lastActiveView;
+        }
+
+        @NonNull
+        @Override
+        public Object instantiateItem(@NonNull ViewGroup container, int position) {
+            Log.i(TAG, "instantiateItem: " + position);
+            LayoutInflater layoutInflater = LayoutInflater.from(mContext);
+            View layout = layoutInflater.inflate(R.layout.base_wallpaper_viewpager,container,false);
+            final PhotoView im = layout.findViewById(R.id.base_wallpaper_main_image);
+
+            final CircleProgressBar circleProgressBar = layout.findViewById(R.id.base_wallpaper_circleProgressBar);
+
+            final wallpaperModel model = getWallpaperModel(position);
+
+
+            im.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(final View v, MotionEvent event) {
+                    if(tapDetector.onTouchEvent(event))
+                    {
+                        return false;
+                    }
+                    tapDetector.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
+                        @Override
+                        public boolean onSingleTapConfirmed(MotionEvent e) {
+                            Log.i(TAG, "onSingleTapConfirmed: ");
+                            toogleUI();
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onDoubleTap(MotionEvent e) {
+                            try {
+                                PhotoViewAttacher attacher = im.getAttacher();
+                                float scale = attacher.getScale();
+                                float x = e.getX();
+                                float y = e.getY();
+                                if (scale < attacher.getMediumScale()) {
+                                    attacher.setScale(attacher.getMediumScale(), x, y, true);
+                                } else if (scale >= attacher.getMediumScale() && scale < attacher.getMaximumScale()) {
+                                    attacher.setScale(attacher.getMaximumScale(), x, y, true);
+                                } else {
+                                    attacher.setScale(attacher.getMinimumScale(), x, y, true);
+                                }
+                            } catch (ArrayIndexOutOfBoundsException var5) {
+                            }
+                            return true;
+                        }
+
+                        @Override
+                        public boolean onDoubleTapEvent(MotionEvent e) {
+                            return false;
+                        }
+                    });
+                   return true;
+                }
+            });
+
+
+
+            if(model != null && im.getDrawable() == null && !circleProgressBar.isLoading)
+            {
+                circleProgressBar.setProgress(0);
+
+                RequestOptions requestOptions = new RequestOptions();
+                if (position == 0) requestOptions.priority(Priority.HIGH);
+                else requestOptions.priority(Priority.NORMAL);
+                MainActivity.LoadImageFromURL(im,model.originalSrc,circleProgressBar,requestOptions,model);
+            }
+            container.addView(layout);
+            return layout;
+        }
+
+        public void addListToList(List<wallpaperModel> models)
+        {
+            this.wallpaperList.addAll(models);
+        }
+    }
 
 }

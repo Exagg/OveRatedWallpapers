@@ -3,22 +3,25 @@ package com.example.hrwallpapers;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
+import java.util.List;
 
-public class ResultFragment extends Fragment {
+public class ResultFragment extends Fragment implements HttpGetImagesAsync.onAsyncTaskFisinhed {
 
+    private static final String TAG = "ResultFragment";
     private static final int RECYCLER_VIEW_COLUMN = 2;
 
 
@@ -28,6 +31,7 @@ public class ResultFragment extends Fragment {
     private static FrameLayout fragmentHolder;
     private static HttpGetImagesAsync task = new HttpGetImagesAsync();
     private int onPausePosition = 0;
+    private FrameLayout noContentView;
 
 
     private static queryModel activeQueryModel;
@@ -38,6 +42,8 @@ public class ResultFragment extends Fragment {
 
     public void setActiveQueryModel(queryModel activeQueryModel) {
         ResultFragment.activeQueryModel = activeQueryModel;
+        if(recyclerViewAdapter != null)recyclerViewAdapter.clearModels();
+        if (recyclerView != null) recyclerView.setAdapter(null);
     }
 
     @Override
@@ -55,11 +61,44 @@ public class ResultFragment extends Fragment {
         recyclerView = view.findViewById(R.id.result_recyclerView);
         recyclerView.getItemAnimator().setChangeDuration(0);
         popupFragment = setFragment(new wallpaperPopupFragment());
+        noContentView = view.findViewById(R.id.result_no_content);
 
         if(activeQueryModel != null)
         {
             load();
         }
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            private int calculatedYPos = 0;
+            private int actualHeight = 0;
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                calculatedYPos = recyclerView.computeVerticalScrollOffset();
+                actualHeight = recyclerView.computeVerticalScrollRange();
+
+
+
+                if(actualHeight - (recyclerView.computeVerticalScrollExtent() + calculatedYPos) < MainActivity.LOAD_MORE_SCROLL_RANGE)
+                {
+                    if(task == null) task = new HttpGetImagesAsync();
+                    if(task.getStatus() == AsyncTask.Status.FINISHED) task = new HttpGetImagesAsync();
+
+                    task.setTaskFisinhed(ResultFragment.this);
+                    if(task.getStatus() != AsyncTask.Status.RUNNING)
+                    {
+                        if(activeQueryModel != null)
+                        {
+                            activeQueryModel.setActivePage(activeQueryModel.getActivePage() + 1);
+                            activeQueryModel.prepareUrl();
+                            MainActivity.setMenuClickListenerForRecyclerView(activeQueryModel,recyclerView,recyclerViewAdapter,task);
+                        }
+                    }
+                }
+                super.onScrolled(recyclerView, dx, dy);
+
+            }
+        });
+
         return view;
     }
 
@@ -71,42 +110,19 @@ public class ResultFragment extends Fragment {
             {
                 recyclerView.removeAllViews();
             }
-            recyclerViewAdapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),fragmentHolder,popupFragment,recyclerView,getActivity(),activeQueryModel,recyclerView);
-            recyclerView.setAdapter(recyclerViewAdapter);
-            MainActivity.setMenuClickListenerForRecyclerView(activeQueryModel,recyclerView,recyclerViewAdapter,task); // Load for the startup images (active page must be 1)
-
             recyclerView.setLayoutManager(new GridLayoutManager(getActivity(),RECYCLER_VIEW_COLUMN));
 
-            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                private int calculatedYPos = 0;
-                private int actualHeight = 0;
-                @Override
-                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                    calculatedYPos = recyclerView.computeVerticalScrollOffset();
-                    actualHeight = recyclerView.computeVerticalScrollRange();
 
+            if(task == null) task = new HttpGetImagesAsync();
+            if(task.getStatus() == AsyncTask.Status.FINISHED) task = new HttpGetImagesAsync();
+            task.setTaskFisinhed(ResultFragment.this);
+            recyclerViewAdapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),fragmentHolder,popupFragment,recyclerView,getActivity(),activeQueryModel,recyclerView);
+            recyclerView.setAdapter(recyclerViewAdapter);
+            MainActivity.setMenuClickListenerForRecyclerView(activeQueryModel,task); // Load for the startup images (active page must be 1)
 
-
-                    if(actualHeight - (recyclerView.computeVerticalScrollExtent() + calculatedYPos) < MainActivity.LOAD_MORE_SCROLL_RANGE)
-                    {
-                        if(task == null) task = new HttpGetImagesAsync();
-                        if(task.getStatus() == AsyncTask.Status.FINISHED) task = new HttpGetImagesAsync();
-                        if(task.getStatus() != AsyncTask.Status.RUNNING)
-                        {
-                            if(activeQueryModel != null)
-                            {
-                                activeQueryModel.setActivePage(activeQueryModel.getActivePage() + 1);
-                                activeQueryModel.prepareUrl();
-                                MainActivity.setMenuClickListenerForRecyclerView(activeQueryModel,recyclerView,recyclerViewAdapter,task);
-                            }
-                        }
-                    }
-                    super.onScrolled(recyclerView, dx, dy);
-
-                }
-            });
         }
     }
+
     protected Fragment setFragment(Fragment fragment) {
         FragmentManager fragmentManager = this.getFragmentManager();
         FragmentTransaction fragmentTransaction =
@@ -146,5 +162,25 @@ public class ResultFragment extends Fragment {
             recyclerView.setAdapter(recyclerViewAdapter);
             recyclerView.scrollToPosition(this.onPausePosition);
         }
+    }
+
+    @Override
+    public void taskFinished(List<wallpaperModel> list) {
+        if (list.size() == 0 && this.recyclerViewAdapter.getModelList().size() == 0)
+        {
+            // there is no content to searchable query. no content view will shown
+            noContentView.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            // content is loaded
+            MainActivity.loadWallpaperToRecyclerView(list,recyclerViewAdapter);
+            noContentView.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onOneTagLoaded(List<wallpaperModel> list) {
+
     }
 }

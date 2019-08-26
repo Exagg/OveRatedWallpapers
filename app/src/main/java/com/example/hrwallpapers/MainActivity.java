@@ -1,29 +1,17 @@
 package com.example.hrwallpapers;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,12 +20,30 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
+
 import com.bumptech.glide.request.RequestOptions;
 import com.example.hrwallpapers.DataAccessLayer.SqliteConnection;
+import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,6 +55,8 @@ import info.androidhive.fontawesome.FontDrawable;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener{
+
+    public static final File downloadFolder = new File(Environment.getExternalStorageDirectory() + File.separator + MainActivity.DOWNLOAD_FILE_NAME);
 
     public static SqliteConnection database;
 
@@ -80,25 +88,7 @@ public class MainActivity extends AppCompatActivity
     DrawerLayout drawer;
     ImageView searchButton;
 
-    private HistoryFragment.OnFragmentInteractionListener historyListener = new HistoryFragment.OnFragmentInteractionListener() {
-        @Override
-        public void onFragmentInteraction(Uri uri) {
-
-        }
-    };
-    private SearchFragment.OnFragmentInteractionListener searchFragmentListener = new SearchFragment.OnFragmentInteractionListener() {
-        @Override
-        public void onFragmentInteraction(Uri uri) {
-
-        }
-    };
     private MainFragment.OnFragmentInteractionListener mainListener = new MainFragment.OnFragmentInteractionListener() {
-        @Override
-        public void onFragmentInteraction(Uri uri) {
-
-        }
-    };
-    private FavoritesFragment.OnFragmentInteractionListener favoritesListener = new FavoritesFragment.OnFragmentInteractionListener() {
         @Override
         public void onFragmentInteraction(Uri uri) {
 
@@ -108,6 +98,9 @@ public class MainActivity extends AppCompatActivity
     public static MainFragment mainFragment = new MainFragment();
     public static FavoritesFragment favoritesFragment = new FavoritesFragment();
     public static SearchFragment searchFragment = new SearchFragment();
+    private Toolbar toolbar;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,9 +109,10 @@ public class MainActivity extends AppCompatActivity
         wallpaperInFavorites =database.getFavorites();
 
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mainContentView = findViewById(R.id.main_content);
+
 
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -153,7 +147,6 @@ public class MainActivity extends AppCompatActivity
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                searchFragment.setInteractionListener(searchFragmentListener);
                 setFragment(searchFragment,menuFragmentHolder,MainActivity.this.getSupportFragmentManager());
                 drawer.closeDrawers();
                 mainFragmentHolder.setVisibility(View.GONE);
@@ -174,6 +167,7 @@ public class MainActivity extends AppCompatActivity
             transaction.remove(historyFragment);
             transaction.commit();
 
+            this.setTitle(R.string.app_name);
             mainFragmentHolder.setVisibility(View.VISIBLE);
         }
         else if (favoritesFragment.isAdded())
@@ -182,14 +176,16 @@ public class MainActivity extends AppCompatActivity
             transaction.remove(favoritesFragment);
             transaction.commit();
 
+            this.setTitle(R.string.app_name);
             mainFragmentHolder.setVisibility(View.VISIBLE);
         }
         else if(searchFragment.isAdded())
         {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.remove(favoritesFragment);
+            transaction.remove(searchFragment);
             transaction.commit();
 
+            this.setTitle(R.string.app_name);
             mainFragmentHolder.setVisibility(View.VISIBLE);
         }
         else {
@@ -216,7 +212,6 @@ public class MainActivity extends AppCompatActivity
             //Favoriye atılanlar getirilecek
             if (menuFragmentHolder != null)
             {
-                favoritesFragment.setInteractionListener(favoritesListener);
                 setFragment(favoritesFragment,menuFragmentHolder,MainActivity.this.getSupportFragmentManager());
                 drawer.closeDrawers();
                 mainFragmentHolder.setVisibility(View.GONE);
@@ -227,7 +222,6 @@ public class MainActivity extends AppCompatActivity
             //Daha once göz atılanlar getirilecek.
 
             if (menuFragmentHolder != null) {
-                historyFragment.setInteractionListener(historyListener);
                 setFragment(historyFragment, menuFragmentHolder, MainActivity.this.getSupportFragmentManager());
                 drawer.closeDrawers();
                 mainFragmentHolder.setVisibility(View.GONE);
@@ -236,23 +230,25 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    @Override
+    protected void onTitleChanged(CharSequence title, int color) {
+        super.onTitleChanged(title, color);
+        toolbar.setTitle(title);
+    }
 
-    public void showFullScreenActivity(wallpaperModel model,Context startContext,final Class<? extends Activity> targetActivity,List<wallpaperModel> modelList)
+
+    public void showResultTab(queryModel queryModel)
     {
-        Intent i = new Intent(startContext,targetActivity);
-        String listData = new Gson().toJson(modelList); // List activity içerisinde yeniden build edilecek. View ve class idleri değişecek.
-        i.putExtra("listIndex",modelList.indexOf(model)); // Modelin indexi viewpagerda görüntülenecek
-        i.putExtra("wallpaperList",listData);
+        if(MainActivity.mainFragment != null) {
 
-
-        if(Build.VERSION.SDK_INT > 20)
-        {
-
-            ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this);
-            startActivityForResult(i,FULLSCREEN_REQUEST_CODE,options.toBundle());
-        }
-        else {
-            startActivityForResult(i,FULLSCREEN_REQUEST_CODE);
+            MainActivity.mainFragment.toggleResultTab(View.VISIBLE);
+            MainActivity.mainFragment.viewPager.setCurrentItem(0);
+            Fragment fragment = this.mainFragment.viewPagerAdapter.getFragment(0);
+            if (fragment.getClass() == ResultFragment.class) {
+                ResultFragment resultFragment = (ResultFragment) fragment;
+                resultFragment.setActiveQueryModel(queryModel);
+                resultFragment.load();
+            }
         }
     }
 
@@ -368,7 +364,7 @@ public class MainActivity extends AppCompatActivity
         return px / ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
-    public static void setMenuClickListenerForViewPager(final queryModel queryModel, final ViewPager viewPager, final BaseWallpaperPagerAdapter adapter,HttpGetImagesAsync task)
+    public static void setMenuClickListenerForViewPager(final queryModel queryModel, final ViewPager viewPager, final BaseWallpaperActivity.BaseWallpaperPagerAdapter adapter,HttpGetImagesAsync task)
     {
         getImagesOnHttp(queryModel,null,LOAD_TO_PAGEVIEWER,adapter,task);
     }
@@ -377,8 +373,13 @@ public class MainActivity extends AppCompatActivity
         getImagesOnHttp(queryModel,adapter,LOAD_TO_RECYCLERVIEW,null,task);
     }
 
-    public static void getImagesOnHttp(final queryModel queryModel,final wallpaperRecyclerViewAdapter recyclerViewAdapter,
-                                       final int loadToWhere,final BaseWallpaperPagerAdapter pagerAdapter,HttpGetImagesAsync _task)
+    public static void setMenuClickListenerForRecyclerView(queryModel activeQueryModel, HttpGetImagesAsync task) {
+        getImagesOnHttp(activeQueryModel,null,0,null, task);
+    }
+
+
+    public static void getImagesOnHttp(final queryModel queryModel, final wallpaperRecyclerViewAdapter recyclerViewAdapter,
+                                       final int loadToWhere, final BaseWallpaperActivity.BaseWallpaperPagerAdapter pagerAdapter, HttpGetImagesAsync _task)
     {
         if(queryModel != null)
         {
@@ -394,30 +395,34 @@ public class MainActivity extends AppCompatActivity
 
                 Object[] container = new Object[] {url};
 
-                ((HttpGetImagesAsync) _task).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {
-                    @Override
-                    public void taskFinished(List<wallpaperModel> list) {
-                        if(loadToWhere == LOAD_TO_RECYCLERVIEW)
-                        {
-                            loadWallpaperToRecyclerView(list,recyclerViewAdapter);
+                if (_task.getTaskFinished() == null)
+                {
+                    ((HttpGetImagesAsync) _task).setTaskFisinhed(new HttpGetImagesAsync.onAsyncTaskFisinhed() {
+                        @Override
+                        public void taskFinished(List<wallpaperModel> list) {
+                            if(loadToWhere == LOAD_TO_RECYCLERVIEW)
+                            {
+                                loadWallpaperToRecyclerView(list,recyclerViewAdapter);
+                            }
+                            else if (loadToWhere == LOAD_TO_PAGEVIEWER)
+                            {
+                                loadWallpaperToViewPager(list,pagerAdapter);
+                            }
                         }
-                        else if (loadToWhere == LOAD_TO_PAGEVIEWER)
-                        {
-                            loadWallpaperToViewPager(list,pagerAdapter);
+
+                        @Override
+                        public void onOneTagLoaded(List<wallpaperModel> list) {
+
                         }
-                    }
+                    });
+                }
 
-                    @Override
-                    public void onOneTagLoaded(List<wallpaperModel> list) {
-
-                    }
-                });
                 _task.execute(container);
             }
         }
     }
 
-    public static void loadWallpaperToViewPager(List<wallpaperModel> models,BaseWallpaperPagerAdapter adapter)
+    public static void loadWallpaperToViewPager(List<wallpaperModel> models, BaseWallpaperActivity.BaseWallpaperPagerAdapter adapter)
     {
         if(models.size() > 0) {
             adapter.addListToList(models);
@@ -453,6 +458,47 @@ public class MainActivity extends AppCompatActivity
             new GlideImageLoader(im,progressBar,context).load(url,requestOptions,model);
         }
 
+    }
+
+    public static void LoadImageFromDisk(ImageView wallpaperImage, File file, CircleProgressBar circleProgressBar, RequestOptions requestOptions, wallpaperModel model) {
+
+        circleProgressBar.setProgress(0);
+        if(circleProgressBar.getProgress() < 100)
+        {
+            new GlideImageLoader(wallpaperImage,circleProgressBar).load(file,requestOptions,model);
+        }
+    }
+    public static void LoadImageFromDisk(ImageView wallpaperImage, File file, CircleProgressBar circleProgressBar, RequestOptions requestOptions, wallpaperModel model,Context Context) {
+        circleProgressBar.setProgress(0);
+        if(circleProgressBar.getProgress() < 100)
+        {
+            new GlideImageLoader(wallpaperImage,circleProgressBar,Context).load(file,requestOptions,model);
+        }
+    }
+
+    public static void loadImage(@NonNull wallpaperRecyclerViewAdapter.wallpaperViewHolder holder,Fragment popupFragment,RequestOptions requestOptions,Context context)
+    {
+
+        if(popupFragment != null)
+        {
+            holder.setEventForModel();
+            if(holder.model.getFilePath() == null){
+                MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model);
+            }
+            else {
+                MainActivity.LoadImageFromDisk(holder.wallpaperImage,new File(holder.model.getFilePath()),holder.circleProgressBar,requestOptions,holder.model);
+            }
+        }
+        else
+        {
+            if(holder.model.getFilePath() == null)
+            {
+                MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model,context);
+            }
+            else {
+                MainActivity.LoadImageFromDisk(holder.wallpaperImage,new File(holder.model.getFilePath()),holder.circleProgressBar,requestOptions,holder.model,context);
+            }
+        }
     }
 
 
@@ -509,6 +555,64 @@ public class MainActivity extends AppCompatActivity
         toast.cancel();
         toast = toast.makeText(context,message,duration);
         toast.show();
+    }
+
+
+    public static boolean isFileExists(final String fileName)
+    {
+        FileFilter fileFilter = new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.getName().equals(fileName);
+            }
+        };
+        File[] downloadedImages = MainActivity.downloadFolder.listFiles(fileFilter);
+
+        if(downloadedImages != null)
+        {
+            if (downloadedImages.length > 0) return true;
+        }
+        return false;
+    }
+
+    public static File findExistFie(final String fileName)
+    {
+        FileFilter fileFilter = new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.getName().equals(fileName);
+            }
+        };
+        File[] downloadedImages = MainActivity.downloadFolder.listFiles(fileFilter);
+
+        if(downloadedImages != null)
+        {
+            if (downloadedImages.length > 0) return downloadedImages[0];
+        }
+        return null;
+    }
+
+    public static void checkPermissions(Context context,Activity activity,int PERM_REQUEST_CODE)
+    {
+        String[]  needPerms = new String[]
+        {
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.INTERNET,
+            Manifest.permission.ACCESS_WIFI_STATE,
+            Manifest.permission.ACCESS_NETWORK_STATE
+        };
+
+        for (String perm:needPerms
+             ) {
+
+            if (ContextCompat.checkSelfPermission(context, perm) == PackageManager.PERMISSION_GRANTED)
+            {
+                ActivityCompat.requestPermissions(activity,needPerms,PERM_REQUEST_CODE);
+                break;
+            }
+
+        }
     }
 
 }

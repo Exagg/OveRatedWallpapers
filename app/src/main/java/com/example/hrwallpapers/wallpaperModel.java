@@ -5,11 +5,10 @@ import android.util.Log;
 import java.io.File;
 import java.util.ArrayList;
 
-import static android.support.constraint.motion.MotionScene.TAG;
-
 public class wallpaperModel {
 
-    String thumbSrc,originalSrc,id,HQFileName,LQFileName;
+    private static final String TAG = "WallpaperModel" ;
+    String thumbSrc,originalSrc,id,HQFileName,LQFileName,similiarsUrl;
     booleanListeners isFavorite;
     ArrayList<String> tagList;
     public String resolution;
@@ -20,7 +19,7 @@ public class wallpaperModel {
     private String filePath = null;
 
 
-    public wallpaperModel(String thumbSrc,String originalSrc,String id)
+    public wallpaperModel(String id)
     {
         this.thumbSrc = thumbSrc;
         this.originalSrc = originalSrc;
@@ -29,7 +28,24 @@ public class wallpaperModel {
         this.tagList = new ArrayList<>();
 
         this.HQFileName = "HQ_" + this.id + ".jpg";
-        this.HQFileName = "LQ_" + this.id + ".jpg";
+        this.LQFileName = "LQ_" + this.id + ".jpg";
+
+        prepareThumbSrc();
+        prepareOriginalSrc();
+        prepareSimiliarsUrl();
+    }
+
+    private void prepareSimiliarsUrl() {
+        this.similiarsUrl = "https://wallhaven.cc/search?q=like%3A"+id;
+    }
+
+    private void prepareThumbSrc() {
+        this.thumbSrc = String.format("https://th.wallhaven.cc/small/%s/%s.jpg",id.substring(0,2),id);
+    }
+
+    private void prepareOriginalSrc() {
+        if(isPng) this.originalSrc = String.format("https://w.wallhaven.cc/full/%s/wallhaven-%s.png",id.substring(0,2),id);
+        else this.originalSrc = String.format("https://w.wallhaven.cc/full/%s/wallhaven-%s.jpg",id.substring(0,2),id);
     }
 
     public queryModel getTagQueryModel(int tagPosition)
@@ -60,5 +76,11 @@ public class wallpaperModel {
     public String getFilePath()
     {
         return this.filePath;
+    }
+
+    public void setIsPng(boolean value) {
+        this.isPng = value;
+        prepareOriginalSrc();
+        prepareThumbSrc();
     }
 }

@@ -3,21 +3,19 @@ package com.example.hrwallpapers;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.support.constraint.motion.MotionScene.TAG;
 
 
 /**
@@ -29,43 +27,22 @@ import static android.support.constraint.motion.MotionScene.TAG;
  * create an instance of this fragment.
  */
 public class FavoritesFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    private OnFragmentInteractionListener mListener;
-
     private static final int RECYCLER_VIEW_COLUMN = 2;
-
+    private static final String FRAGMENT_TITLE = "Favorites";
     private View noContentContainer;
     private RecyclerView favoritesRecyclerView;
     private wallpaperRecyclerViewAdapter favoritesAdapter;
     private FrameLayout favoritesPopupFragmentHolder;
     private Fragment popupFragment;
+    private int lastShowIndex;
 
     public FavoritesFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment FavoritesFragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static FavoritesFragment newInstance(String param1, String param2) {
         FavoritesFragment fragment = new FavoritesFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -73,10 +50,6 @@ public class FavoritesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -89,6 +62,7 @@ public class FavoritesFragment extends Fragment {
         noContentContainer = view.findViewById(R.id.favorites_no_content_container);
         favoritesRecyclerView = view.findViewById(R.id.favorites_recyclerview);
         favoritesPopupFragmentHolder = view.findViewById(R.id.favorites_fragment_holder);
+        favoritesRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(),RECYCLER_VIEW_COLUMN));
 
 
         popupFragment = setFragment(new wallpaperPopupFragment());
@@ -98,6 +72,8 @@ public class FavoritesFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        getActivity().setTitle(FRAGMENT_TITLE);
+        popupFragment = setFragment(new wallpaperPopupFragment());
 
         List<String> favorites = MainActivity.database.getFavorites();
 
@@ -106,24 +82,31 @@ public class FavoritesFragment extends Fragment {
             List<wallpaperModel> wallpaperModelList = new ArrayList<>();
             for (String id :
                     favorites) {
-                Log.i(TAG, "onCreateView: " + id);
-                String thumbUrl = String.format("https://th.wallhaven.cc/small/%s/%s.jpg",id.substring(0,2),id);
-                String originalUrl = String.format("https://w.wallhaven.cc/full/%s/wallhaven-%s.jpg",id.substring(0,2),id);
-
-                wallpaperModel m = new wallpaperModel(thumbUrl,originalUrl,id);
+                wallpaperModel m = new wallpaperModel(id);
 
                 wallpaperModelList.add(m);
             }
+            this.favoritesAdapter = new wallpaperRecyclerViewAdapter(wallpaperModelList,favoritesPopupFragmentHolder,popupFragment, getView(),getContext(),null,favoritesRecyclerView);
 
-            favoritesRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(),RECYCLER_VIEW_COLUMN));
-            this.favoritesAdapter = new wallpaperRecyclerViewAdapter(wallpaperModelList,favoritesPopupFragmentHolder,popupFragment,favoritesRecyclerView,getContext(),null,favoritesRecyclerView);
+            this.favoritesAdapter.updateAdapter(wallpaperModelList);
             this.favoritesRecyclerView.setAdapter(favoritesAdapter);
+            this.favoritesRecyclerView.scrollToPosition(this.lastShowIndex);
+
+
+            noContentContainer.setVisibility(View.GONE);
         }
         else
         {
             noContentContainer.setVisibility(View.VISIBLE);
         }
 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if(this.favoritesAdapter != null) this.lastShowIndex = this.favoritesAdapter.getClickedItemPosition();
     }
 
     protected Fragment setFragment(Fragment fragment) {
@@ -136,26 +119,16 @@ public class FavoritesFragment extends Fragment {
     }
 
 
-    public void setInteractionListener(FavoritesFragment.OnFragmentInteractionListener listener) {
-        this.mListener = listener;
-        Log.i(TAG, "setInteractionListener: " + this.mListener);
-    }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (this.mListener == null)
-        {
-            throw new RuntimeException(context.toString()
-                    + " must define listener before call this instance");
-        }
     }
 
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
     }
 
     /**

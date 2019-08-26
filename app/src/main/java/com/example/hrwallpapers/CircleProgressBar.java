@@ -79,7 +79,7 @@ public class CircleProgressBar extends View {
                     responsibleView.setVisibility(VISIBLE);
                 }
                 else {
-                    responsibleView.setVisibility(INVISIBLE);
+                    responsibleView.setVisibility(VISIBLE);
                 }
             }
         }
@@ -93,7 +93,7 @@ public class CircleProgressBar extends View {
             {
                 if (visibilityType == 1)
                 {
-                    responsibleView.setVisibility(INVISIBLE);
+                    responsibleView.setVisibility(VISIBLE);
                 }
                 else {
                     responsibleView.setVisibility(VISIBLE);

@@ -1,20 +1,13 @@
 package com.example.hrwallpapers;
 
 import android.os.AsyncTask;
-import android.util.Log;
-import android.view.View;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static android.support.constraint.motion.MotionScene.TAG;
 
 class HttpGetTagsAsync extends AsyncTask<Object,Integer, wallpaperModel> {
 

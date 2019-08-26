@@ -4,10 +4,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,19 +11,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.material.tabs.TabLayout;
+
 import java.util.List;
 
-import static android.support.constraint.motion.MotionScene.TAG;
-
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link MainFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link MainFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class MainFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -39,7 +29,6 @@ public class MainFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
-
 
 
     private static final queryModel homeQueryModel = new queryModel(true,true,true,true,true,false,
@@ -130,17 +119,11 @@ public class MainFragment extends Fragment {
 
     public void setInteractionListener(MainFragment.OnFragmentInteractionListener listener) {
         this.mListener = listener;
-        Log.i(TAG, "setInteractionListener: " + this.mListener);
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        /*2if (this.mListener == null)
-        {
-            throw new RuntimeException(context.toString()
-                    + " must define listener before call this instance");
-        }*/
     }
 
     @Override
@@ -148,16 +131,12 @@ public class MainFragment extends Fragment {
         super.onDetach();
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        getActivity().setTitle(R.string.app_name);
+    }
 
 
     public static void drawTabMenu(Context context,TabLayout tabLayout,List<MenuModel> menuModels)

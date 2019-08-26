@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:androdid="http://schemas.android.com/apk/res/android">
+    <solid androdid:color="@color/slate_gray"/>
+    <corners androdid:radius="40px"/>
+    <padding androdid:left="15dp"/>
+</shape>
