@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SearchFragment"
+    android:background="@color/colorPrimary"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="private boolean general,anime,people,sfw,sketchy,nsfw; private int resolutionW,resolutionH,ratioX,ratioY,id,activePage; private String colorHex,orderBy,query,sorting,url,topRange"
+        android:textColor="@color/white"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Keyword"
+            android:textAlignment="textEnd"
+            android:textColor="@color/white"
+            android:textSize="16dp"
+            android:fontFamily="@font/helvetica"
+            android:padding="5dp"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:background="@drawable/search_textbox"
+            android:textColor="@color/white"
+            android:layout_marginRight="15dp"
+            android:layout_marginLeft="15dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <ToggleButton
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:textOff="Anime"
+                android:textOn="Anime"
+                android:textColor="@color/white"
+                android:background="@drawable/search_fragment_button_style"
+                android:layout_margin="5dp"
+                android:layout_weight="33"/>
+            <ToggleButton
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:textOff="People"
+                android:textOn="People"
+                android:textColor="@color/white"
+                android:background="@drawable/search_fragment_button_style"
+                android:layout_margin="5dp"
+                android:layout_weight="33"/>
+            <ToggleButton
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:textOff="Others"
+                android:textOn="Others"
+                android:textColor="@color/white"
+                android:background="@drawable/search_fragment_button_style"
+                android:layout_margin="5dp"
+                android:layout_weight="33"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="horizontal">
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:textOff="Safe for work"
+            android:textOn="Safe for work"
+            android:textColor="@color/white"
+            android:layout_margin="5dp"
+            android:background="@drawable/search_fragment_button_style"
+            android:layout_weight="50"/>
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:textOff="Sketchy"
+            android:textOn="Sketchy"
+            android:layout_margin="5dp"
+            android:textColor="@color/white"
+            android:background="@drawable/search_fragment_button_style"
+            android:layout_weight="50"/>
+    </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Resolution"
+            android:textColor="@color/white"
+            android:textSize="16dp"
+            android:padding="10dp"/>
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_weight="75"
+            android:entries="@array/resolutionArray"
+            android:layout_marginRight="10dp"
+            android:background="@color/white"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Order By"
+            android:textColor="@color/white"
+            android:textSize="16dp"
+            android:padding="10dp"/>
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_weight="75"
+            android:entries="@array/orderByArray"
+            android:layout_marginRight="10dp"
+            android:background="@color/white"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+        <com.skydoves.colorpickerpreference.ColorPickerPreference
+        android:title="Toolbar Color"
+        android:summary="changes toolbar color"
+        app:preference_dialog_title="Toolbar ColorPickerDialog"
+        app:preference_palette="@drawable/palette"
+        app:preference_selector="@drawable/wheel"
+        app:default_color="@color/colorPrimary"/>
+
+    </LinearLayout>
+
+
+</LinearLayout>

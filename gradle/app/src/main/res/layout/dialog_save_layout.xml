@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_gravity="bottom"
+    android:background="@android:color/transparent"
+    android:orientation="vertical">
+
+    <com.example.hrwallpapers.CircleProgressBar
+        android:layout_margin="35dp"
+        android:id="@+id/download_dialog_circlebar"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:progressValue="0"
+        app:progressbarPercentageColor="@color/CircleLoadingBarPercentageColor"
+        app:progressBarResponsibleObjectVisibilityType="0"
+        app:progressBarThickness="2dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/white"
+        android:orientation="vertical">
+        <LinearLayout
+            android:id="@+id/download_dialog_high_quality_container"
+            android:background="@android:color/transparent"
+            android:layout_width="match_parent"
+            android:padding="10dp"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@drawable/ic_high_quality"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Download as High Quality"
+                android:textSize="16dp"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="15dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/download_dialog_actual_quality_container"
+            android:layout_width="match_parent"
+            android:background="@color/white"
+            android:padding="10dp"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@drawable/ic_screen_size"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Download as Actual Size"
+                android:textSize="16dp"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="15dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

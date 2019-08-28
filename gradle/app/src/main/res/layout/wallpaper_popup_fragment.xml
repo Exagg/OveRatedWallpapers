@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/wallpaper_fragment_container"
+    android:orientation="horizontal">
+    <ImageView
+        android:id="@+id/fragment_blur_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:background="#43868383">
+        <ImageView
+            android:id="@+id/wallpaper_popup_base_image"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:scaleType="center"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/wallpaper_share_button"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="33"
+                android:src="@drawable/ic_eye" />
+
+            <ImageView
+                android:id="@+id/wallpaper_like_button"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="33"
+                android:src="@drawable/ic_eye" />
+
+            <ImageView
+                android:id="@+id/wallpaper_download_button"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="33"
+                android:src="@drawable/ic_eye" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

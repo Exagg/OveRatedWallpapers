@@ -1,0 +1,54 @@
+<resources>
+    <string name="app_name">Splice Wallpaper</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Splice Wallpapers</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="title_activity_base_wallpaper">Wallpaper</string>
+    <string name="title_activity_image_process">Filter</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="arrayDefaultALL"></string>
+
+    <string-array name="resolutionArray">
+        <item>@string/arrayDefaultALL</item>
+        <item>1280 × 720</item>
+        <item>1280 × 800</item>
+        <item>1280 × 960</item>
+        <item>1280 × 1024</item>
+        <item>1600 × 900</item>
+        <item>1600 × 1000</item>
+        <item>1600 × 1200</item>
+        <item>1600 × 1280</item>
+        <item>1920 × 1080</item>
+        <item>1920 × 1200</item>
+        <item>1920 × 1440</item>
+        <item>1920 × 1536</item>
+        <item>2560 × 1080</item>
+        <item>2560 × 1440</item>
+        <item>2560 × 1600</item>
+        <item>2560 × 1920</item>
+        <item>2560 × 2048</item>
+        <item>3440 × 1440</item>
+        <item>3840 × 1600</item>
+        <item>3840 × 2160</item>
+        <item>3840 × 2400</item>
+        <item>3840 × 2880</item>
+        <item>3840 × 3072</item>
+    </string-array>
+
+
+    <string-array name="orderByArray">
+        <item>@string/arrayDefaultALL</item>
+        <item>Date Added</item>
+        <item>Relevance</item>
+        <item>Random</item>
+        <item>Views</item>
+        <item>Favorites</item>
+        <item>Toplist</item>
+    </string-array>
+</resources>

@@ -31,11 +31,11 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-                <androidx.viewpager.widget.ViewPager
+                <android.support.v4.view.ViewPager
                     android:id="@+id/base_wallpaper_viewPager"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
-                </androidx.viewpager.widget.ViewPager>
+                </android.support.v4.view.ViewPager>
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -125,17 +125,6 @@
                             android:tint="@color/white"
                             android:visibility="gone"
                             android:padding="7dp"/>
-                        <ImageView
-                            android:id="@+id/base_wallpaper_slide_up"
-                            android:layout_width="50dp"
-                            android:layout_height="50dp"
-                            android:src="@drawable/ic_arrow_drop_down"
-                            android:rotation="180"
-                            android:layout_gravity="bottom|center_horizontal"
-                            android:background="@drawable/circle_imageview_drawable"
-                            android:tint="@color/white"
-                            android:visibility="visible"
-                            android:padding="7dp"/>
 
                         <ImageView
                             android:layout_width="40dp"
@@ -224,14 +213,14 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-                <androidx.recyclerview.widget.RecyclerView
+                <android.support.v7.widget.RecyclerView
                     android:id="@+id/base_Wallpaper_similiar_recyclerView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="10dp"
                     android:clickable="true"
                     android:isScrollContainer="true">
-                </androidx.recyclerview.widget.RecyclerView>
+                </android.support.v7.widget.RecyclerView>
             </FrameLayout>
         </LinearLayout>
     </com.sothree.slidinguppanel.SlidingUpPanelLayout>

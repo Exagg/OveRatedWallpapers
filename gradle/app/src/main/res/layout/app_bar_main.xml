@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="wrap_content"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@color/colorPrimary"
+                app:title="@string/app_name"
+                app:popupTheme="@style/AppTheme.PopupOverlay">
+
+            </android.support.v7.widget.Toolbar>
+
+            <ImageView
+                android:id="@+id/main_search_button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_search"
+                android:layout_gravity="center_vertical|right"
+                android:layout_marginRight="15dp"
+                android:padding="10dp"/>
+        </FrameLayout>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <include layout="@layout/content_main" />
+
+
+
+
+</android.support.design.widget.CoordinatorLayout>
