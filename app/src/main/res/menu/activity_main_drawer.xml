@@ -6,6 +6,10 @@
     <group android:id="@+id/menu_group"
         android:checkableBehavior="single">
         <item
+            android:id="@+id/menu_home"
+            android:icon="@drawable/ic_home"
+            android:title="Home"/>
+        <item
             android:id="@+id/menu_history"
             android:icon="@drawable/ic_photo_gallery"
             android:title="History"/>
@@ -13,6 +17,9 @@
             android:id="@+id/menu_favorites"
             android:icon="@drawable/ic_diamond"
             android:title="Favorites"/>
+        <item
+            android:id="@+id/menu_auto_wallpaper"
+            android:icon="@drawable/ic_gear_play"
+            android:title="Auto Wallpaper"/>
     </group>
-
 </menu>

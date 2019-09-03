@@ -1,7 +1,9 @@
 package com.example.hrwallpapers;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +21,7 @@ import java.util.List;
 public class CategoriesFragment extends Fragment {
 
     private static final int RECYCLER_VIEW_COLUMN = 1;
+    private static final String TAG = "CategoriesFragment";
     private static RecyclerView recyclerView;
     private static CategoriesRecyclerViewAdapter adapter;
     private static List<MenuModel> menuModels = new ArrayList<>();
@@ -35,7 +38,7 @@ public class CategoriesFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_categories,null);
+        View view = inflater.inflate(R.layout.fragment_categories,container,false);
         recyclerView = view.findViewById(R.id.categories_recyclerview);
         recyclerView.setLayoutManager(new GridLayoutManager(getActivity(),RECYCLER_VIEW_COLUMN));
 
@@ -117,7 +120,19 @@ public class CategoriesFragment extends Fragment {
         if(recyclerView != null)
         {
             getActivity().getSupportFragmentManager().beginTransaction().detach(this).attach(this).commit();
+            Log.i(TAG, "onConfigurationChanged: ");
         }
     }
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        Log.i(TAG, "onAttach: " + context);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        Log.i(TAG, "onDetach: ");
+    }
 }

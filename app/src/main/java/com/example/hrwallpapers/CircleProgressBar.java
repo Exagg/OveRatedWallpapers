@@ -101,9 +101,9 @@ public class CircleProgressBar extends View {
             }
         }
 
-        postInvalidate();
-        invalidate();
         requestLayout();
+        invalidate();
+        refreshDrawableState();
 
     }
 

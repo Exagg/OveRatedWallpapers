@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/wallpaper_fragment_container"
     android:orientation="horizontal">
     <ImageView
@@ -17,36 +18,45 @@
         <ImageView
             android:id="@+id/wallpaper_popup_base_image"
             android:layout_width="match_parent"
-            android:layout_height="400dp"
-            android:scaleType="center"/>
+            android:layout_height="400dp"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:orientation="horizontal">
 
-            <ImageView
+            <info.androidhive.fontawesome.FontTextView
                 android:id="@+id/wallpaper_share_button"
                 android:layout_width="25dp"
-                android:layout_height="25dp"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="33"
-                android:src="@drawable/ic_eye" />
+                android:textSize="22dp"
+                android:text="@string/fa_share_alt_solid"
+                android:textAlignment="center"
+                app:solid_icon="true"/>
 
-            <ImageView
+            <info.androidhive.fontawesome.FontTextView
                 android:id="@+id/wallpaper_like_button"
                 android:layout_width="25dp"
-                android:layout_height="25dp"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="33"
-                android:src="@drawable/ic_eye" />
+                android:textSize="22dp"
+                android:text="@string/fa_heart"
+                android:textAlignment="center"
+                android:textColor="@color/red"/>
 
-            <ImageView
+            <info.androidhive.fontawesome.FontTextView
                 android:id="@+id/wallpaper_download_button"
                 android:layout_width="25dp"
                 android:layout_height="25dp"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="33"
-                android:src="@drawable/ic_eye" />
+                android:text="@string/fa_cloud_download_alt_solid"
+                app:solid_icon="true"
+                android:textSize="22dp"
+                android:textAlignment="center"
+                android:textColor="@color/black"/>
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

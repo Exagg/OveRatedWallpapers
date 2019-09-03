@@ -95,7 +95,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             .fitCenter();
 
 
-    private Fragment popupFragment;
+    private wallpaperPopupFragment popupFragment;
 
     private SlidingUpPanelLayout mSlidingPanel;
     private FlexboxLayout tagsContainer;
@@ -124,7 +124,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         setAnimation();
         setContentView(R.layout.activity_base_wallpaper);
         baseWallpaper = this;
-        popupFragment = setFragment(new wallpaperPopupFragment(),R.id.base_wallpaper_fragment_holder);
+        popupFragment = (wallpaperPopupFragment) setFragment(new wallpaperPopupFragment(),R.id.base_wallpaper_fragment_holder);
         thisActivity = this;
         if(this.getIntent().getExtras().containsKey("wallpaperList"))
         {
@@ -929,7 +929,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                 RequestOptions requestOptions = new RequestOptions();
                 if (position == 0) requestOptions.priority(Priority.HIGH);
                 else requestOptions.priority(Priority.NORMAL);
-                MainActivity.LoadImageFromURL(im,model.originalSrc,circleProgressBar,requestOptions,model);
+                MainActivity.loadImageAsHQ(im,circleProgressBar,requestOptions,model);
             }
             super.setPrimaryItem(container, position, object);
         }
@@ -984,7 +984,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
                 RequestOptions requestOptions = new RequestOptions();
                 if (position == 0) requestOptions.priority(Priority.HIGH);
                 else requestOptions.priority(Priority.NORMAL);
-                MainActivity.LoadImageFromURL(im,model.originalSrc,circleProgressBar,requestOptions,model);
+                MainActivity.loadImageAsHQ(im,circleProgressBar,requestOptions,model);
             }
             container.addView(layout);
             return layout;

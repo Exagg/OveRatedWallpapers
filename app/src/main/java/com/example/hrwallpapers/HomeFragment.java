@@ -3,25 +3,23 @@ package com.example.hrwallpapers;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
 
 
 
 public class HomeFragment extends Fragment {
-
 
     private static final int RECYCLER_VIEW_COLUMN = 2;
     private static final String TAG = "HomeFragment";
@@ -30,7 +28,7 @@ public class HomeFragment extends Fragment {
 
     public wallpaperRecyclerViewAdapter recyclerViewAdapter;
     public RecyclerView recyclerView;
-    private static Fragment popupFragment;
+    private static wallpaperPopupFragment popupFragment;
     private static FrameLayout fragmentHolder;
     private static HttpGetImagesAsync task = new HttpGetImagesAsync();
 
@@ -44,7 +42,6 @@ public class HomeFragment extends Fragment {
     public void setActiveQueryModel(queryModel activeQueryModel) {
         HomeFragment.activeQueryModel = activeQueryModel;
     }
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,7 +62,7 @@ public class HomeFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.home_recycler_view);
         recyclerView.getItemAnimator().setChangeDuration(0);
-        popupFragment = setFragment(new wallpaperPopupFragment());
+        popupFragment = (wallpaperPopupFragment) MainActivity.setFragment(new wallpaperPopupFragment(),fragmentHolder,getChildFragmentManager());
 
         recyclerViewAdapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),fragmentHolder,popupFragment,recyclerView,getActivity(),activeQueryModel,recyclerView);
 
@@ -120,15 +117,6 @@ public class HomeFragment extends Fragment {
         {
             getActivity().getSupportFragmentManager().beginTransaction().detach(this).attach(this).commit();
         }
-    }
-
-    protected Fragment setFragment(Fragment fragment) {
-        FragmentManager fragmentManager = this.getFragmentManager();
-        FragmentTransaction fragmentTransaction =
-                fragmentManager.beginTransaction();
-        fragmentTransaction.replace(fragmentHolder.getId(), fragment);
-        fragmentTransaction.commit();
-        return fragment;
     }
 
     @Override

@@ -9,6 +9,20 @@
     <string name="title_activity_base_wallpaper">Wallpaper</string>
     <string name="title_activity_image_process">Filter</string>
 
+
+
+    <string name="interval_1m">1 Minute</string>
+    <string name="interval_3m">3 Minute</string>
+    <string name="interval_5m">5 Minute</string>
+    <string name="interval_10m">10 Minute</string>
+    <string name="interval_30m">30 Minute</string>
+    <string name="interval_1h">1 Hour</string>
+    <string name="interval_2h">2 Hour</string>
+    <string name="interval_4h">4 Hour</string>
+    <string name="interval_6h">6 Hour</string>
+
+
+
     <string name="arrayDefaultALL"></string>
 
     <string-array name="resolutionArray">
@@ -37,7 +51,6 @@
         <item>3840x2880</item>
         <item>3840x3072</item>
     </string-array>
-
 
     <string-array name="sortingArray">
         <item>@string/arrayDefaultALL</item>
@@ -80,6 +93,21 @@
         <item>#ffffff</item>
         <item>#424153</item>
     </string-array>
+
+    <string-array name="intervalArray">
+        <item>@string/interval_1m</item>
+        <item>@string/interval_3m</item>
+        <item>@string/interval_5m</item>
+        <item>@string/interval_10m</item>
+        <item>@string/interval_30m</item>
+        <item>@string/interval_1h</item>
+        <item>@string/interval_2h</item>
+        <item>@string/interval_4h</item>
+        <item>@string/interval_6h</item>
+    </string-array>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
 </resources>

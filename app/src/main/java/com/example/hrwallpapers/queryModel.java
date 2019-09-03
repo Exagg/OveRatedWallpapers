@@ -68,7 +68,7 @@ public class queryModel {
 
 
             purity +=this.isSfw() ? "1" : "0";
-            purity +=this.isSketchy() ? "1" : "0";
+            purity +=this.isSketchy() ? "0" : "0";
             purity +=this.isNsfw() ? "1" : "1";
 
 

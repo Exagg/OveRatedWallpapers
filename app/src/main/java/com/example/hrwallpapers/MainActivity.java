@@ -7,12 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -51,12 +51,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import info.androidhive.fontawesome.FontDrawable;
+import info.androidhive.fontawesome.FontCache;
+import info.androidhive.fontawesome.FontTextView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener{
 
     public static final File downloadFolder = new File(Environment.getExternalStorageDirectory() + File.separator + MainActivity.DOWNLOAD_FILE_NAME);
+    public static SpliceWallpaperBackgroundService autoBackgroundService;
 
     public static SqliteConnection database;
 
@@ -88,17 +90,14 @@ public class MainActivity extends AppCompatActivity
     DrawerLayout drawer;
     ImageView searchButton;
 
-    private MainFragment.OnFragmentInteractionListener mainListener = new MainFragment.OnFragmentInteractionListener() {
-        @Override
-        public void onFragmentInteraction(Uri uri) {
-
-        }
-    };
     public static HistoryFragment historyFragment = new HistoryFragment();
     public static MainFragment mainFragment = new MainFragment();
     public static FavoritesFragment favoritesFragment = new FavoritesFragment();
     public static SearchFragment searchFragment = new SearchFragment();
+    public static Fragment autoWallpaperFragment = new AutoWallpaperFragment();
+
     private Toolbar toolbar;
+    private boolean mDrawerIsOpen =false;
 
 
     @Override
@@ -107,6 +106,8 @@ public class MainActivity extends AppCompatActivity
         ma = this;
         database = new SqliteConnection(MainActivity.this);
         wallpaperInFavorites =database.getFavorites();
+
+        startService(new Intent(this,SpliceWallpaperBackgroundService.class));
 
         setContentView(R.layout.activity_main);
         toolbar = findViewById(R.id.toolbar);
@@ -140,7 +141,6 @@ public class MainActivity extends AppCompatActivity
         else  DOWNLOAD_FILE_PATH = null;
 
 
-        mainFragment.setInteractionListener(mainListener);
         setFragment(mainFragment,mainFragmentHolder,getSupportFragmentManager());
 
 
@@ -152,14 +152,14 @@ public class MainActivity extends AppCompatActivity
                 mainFragmentHolder.setVisibility(View.GONE);
             }
         });
-
     }
 
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
+        if (drawer.isDrawerOpen(GravityCompat.START) && mDrawerIsOpen) {
             drawer.closeDrawer(GravityCompat.START);
+            mDrawerIsOpen = false;
         }
         else if (historyFragment.isAdded())
         {
@@ -188,6 +188,15 @@ public class MainActivity extends AppCompatActivity
             this.setTitle(R.string.app_name);
             mainFragmentHolder.setVisibility(View.VISIBLE);
         }
+        else if(autoWallpaperFragment.isAdded())
+        {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(autoWallpaperFragment);
+            transaction.commit();
+
+            this.setTitle(R.string.app_name);
+            mainFragmentHolder.setVisibility(View.VISIBLE);
+        }
         else {
             super.onBackPressed();
         }
@@ -206,14 +215,14 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
+        mDrawerIsOpen= true;
         if (id == R.id.menu_favorites)
         {
             //Favoriye atılanlar getirilecek
             if (menuFragmentHolder != null)
             {
+                onBackPressed();
                 setFragment(favoritesFragment,menuFragmentHolder,MainActivity.this.getSupportFragmentManager());
-                drawer.closeDrawers();
                 mainFragmentHolder.setVisibility(View.GONE);
             }
         }
@@ -222,8 +231,26 @@ public class MainActivity extends AppCompatActivity
             //Daha once göz atılanlar getirilecek.
 
             if (menuFragmentHolder != null) {
+                onBackPressed();
+
                 setFragment(historyFragment, menuFragmentHolder, MainActivity.this.getSupportFragmentManager());
-                drawer.closeDrawers();
+                mainFragmentHolder.setVisibility(View.GONE);
+            }
+        }
+        else if (id == R.id.menu_home)
+        {
+            onBackPressed();
+            if (mainFragmentHolder.getVisibility() != View.VISIBLE)
+            {
+                onBackPressed();
+            }
+        }
+        else if(id == R.id.menu_auto_wallpaper)
+        {
+            if (menuFragmentHolder!= null)
+            {
+                onBackPressed();
+                setFragment(autoWallpaperFragment,menuFragmentHolder,MainActivity.this.getSupportFragmentManager());
                 mainFragmentHolder.setVisibility(View.GONE);
             }
         }
@@ -333,27 +360,55 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    protected void setFragment(Fragment fragment,View fragmentHolder,FragmentManager fragmentManager) {
-        FragmentTransaction fragmentTransaction =
-                fragmentManager.beginTransaction();
-        fragmentTransaction.replace(fragmentHolder.getId(), fragment);
-        fragmentTransaction.commit();
-    }
-
-    public static void setIconToImageView(ImageView imageView, Context context,int resource ,boolean isSolid,boolean isBrand,int size)
-    {
-        FontDrawable drawable = new FontDrawable(context,resource,isSolid,isBrand);
-        drawable.setTextSize(MainActivity.setPxToDP(size,context));
-        imageView.setImageDrawable(drawable);
+    public static Fragment setFragment(Fragment fragment,View fragmentHolder,FragmentManager fragmentManager) {
+        if(fragmentHolder != null )
+        {
+            FragmentTransaction fragmentTransaction =
+                    fragmentManager.beginTransaction();
+            fragmentTransaction.replace(fragmentHolder.getId(), fragment);
+            fragmentTransaction.commit();
+        }
+        return fragment;
     }
 
 
-    public static void setIconToImageView(ImageView imageView, Context context, int resource , boolean isSolid, boolean isBrand, int size, int color)
+    public static void setIconToImageView(FontTextView fontTextView, Context context, int resource , boolean isSolid, boolean isBrand)
     {
-        FontDrawable drawable = new FontDrawable(context,resource,isSolid,isBrand);
-        drawable.setTextSize(MainActivity.setPxToDP(size,context));
-        drawable.setTextColor(color);
-        imageView.setImageDrawable(drawable);
+        if (isBrand)
+            fontTextView.setTypeface(FontCache.get(context, "fa-brands-400.ttf"));
+        else if (isSolid)
+            fontTextView.setTypeface(FontCache.get(context, "fa-solid-900.ttf"));
+        else
+            fontTextView.setTypeface(FontCache.get(context, "fa-regular-400.ttf"));
+
+        fontTextView.setText(resource);
+    }
+    public static void setIconToImageView(FontTextView fontTextView, Context context, int resource , boolean isSolid, boolean isBrand, int size)
+    {
+        if (isBrand)
+            fontTextView.setTypeface(FontCache.get(context, "fa-brands-400.ttf"));
+        else if (isSolid)
+            fontTextView.setTypeface(FontCache.get(context, "fa-solid-900.ttf"));
+        else
+            fontTextView.setTypeface(FontCache.get(context, "fa-regular-400.ttf"));
+
+        fontTextView.setText(resource);
+        fontTextView.setTextSize(size);
+    }
+
+    public static void setIconToImageView(FontTextView fontTextView, Context context, int resource , boolean isSolid, boolean isBrand, int size, int color)
+    {
+
+        if (isBrand)
+            fontTextView.setTypeface(FontCache.get(context, "fa-brands-400.ttf"));
+        else if (isSolid)
+            fontTextView.setTypeface(FontCache.get(context, "fa-solid-900.ttf"));
+        else
+            fontTextView.setTypeface(FontCache.get(context, "fa-regular-400.ttf"));
+
+        fontTextView.setText(resource);
+        fontTextView.setTextSize(size);
+        fontTextView.setTextColor(color);
     }
 
     public static float setDpToPx(float dp, Context context) {
@@ -441,66 +496,23 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public static void LoadImageFromURL(ImageView im, String url, final CircleProgressBar progressBar, RequestOptions requestOptions,wallpaperModel model)
-    {
-        progressBar.setProgress(0);
-        if(progressBar.getProgress() < 100)
-        {
-            new GlideImageLoader(im,progressBar).load(url,requestOptions,model);
-        }
-
-    }
-    public static void LoadImageFromURL(ImageView im, String url, final CircleProgressBar progressBar, RequestOptions requestOptions,wallpaperModel model,Context context)
-    {
-        progressBar.setProgress(0);
-        if(progressBar.getProgress() < 100)
-        {
-            new GlideImageLoader(im,progressBar,context).load(url,requestOptions,model);
-        }
-
-    }
-
-    public static void LoadImageFromDisk(ImageView wallpaperImage, File file, CircleProgressBar circleProgressBar, RequestOptions requestOptions, wallpaperModel model) {
+    public static void loadImageAsHQ(ImageView wallpaperImage,CircleProgressBar circleProgressBar, RequestOptions requestOptions, wallpaperModel model) {
 
         circleProgressBar.setProgress(0);
         if(circleProgressBar.getProgress() < 100)
         {
-            new GlideImageLoader(wallpaperImage,circleProgressBar).load(file,requestOptions,model);
+            new GlideImageLoader(wallpaperImage,circleProgressBar).load(model.originalSrc,requestOptions,model);
         }
     }
-    public static void LoadImageFromDisk(ImageView wallpaperImage, File file, CircleProgressBar circleProgressBar, RequestOptions requestOptions, wallpaperModel model,Context Context) {
+
+    public static void loadImageAsLQ(ImageView wallpaperImage,CircleProgressBar circleProgressBar, RequestOptions requestOptions, wallpaperModel model) {
+
         circleProgressBar.setProgress(0);
         if(circleProgressBar.getProgress() < 100)
         {
-            new GlideImageLoader(wallpaperImage,circleProgressBar,Context).load(file,requestOptions,model);
+            new GlideImageLoader(wallpaperImage,circleProgressBar).load(model.thumbSrc,requestOptions,model);
         }
     }
-
-    public static void loadImage(@NonNull wallpaperRecyclerViewAdapter.wallpaperViewHolder holder,Fragment popupFragment,RequestOptions requestOptions,Context context)
-    {
-
-        if(popupFragment != null)
-        {
-            holder.setEventForModel();
-            if(holder.model.getFilePath() == null){
-                MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model);
-            }
-            else {
-                MainActivity.LoadImageFromDisk(holder.wallpaperImage,new File(holder.model.getFilePath()),holder.circleProgressBar,requestOptions,holder.model);
-            }
-        }
-        else
-        {
-            if(holder.model.getFilePath() == null)
-            {
-                MainActivity.LoadImageFromURL(holder.wallpaperImage,holder.model.thumbSrc,holder.circleProgressBar,requestOptions,holder.model,context);
-            }
-            else {
-                MainActivity.LoadImageFromDisk(holder.wallpaperImage,new File(holder.model.getFilePath()),holder.circleProgressBar,requestOptions,holder.model,context);
-            }
-        }
-    }
-
 
     public static void likeWallpaper(@NonNull wallpaperModel model,@NonNull ImageView toggleImage)
     {
@@ -592,6 +604,32 @@ public class MainActivity extends AppCompatActivity
         return null;
     }
 
+    public static List<File> findAllExistFile()
+    {
+        List<File> list = new ArrayList<>();
+        File[] allFiles = MainActivity.downloadFolder.listFiles();
+        for (File file: allFiles
+             ) {
+            list.add(file);
+        }
+        return list;
+    }
+
+    public static List<wallpaperModel> findAllexistFileAsModel(){
+        List<wallpaperModel> list = new ArrayList<>();
+        File[] allFiles = MainActivity.downloadFolder.listFiles();
+        for (File file: allFiles
+             ) {
+
+            String name = file.getName();
+            String id = wallpaperModel.fileNameToID(name);
+
+            wallpaperModel model = new wallpaperModel(id);
+            list.add(model);
+        }
+        return list;
+    }
+
     public static void checkPermissions(Context context,Activity activity,int PERM_REQUEST_CODE)
     {
         String[]  needPerms = new String[]
@@ -618,12 +656,12 @@ public class MainActivity extends AppCompatActivity
 }
 class mainViewPagerAdapter extends FragmentPagerAdapter
 {
+    private static String TAG = "FragmentPagerAdapter";
     private final List<Fragment> fragmentList = new ArrayList<>();
     private final List<MenuModel> fragmentMenuList = new ArrayList<>();
 
-    public mainViewPagerAdapter(FragmentManager fragmentManager)
-    {
-        super(fragmentManager);
+    public mainViewPagerAdapter(@NonNull FragmentManager fm, int behavior) {
+        super(fm, behavior);
     }
 
     @Override
@@ -645,12 +683,24 @@ class mainViewPagerAdapter extends FragmentPagerAdapter
 
     public void AddFragment(Fragment fragment,MenuModel menuModel)
     {
-        fragmentList.add(fragment);
-        fragmentMenuList.add(menuModel);
-        notifyDataSetChanged();
+        if (!fragment.isAdded())
+        {
+            fragmentList.add(fragment);
+            fragmentMenuList.add(menuModel);
+            notifyDataSetChanged();
+        }
+        else
+        {
+            Log.i(TAG, "AddFragment: ");
+        }
     }
 
-    public void AddFragmentAt(Fragment fragment,int index,MenuModel menuModel)
+    @Override
+    public long getItemId(int position) {
+        return super.getItemId(position);
+    }
+
+    public void AddFragmentAt(Fragment fragment, int index, MenuModel menuModel)
     {
         fragmentList.add(index,fragment);
         fragmentMenuList.add(index,menuModel);
@@ -661,6 +711,7 @@ class mainViewPagerAdapter extends FragmentPagerAdapter
     {
         return fragmentMenuList;
     }
+
     public Fragment getFragment(int position)
     {
         return fragmentList.get(position);

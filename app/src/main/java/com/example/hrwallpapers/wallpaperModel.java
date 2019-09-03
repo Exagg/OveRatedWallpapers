@@ -83,4 +83,10 @@ public class wallpaperModel {
         prepareOriginalSrc();
         prepareThumbSrc();
     }
+
+    public static String fileNameToID(String name)
+    {
+        String id = name.replace("HQ_","").replace("LQ_","").replace(".jpg","");
+        return id;
+    }
 }

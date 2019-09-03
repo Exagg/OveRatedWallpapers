@@ -83,7 +83,7 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
         {
             case R.id.download_dialog_high_quality_container:
             {
-                if(this.activeBitmap != null && this.activeModel != null && dialogType != null)
+                if(this.activeModel != null && dialogType != null)
                 {
                     if(!MainActivity.isFileExists(activeModel.HQFileName))
                     {
@@ -239,18 +239,24 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
     @Override
     public void Finished(String imagePath) {
         activeBitmap = BitmapFactory.decodeFile(imagePath);
+        activeModel.setFilePath(imagePath);
 
         if(this.activeBitmap != null)
         {
-            MainActivity.showToast("This wallpaper is downloaded to " + imagePath,Toast.LENGTH_SHORT,MainActivity.ma);
-            File file = new File(imagePath);
-            doEvent(file);
-            dismiss();
+            progressBarLoaded(circleProgressBar);
         }
     }
 
     @Override
     public void progressBarLoaded(View view) {
+
+        if (activeBitmap != null && circleProgressBar.getProgress() >= 100f)
+        {
+            MainActivity.showToast("This wallpaper is downloaded to " + activeModel.getFilePath(),Toast.LENGTH_SHORT,MainActivity.ma);
+            File file = new File(activeModel.getFilePath());
+            doEvent(file);
+            dismiss();
+        }
     }
 
     public enum BottomDownloadDialogType

@@ -26,7 +26,8 @@
     <com.google.android.gms.ads.AdView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"/>
+        android:layout_gravity="bottom"
+        app:adSize="Banner"/>
 
 
 </FrameLayout>

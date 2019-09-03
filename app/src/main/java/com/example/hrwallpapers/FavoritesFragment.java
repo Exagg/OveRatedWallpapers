@@ -9,8 +9,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,7 +31,7 @@ public class FavoritesFragment extends Fragment {
     private RecyclerView favoritesRecyclerView;
     private wallpaperRecyclerViewAdapter favoritesAdapter;
     private FrameLayout favoritesPopupFragmentHolder;
-    private Fragment popupFragment;
+    private wallpaperPopupFragment popupFragment;
     private int lastShowIndex;
 
     public FavoritesFragment() {
@@ -65,7 +63,7 @@ public class FavoritesFragment extends Fragment {
         favoritesRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(),RECYCLER_VIEW_COLUMN));
 
 
-        popupFragment = setFragment(new wallpaperPopupFragment());
+        popupFragment = (wallpaperPopupFragment) MainActivity.setFragment(new wallpaperPopupFragment(),favoritesPopupFragmentHolder,getChildFragmentManager());
         return view;
     }
 
@@ -73,7 +71,7 @@ public class FavoritesFragment extends Fragment {
     public void onResume() {
         super.onResume();
         getActivity().setTitle(FRAGMENT_TITLE);
-        popupFragment = setFragment(new wallpaperPopupFragment());
+        popupFragment = (wallpaperPopupFragment) MainActivity.setFragment(new wallpaperPopupFragment(),favoritesPopupFragmentHolder,getChildFragmentManager());
 
         List<String> favorites = MainActivity.database.getFavorites();
 
@@ -108,16 +106,6 @@ public class FavoritesFragment extends Fragment {
 
         if(this.favoritesAdapter != null) this.lastShowIndex = this.favoritesAdapter.getClickedItemPosition();
     }
-
-    protected Fragment setFragment(Fragment fragment) {
-        FragmentManager fragmentManager = this.getFragmentManager();
-        FragmentTransaction fragmentTransaction =
-                fragmentManager.beginTransaction();
-        fragmentTransaction.replace(favoritesPopupFragmentHolder.getId(), fragment);
-        fragmentTransaction.commit();
-        return fragment;
-    }
-
 
 
     @Override

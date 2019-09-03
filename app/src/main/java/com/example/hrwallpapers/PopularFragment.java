@@ -3,6 +3,11 @@ package com.example.hrwallpapers;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -10,10 +15,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 
@@ -24,7 +25,7 @@ public class PopularFragment extends Fragment {
 
     public wallpaperRecyclerViewAdapter recyclerViewAdapter;
     public RecyclerView recyclerView;
-    private static Fragment popupFragment;
+    private static wallpaperPopupFragment popupFragment;
     private static FrameLayout fragmentHolder;
     private static HttpGetImagesAsync task = new HttpGetImagesAsync();
     private int onPausePosition = 0;
@@ -56,7 +57,7 @@ public class PopularFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.popular_recycler_view);
         recyclerView.getItemAnimator().setChangeDuration(0);
-        popupFragment = setFragment(new wallpaperPopupFragment());
+        popupFragment = (wallpaperPopupFragment) setFragment(new wallpaperPopupFragment());
 
         recyclerViewAdapter = new wallpaperRecyclerViewAdapter(new ArrayList<wallpaperModel>(),fragmentHolder,popupFragment,recyclerView,getActivity(),activeQueryModel,recyclerView);
         recyclerView.setAdapter(recyclerViewAdapter);

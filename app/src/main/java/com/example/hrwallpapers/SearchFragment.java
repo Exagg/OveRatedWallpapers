@@ -70,7 +70,7 @@ public class SearchFragment extends Fragment implements Spinner.OnItemSelectedLi
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_search, container, false);
+        View view = inflater.inflate(R.layout.fragment_search, null, false);
         colorSpinner = view.findViewById(R.id.search_color_spinner);
         keywordInput = view.findViewById(R.id.search_keyword);
         animeButton = view.findViewById(R.id.search_anime);
@@ -96,7 +96,6 @@ public class SearchFragment extends Fragment implements Spinner.OnItemSelectedLi
         sortingSpinner.setOnItemSelectedListener(this);
 
         searchButton.setOnClickListener(this);
-
 
         query.setPeople(peopleButton.isChecked());
         query.setAnime(animeButton.isChecked());

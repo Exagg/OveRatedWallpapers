@@ -11,8 +11,6 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,7 +25,7 @@ public class ResultFragment extends Fragment implements HttpGetImagesAsync.onAsy
 
     public wallpaperRecyclerViewAdapter recyclerViewAdapter;
     public RecyclerView recyclerView;
-    private static Fragment popupFragment;
+    private static wallpaperPopupFragment popupFragment;
     private static FrameLayout fragmentHolder;
     private static HttpGetImagesAsync task = new HttpGetImagesAsync();
     private int onPausePosition = 0;
@@ -60,7 +58,7 @@ public class ResultFragment extends Fragment implements HttpGetImagesAsync.onAsy
 
         recyclerView = view.findViewById(R.id.result_recyclerView);
         recyclerView.getItemAnimator().setChangeDuration(0);
-        popupFragment = setFragment(new wallpaperPopupFragment());
+        popupFragment = (wallpaperPopupFragment) MainActivity.setFragment(new wallpaperPopupFragment(),fragmentHolder,getChildFragmentManager());
         noContentView = view.findViewById(R.id.result_no_content);
 
         if(activeQueryModel != null)
@@ -123,14 +121,6 @@ public class ResultFragment extends Fragment implements HttpGetImagesAsync.onAsy
         }
     }
 
-    protected Fragment setFragment(Fragment fragment) {
-        FragmentManager fragmentManager = this.getFragmentManager();
-        FragmentTransaction fragmentTransaction =
-                fragmentManager.beginTransaction();
-        fragmentTransaction.replace(fragmentHolder.getId(), fragment);
-        fragmentTransaction.commit();
-        return fragment;
-    }
 
 
     @Override

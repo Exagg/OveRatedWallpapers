@@ -5,13 +5,18 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
 import androidx.annotation.NonNull;
+
+import com.example.hrwallpapers.MainActivity;
+import com.example.hrwallpapers.wallpaperList;
+import com.example.hrwallpapers.wallpaperModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SqliteConnection extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION =3;
     private static final String DATABASE_NAME = "Wallpapers";
 
 
@@ -30,6 +35,30 @@ public class SqliteConnection extends SQLiteOpenHelper {
             FAVORITES_PICTURE_TYPE_COLUMN + " TEXT NOT NULL\n"+
             ");";
 
+
+    private static final String WALLPAPER_LISTS_TABLE_NAME = "Lists";
+    private static final String WALLPAPER_LISTS_LIST_NAME = "Name";
+    private static final String WALLPAPER_LISTS_CREATE_DATE = "Create_Date";
+    private static final String WALLPAPER_LISTS_ID = "ID";
+
+    private static final String wallpaperListsQuery = "CREATE TABLE " + WALLPAPER_LISTS_TABLE_NAME + " (\n"+
+            WALLPAPER_LISTS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,\n"+
+            WALLPAPER_LISTS_LIST_NAME + " TEXT NOT NULL,\n"+
+            WALLPAPER_LISTS_CREATE_DATE + " TEXT NOT NULL\n"+
+            ");";
+
+
+    private static final String WALLPAPER_IN_LIST_TABLE_NAME = "Wallpaper_In_List";
+    private static final String WALLPAPER_IN_LIST_ID = "ID";
+    private static final String WALLPAPER_IN_LIST_LIST_ID = "List_ID";
+    private static final String WALLPAPER_IN_LIST_WALLPAPER_ID = "Wallpaper_ID";
+
+    private static final String wallpaperInListQuery =  "CREATE TABLE " + WALLPAPER_IN_LIST_TABLE_NAME + " (\n"+
+            WALLPAPER_IN_LIST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,\n"+
+            WALLPAPER_IN_LIST_LIST_ID + " INTEGER NOT NULL,\n"+
+            WALLPAPER_IN_LIST_WALLPAPER_ID + " TEXT NOT NULL\n"+
+            ");";
+
     public SqliteConnection(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -37,11 +66,15 @@ public class SqliteConnection extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(favoritesTableQuery);
+        db.execSQL(WALLPAPER_LISTS_TABLE_NAME);
+        db.execSQL(WALLPAPER_IN_LIST_TABLE_NAME);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + FAVORITES_TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + WALLPAPER_LISTS_TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + WALLPAPER_IN_LIST_TABLE_NAME);
         onCreate(db);
     }
 
@@ -96,6 +129,74 @@ public class SqliteConnection extends SQLiteOpenHelper {
         {
             ex.printStackTrace();
         }
+        finally {
+            db.close();
+        }
         return  favoritesList;
     }
+
+    public long createNewList(@NonNull String listName) throws Exception {
+        long createdID = 0;
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        try
+        {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(WALLPAPER_LISTS_LIST_NAME,listName);
+            contentValues.put(WALLPAPER_LISTS_CREATE_DATE, MainActivity.getCurrentDateTime());
+            createdID = db.insert(WALLPAPER_LISTS_TABLE_NAME,null,contentValues);
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            createdID = -1;
+        }
+        finally {
+            db.close();
+            if (createdID < 1) throw new Exception();
+            return createdID;
+        }
+    }
+
+    public List<wallpaperList> getWallpaperLists()
+    {
+        List<wallpaperList> wallpaperLists = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        try
+        {
+            String[] selectQuery = {WALLPAPER_LISTS_ID,WALLPAPER_LISTS_LIST_NAME,WALLPAPER_LISTS_CREATE_DATE};
+            Cursor cursor = db.query(WALLPAPER_LISTS_LIST_NAME,selectQuery,null,null,null,null,null);
+            while (cursor.moveToNext())
+            {
+                int id = cursor.getInt(0);
+                String listName = cursor.getString(1);
+                wallpaperList list = new wallpaperList(listName,id);
+
+
+                String[] childSelectQuery = {WALLPAPER_IN_LIST_ID,WALLPAPER_IN_LIST_WALLPAPER_ID};
+                Cursor childCursor = db.query(WALLPAPER_IN_LIST_TABLE_NAME,childSelectQuery,null,null,null,null,null);
+
+                List<wallpaperModel> childList = new ArrayList<>();
+                while (cursor.moveToNext())
+                {
+                    int childID = childCursor.getInt(0);
+                    String wallpaperID = childCursor.getString(1);
+
+                    wallpaperModel model = new wallpaperModel(wallpaperID);
+
+                    childList.add(model);
+                }
+                list.setModelList(childList);
+            }
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        finally {
+            db.close();
+        }
+        return wallpaperLists;
+    }
+
 }

@@ -9,8 +9,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,7 +28,7 @@ public class HistoryFragment extends Fragment {
     private RecyclerView downloadedRecyclerView;
     private wallpaperRecyclerViewAdapter downloadedRecyclerViewAdapter;
     private FrameLayout popupFragmentHolder;
-    private Fragment popupFragment;
+    private wallpaperPopupFragment popupFragment;
     private int lastShowIndex;
 
     public HistoryFragment( ) {
@@ -75,7 +73,7 @@ public class HistoryFragment extends Fragment {
         super.onResume();
         getActivity().setTitle(FRAGMENT_TITLE);
 
-        popupFragment = setFragment(new wallpaperPopupFragment());
+        popupFragment = (wallpaperPopupFragment) MainActivity.setFragment(new wallpaperPopupFragment(),popupFragmentHolder,getChildFragmentManager());
 
 
         FileFilter fileFilter = new FileFilter() {
@@ -120,12 +118,4 @@ public class HistoryFragment extends Fragment {
         super.onDetach();
     }
 
-    protected Fragment setFragment(Fragment fragment) {
-        FragmentManager fragmentManager = this.getFragmentManager();
-        FragmentTransaction fragmentTransaction =
-                fragmentManager.beginTransaction();
-        fragmentTransaction.replace(popupFragmentHolder.getId(), fragment);
-        fragmentTransaction.commit();
-        return fragment;
-    }
 }

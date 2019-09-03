@@ -119,7 +119,7 @@ public class GlideImageLoader {
                     .into(mImageView);
         }
     }
-    public void load(final File localFile, final RequestOptions options, final wallpaperModel wallpaperModel) {
+    private void load(final File localFile, final RequestOptions options, final wallpaperModel wallpaperModel) {
         if (localFile == null || options == null) return;
 
         //set Listener & start
@@ -160,8 +160,6 @@ public class GlideImageLoader {
                 })
                 .into(mImageView);
     }
-
-
 
     private void onConnecting() {
         if (mProgressBar != null)
