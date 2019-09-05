@@ -4,14 +4,14 @@ import androidx.annotation.NonNull;
 
 import java.util.List;
 
-public class wallpaperList {
+public class wallpaperListModel {
 
     private int ID;
     private String listName;
     private List<wallpaperModel> wallpaperModels;
     private String createDate;
 
-    public wallpaperList(@NonNull String listName,@NonNull int id)
+    public wallpaperListModel(@NonNull String listName,@NonNull int id)
     {
         this.listName = listName;
         this.ID = id;

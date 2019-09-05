@@ -80,6 +80,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
     private ImageView setAsImageView;
     private ImageView downloadImageView;
     private ImageView slideUpButton;
+    private ImageView addButton;
     public wallpaperModel model;
 
 
@@ -184,6 +185,8 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         progressingAreaCircleBar = findViewById(R.id.base_wallpaper_progressing_area_circle);
         downloadDialog = new BottomDownloadDialog(this.getContentResolver());
         slideUpButton = findViewById(R.id.base_wallpaper_slide_up);
+        addButton = findViewById(R.id.base_wallpaper_add_to_list);
+
 
         mSlidingPanel.setAnchorPoint(0.7f); // it will up to %70 of screen size
 
@@ -518,6 +521,18 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         });
 
         Log.i(TAG, "onCreate:  on create event is triggered");
+
+
+        this.addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (model != null)
+                {
+                }
+                else MainActivity.showToast("There is no selected wallpaper, please restart this application or try again few seconds..",Toast.LENGTH_LONG,BaseWallpaperActivity.this);
+
+            }
+        });
 
 
     }

@@ -89,4 +89,8 @@ public class wallpaperModel {
         String id = name.replace("HQ_","").replace("LQ_","").replace(".jpg","");
         return id;
     }
+
+    public String getId() {
+        return id;
+    }
 }

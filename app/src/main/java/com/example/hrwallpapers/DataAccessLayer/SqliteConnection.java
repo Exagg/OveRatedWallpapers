@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import androidx.annotation.NonNull;
 
 import com.example.hrwallpapers.MainActivity;
-import com.example.hrwallpapers.wallpaperList;
+import com.example.hrwallpapers.wallpaperListModel;
 import com.example.hrwallpapers.wallpaperModel;
 
 import java.util.ArrayList;
@@ -66,8 +66,8 @@ public class SqliteConnection extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(favoritesTableQuery);
-        db.execSQL(WALLPAPER_LISTS_TABLE_NAME);
-        db.execSQL(WALLPAPER_IN_LIST_TABLE_NAME);
+        db.execSQL(wallpaperListsQuery);
+        db.execSQL(wallpaperInListQuery);
     }
 
     @Override
@@ -158,9 +158,9 @@ public class SqliteConnection extends SQLiteOpenHelper {
         }
     }
 
-    public List<wallpaperList> getWallpaperLists()
+    public List<wallpaperListModel> getWallpaperLists()
     {
-        List<wallpaperList> wallpaperLists = new ArrayList<>();
+        List<wallpaperListModel> wallpaperLists = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         try
         {
@@ -170,7 +170,7 @@ public class SqliteConnection extends SQLiteOpenHelper {
             {
                 int id = cursor.getInt(0);
                 String listName = cursor.getString(1);
-                wallpaperList list = new wallpaperList(listName,id);
+                wallpaperListModel list = new wallpaperListModel(listName,id);
 
 
                 String[] childSelectQuery = {WALLPAPER_IN_LIST_ID,WALLPAPER_IN_LIST_WALLPAPER_ID};
@@ -197,6 +197,25 @@ public class SqliteConnection extends SQLiteOpenHelper {
             db.close();
         }
         return wallpaperLists;
+    }
+
+    public boolean addToList(@NonNull int ListID,@NonNull wallpaperModel model)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(WALLPAPER_IN_LIST_LIST_ID, ListID);
+            contentValues.put(WALLPAPER_IN_LIST_WALLPAPER_ID, model.getId());
+            db.insert(WALLPAPER_IN_LIST_TABLE_NAME,null,contentValues);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            return false;
+        }
+
     }
 
 }

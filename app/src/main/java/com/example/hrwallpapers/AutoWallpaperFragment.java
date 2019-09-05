@@ -1,5 +1,6 @@
 package com.example.hrwallpapers;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -10,8 +11,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
@@ -20,6 +23,7 @@ import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class AutoWallpaperFragment extends Fragment implements ListView.OnItemSelectedListener,
         View.OnClickListener,
@@ -47,6 +51,7 @@ public class AutoWallpaperFragment extends Fragment implements ListView.OnItemSe
 
         numberSpinner = view.findViewById(R.id.auto_wallpaper_interval_spinner);
         toggleButton = view.findViewById(R.id.auto_wallpaper_enable_button);
+        autoWallpaperListView = view.findViewById(R.id.auto_wallpaper_lists);
 
 
         numberAdapter = ArrayAdapter.createFromResource(this.getContext(),R.array.intervalArray,R.layout.custom_def_spinner_item);
@@ -160,6 +165,57 @@ public class AutoWallpaperFragment extends Fragment implements ListView.OnItemSe
                 IsEnabled = isChecked;
                 setValueToSharedPreferences(IsEnabledKey,IsEnabled);
                 break;
+        }
+    }
+
+    public class autoWallpaperListViewAdapter extends ArrayAdapter<wallpaperListModel> {
+
+        List<wallpaperListModel> list;
+        Context context;
+        public autoWallpaperListViewAdapter(@NonNull Context context, int resource, @NonNull List<wallpaperListModel> objects) {
+            super(context, resource, objects);
+            this.list = objects;
+            this.context = context;
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            View view = LayoutInflater.from(this.context).inflate(R.layout.layout_custom_list_of_wallpaper,null,false);
+            TextView listItemNameTextView = view.findViewById(R.id.list_item_name);
+            ImageButton editButton = view.findViewById(R.id.list_item_edit);
+            ImageButton deleteButton = view.findViewById(R.id.list_item_delete);
+
+            autoWallpaperListHolder holder = new autoWallpaperListHolder(deleteButton,editButton,listItemNameTextView);
+
+            wallpaperListModel listItem = getItem(position);
+
+
+            listItemNameTextView.setText(listItem.getListName());
+
+
+            return view;
+        }
+
+
+        @Nullable
+        @Override
+        public wallpaperListModel getItem(int position) {
+            return this.list.get(position);
+        }
+    }
+
+    public class autoWallpaperListHolder
+    {
+        ImageButton deleteButton;
+        ImageButton editButton;
+        TextView listNameTextView;
+
+        public autoWallpaperListHolder(@NonNull ImageButton deleteButton, @NonNull ImageButton editButton, @NonNull TextView listNameTextView)
+        {
+            this.deleteButton = deleteButton;
+            this.editButton = editButton;
+            this.listNameTextView = listNameTextView;
         }
     }
 }
