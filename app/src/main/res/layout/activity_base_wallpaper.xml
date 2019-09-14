@@ -62,15 +62,15 @@
                                 android:layout_marginRight="10dp">
 
                                 <ImageView
-                                    android:id="@+id/base_wallpaper_like"
-                                    android:layout_width="30dp"
-                                    android:layout_height="30dp"
+                                    android:id="@+id/base_wallpaper_add_to_list"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
                                     android:layout_gravity="center"
                                     android:tint="@color/white"
                                     android:layout_marginRight="25dp"
                                     android:src="@drawable/ic_add"/>
                                 <ImageView
-                                    android:id="@+id/base_wallpaper_add_to_list"
+                                    android:id="@+id/base_wallpaper_like"
                                     android:layout_width="30dp"
                                     android:layout_height="30dp"
                                     android:layout_gravity="center"

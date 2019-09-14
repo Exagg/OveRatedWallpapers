@@ -117,7 +117,7 @@ public class BaseWallpaperActivity extends AppCompatActivity {
 
 
     BottomDownloadDialog downloadDialog;
-
+    AddToListDialog addToListDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,11 +183,10 @@ public class BaseWallpaperActivity extends AppCompatActivity {
         setAsImageView = findViewById(R.id.base_wallpaper_setas);
         progressingArea = findViewById(R.id.base_wallpaper_progressing_area);
         progressingAreaCircleBar = findViewById(R.id.base_wallpaper_progressing_area_circle);
-        downloadDialog = new BottomDownloadDialog(this.getContentResolver());
         slideUpButton = findViewById(R.id.base_wallpaper_slide_up);
         addButton = findViewById(R.id.base_wallpaper_add_to_list);
 
-
+        downloadDialog = new BottomDownloadDialog(this.getContentResolver());
         mSlidingPanel.setAnchorPoint(0.7f); // it will up to %70 of screen size
 
 
@@ -528,6 +527,8 @@ public class BaseWallpaperActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (model != null)
                 {
+                    addToListDialog = new AddToListDialog(BaseWallpaperActivity.this.model);
+                    BaseWallpaperActivity.this.addToListDialog.show(getSupportFragmentManager(),"Add to list");
                 }
                 else MainActivity.showToast("There is no selected wallpaper, please restart this application or try again few seconds..",Toast.LENGTH_LONG,BaseWallpaperActivity.this);
 

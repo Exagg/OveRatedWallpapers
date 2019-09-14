@@ -1,12 +1,16 @@
 package com.example.hrwallpapers;
 
-import android.util.Log;
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.content.res.ColorStateList;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 
-import static android.content.ContentValues.TAG;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class Animations {
 
@@ -137,5 +141,103 @@ public class Animations {
         animate.setDuration(ANIMATION_DURATION);
         animate.setFillAfter(true);
         view.startAnimation(animate);
+    }
+
+}
+
+class CustomRotateAnimation
+{
+    private View view;
+    private int ANIMATE_DURATION;
+    private ObjectAnimator animator;
+    private boolean colorAnimationIsEnabled;
+
+    private CustomColorAnimation colorAnimation;
+
+    public CustomRotateAnimation (View view, int ANIMATE_DURATION, @Nullable boolean colorAnimationIsEnabled, @Nullable int firstColor, @Nullable int secondColor,@Nullable boolean isTintColor )
+    {
+        this.view = view;
+        this.ANIMATE_DURATION = ANIMATE_DURATION;
+        this.colorAnimationIsEnabled = colorAnimationIsEnabled;
+
+        if (this.colorAnimationIsEnabled && (firstColor == 0 || secondColor == 0))
+        {
+            throw new NullPointerException("if color animation came as true, then you send first and second color values..Please check your declares");
+        }
+
+
+        if (this.colorAnimationIsEnabled)
+        {
+            this.colorAnimation = new CustomColorAnimation(this.view,this.ANIMATE_DURATION,firstColor,secondColor,isTintColor);
+        }
+
+    }
+
+    public void rotateTo(float degree,boolean isChecked)
+    {
+        if (animator != null && animator.isRunning()) animator.pause();
+        animator = ObjectAnimator.ofFloat(view,View.ROTATION,view.getRotation(),degree).setDuration(ANIMATE_DURATION);
+        animator.start();
+
+        if (this.colorAnimationIsEnabled)
+        {
+            if (isChecked) this.colorAnimation.animateToSecondColor();
+            else this.colorAnimation.animateToFirstColor();
+        }
+    }
+}
+class CustomColorAnimation implements ValueAnimator.AnimatorUpdateListener
+{
+    private int lastAnimatedValue = 0;
+    private View view;
+    private int ANIMATE_DURATION;
+    private ValueAnimator valueAnimator;
+    private int firstColor;
+    private int secondColor;
+    private boolean isTintColor;
+
+    public CustomColorAnimation(@NonNull View view,@NonNull int ANIMATE_DURATION, @NonNull int firstColor,@NonNull int secondColor,@NonNull boolean isTintColor)
+    {
+        this.ANIMATE_DURATION = ANIMATE_DURATION;
+        this.view = view;
+        this.firstColor = firstColor;
+        this.secondColor = secondColor;
+        this.isTintColor = isTintColor;
+
+        this.valueAnimator = new ValueAnimator();
+        this.valueAnimator.setEvaluator(new ArgbEvaluator());
+        valueAnimator.setDuration(this.ANIMATE_DURATION);
+        valueAnimator.addUpdateListener(this);
+    }
+
+    public void animateToSecondColor()
+    {
+        if (valueAnimator.isRunning()) valueAnimator.pause();
+        if (lastAnimatedValue != 0) this.firstColor = lastAnimatedValue;
+        valueAnimator.setIntValues(lastAnimatedValue,secondColor);
+        valueAnimator.start();
+    }
+    public void animateToFirstColor()
+    {
+        if (valueAnimator.isRunning()) valueAnimator.pause();
+        if (lastAnimatedValue != 0) this.secondColor = lastAnimatedValue;
+
+        valueAnimator.setIntValues(this.secondColor,this.firstColor);
+        valueAnimator.start();
+    }
+
+    @Override
+    public void onAnimationUpdate(ValueAnimator animation) {
+        if (view != null)
+        {
+            if (this.isTintColor)
+            {
+                this.view.setBackgroundTintList(ColorStateList.valueOf((Integer)animation.getAnimatedValue()));
+            }
+            else
+            {
+                this.view.setBackgroundColor((Integer)animation.getAnimatedValue());
+            }
+        }
     }
 }

@@ -21,15 +21,19 @@ public class wallpaperListModel {
         this.wallpaperModels = modelList;
     }
 
-    public List<wallpaperModel> getModelList() {
-        return wallpaperModels;
-    }
-
     public String getListName() {
         return listName;
     }
 
     public void setListName(String listName) {
         this.listName = listName;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public List<wallpaperModel> getWallpaperModels() {
+        return wallpaperModels;
     }
 }

@@ -1,16 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/colorPrimary">
+    android:layout_height="wrap_content">
 
+    <ToggleButton
+        android:id="@+id/list_item_state"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="center"
+        android:background="@drawable/add_to_list_state_button"
+        android:textOn=""
+        android:textOff=""
+        android:text=""
+        android:clickable="false"
+        android:backgroundTint="@color/white"/>
     <TextView
         android:id="@+id/list_item_name"
         android:text="List_name_1"
         android:textColor="@color/white"
-        android:textSize="22dp"
+        android:textSize="14dp"
         android:fontFamily="@font/helvetica_bold"
         android:gravity="center_vertical"
+        android:paddingLeft="25dp"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="100"/>
@@ -20,12 +31,14 @@
         android:layout_height="50dp"
         android:layout_gravity="right"
         android:background="@android:color/transparent"
-        android:src="@color/slate_gray"/>
+        android:tint="@color/white"
+        android:src="@drawable/ic_edit"/>
     <ImageButton
         android:id="@+id/list_item_delete"
         android:layout_width="50dp"
         android:background="@android:color/transparent"
         android:layout_height="50dp"
         android:layout_gravity="right"
-        android:src="@color/red"/>
+        android:tint="@color/red"
+        android:src="@drawable/ic_delete"/>
 </LinearLayout>

@@ -611,6 +611,7 @@ public class MainActivity extends AppCompatActivity
         for (File file: allFiles
              ) {
             list.add(file);
+            Log.i(TAG, "findAllExistFile: " + file.getPath());
         }
         return list;
     }

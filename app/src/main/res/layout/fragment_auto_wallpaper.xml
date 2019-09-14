@@ -6,90 +6,140 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".AutoWallpaperFragment">
 
-
-    <LinearLayout
-        android:layout_width="match_parent"
+    <ScrollView android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorPrimary"
-        android:orientation="vertical">
+        android:fillViewport="true">
+
         <LinearLayout
-            android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:layout_marginTop="25dp">
-            <TextView
-                android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimary"
+            android:orientation="vertical">
+            <LinearLayout
                 android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:textSize="20dp"
-                android:textStyle="bold"
-                android:textAllCaps="false"
-                android:fontFamily="@font/helvetica"
+                android:layout_width="match_parent"
+                android:layout_marginTop="25dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="20dp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:fontFamily="@font/helvetica"
+                    android:textAlignment="center"
+                    android:layout_gravity="center"
+                    android:text="Auto Wallpaper Changer"/>
+            </LinearLayout>
+
+            <ToggleButton
+                android:id="@+id/auto_wallpaper_enable_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:padding="10dp"
+                android:layout_marginTop="20dp"
                 android:textAlignment="center"
-                android:layout_gravity="center"
-                android:text="Auto Wallpaper Changer"/>
-        </LinearLayout>
-
-        <ToggleButton
-            android:id="@+id/auto_wallpaper_enable_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:padding="10dp"
-            android:layout_marginTop="20dp"
-            android:textAlignment="center"
-            android:textColor="@color/white"
-            android:textOff="Set as enabled to Auto Wallpaper"
-            android:textOn="Set as disabled to Auto Wallpaper"
-            android:textSize="16dp" />
-
-        <LinearLayout
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Interval(m)"
                 android:textColor="@color/white"
-                android:textSize="16dp"
-                android:textStyle="bold"
-                android:fontFamily="@font/helvetica"
-                android:layout_marginLeft="10dp"/>
+                android:textOff="Set as enabled to Auto Wallpaper"
+                android:textOn="Set as disabled to Auto Wallpaper"
+                android:textSize="16dp" />
 
-            <Spinner
-                android:id="@+id/auto_wallpaper_interval_spinner"
-                android:layout_height="50dp"
-                android:layout_width="150dp"
-                android:entries="@array/intervalArray"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp">
-
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
                 android:layout_height="wrap_content"
-                android:text="Wallpaper List"
-                android:textColor="@color/white"
-                android:textSize="16dp"
-                android:textStyle="bold"
-                android:fontFamily="@font/helvetica"
-                android:layout_marginLeft="10dp"/>
-            <ListView
-                android:id="@+id/auto_wallpaper_lists"
                 android:layout_width="match_parent"
-                android:layout_height="100dp"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Interval(m)"
+                    android:textColor="@color/white"
+                    android:textSize="16dp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/helvetica"
+                    android:layout_marginLeft="10dp"/>
+
+                <Spinner
+                    android:id="@+id/auto_wallpaper_interval_spinner"
+                    android:layout_height="50dp"
+                    android:layout_width="150dp"
+                    android:entries="@array/intervalArray"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"/>
+            </LinearLayout>
+
+            <RadioGroup
+                android:id="@+id/auto_wallpaper_radio_group"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginLeft="50dp"
+                android:layout_marginRight="50dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/auto_wallpaper_switch"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:layout_marginTop="1dp"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="1dp"
+                    android:id="@+id/auto_wallpaper_folder_button"
+                    android:background="@drawable/auto_wallpaper_switch_items"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:text="From Folders"
+                    android:fontFamily="@font/helvetica_rounded_bold"
+                    android:textColor="@color/white" />
+
+                <RadioButton
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_marginBottom="1dp"
+                    android:id="@+id/auto_wallpaper_list_button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/auto_wallpaper_switch_items"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:text="From Lists"
+                    android:fontFamily="@font/helvetica_rounded_bold"
+                    android:textColor="@color/white" />
+            </RadioGroup>
+
+            <LinearLayout
+                android:id="@+id/auto_wallpaper_list_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
                 android:layout_margin="10dp"
+                android:padding="5dp"
+                android:orientation="vertical"
                 android:background="@drawable/wallpaper_list_border">
-            </ListView>
+                <ListView
+                    android:id="@+id/auto_wallpaper_lists"
+                    android:padding="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:choiceMode="singleChoice"
+                    android:listSelector="@drawable/list_view_selector"
+                    android:layout_weight="100">
+                </ListView>
+                <ImageButton
+                    android:id="@+id/auto_wallpaper_add_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:background="@color/antique_white"
+                    android:layout_gravity="bottom"
+                    android:src="@drawable/ic_add" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </ScrollView>
 
 
 </FrameLayout>

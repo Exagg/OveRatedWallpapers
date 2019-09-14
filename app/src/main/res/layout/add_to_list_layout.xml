@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_weight="100"
+    android:background="@color/colorPrimary">
+
+    <com.sothree.slidinguppanel.SlidingUpPanelLayout
+        android:id="@+id/add_to_list_sliding_up_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="top"
+        android:layout_weight="100"
+        app:umanoPanelHeight="0dp">
+
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"
+           android:orientation="vertical">
+
+
+           <TextView
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:fontFamily="@font/helvetica_rounded_bold"
+               android:text="AUTO WALLPAPER LISTS"
+               android:textAlignment="center"
+               android:textColor="@color/white"
+               android:textSize="14dp"
+               android:layout_marginTop="10dp"
+               android:layout_marginBottom="10dp"/>
+
+           <LinearLayout
+               android:id="@+id/add_to_list_no_content"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:orientation="vertical"
+               android:padding="25dp">
+
+               <ImageView
+                   android:layout_width="200dp"
+                   android:layout_height="200dp"
+                   android:layout_gravity="center"
+                   android:src="@drawable/ic_empty_box" />
+
+               <TextView
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:fontFamily="@font/helvetica_rounded_bold"
+                   android:text="THERE IS NO CREATED LIST"
+                   android:textAlignment="center"
+                   android:textColor="@color/white"
+                   android:textSize="12dp" />
+           </LinearLayout>
+
+           <ListView
+               android:id="@+id/add_to_list_list_view"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:visibility="gone"
+               android:layout_weight="100" />
+
+       </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <!--This area will be showen when add button is clicked-->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="20dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:fontFamily="@font/helvetica_rounded_bold"
+                    android:text="List name"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textSize="12dp" />
+
+                <ImageButton
+                    android:id="@+id/add_to_list_back_button"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/ic_arrow_back"
+                    android:background="@android:color/transparent"
+                    android:tint="@color/white" />
+            </FrameLayout>
+
+            <EditText
+                android:id="@+id/add_to_list_edit_text"
+                android:layout_width="200dp"
+                android:layout_height="35dp"
+                android:layout_gravity="center"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:background="@drawable/search_textbox"
+                android:textColor="@color/white" />
+
+            <Button
+                android:id="@+id/add_to_list_create_button"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="25dp"
+                android:background="@color/antique_white"
+                android:drawableLeft="@drawable/ic_add"
+                android:padding="10dp"
+                android:text="Create"
+                android:textAlignment="center" />
+        </LinearLayout>
+    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+
+    <ImageButton
+        android:id="@+id/add_to_list_add_button"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@color/antique_white"
+        android:layout_gravity="bottom"
+        android:src="@drawable/ic_add" />
+</LinearLayout>

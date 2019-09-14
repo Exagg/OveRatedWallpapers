@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.NonNull;
 
+import com.example.hrwallpapers.FolderModel;
 import com.example.hrwallpapers.MainActivity;
 import com.example.hrwallpapers.wallpaperListModel;
 import com.example.hrwallpapers.wallpaperModel;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SqliteConnection extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION =3;
+    private static final int DATABASE_VERSION =4;
     private static final String DATABASE_NAME = "Wallpapers";
 
 
@@ -59,6 +60,18 @@ public class SqliteConnection extends SQLiteOpenHelper {
             WALLPAPER_IN_LIST_WALLPAPER_ID + " TEXT NOT NULL\n"+
             ");";
 
+
+    private static final String WALLPAPER_IN_FOLDER_TABLE_NAME = "Folders";
+    private static final String WALLPAPER_IN_FOlDER_ID = "ID";
+    private static final String WALLPAPER_IN_FOLDER_PATH = "Folder_Path";
+    private static final String WALLPAPER_IN_FOLDER_NAME = "Folder_Name";
+
+    private static final String wallpaperInFolderQuery =  "CREATE TABLE " + WALLPAPER_IN_FOLDER_TABLE_NAME + " (\n"+
+            WALLPAPER_IN_FOlDER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,\n"+
+            WALLPAPER_IN_FOLDER_PATH + " TEXT NOT NULL,\n"+
+            WALLPAPER_IN_FOLDER_NAME + " TEXT NOT NULL\n"+
+            ");";
+
     public SqliteConnection(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -68,6 +81,7 @@ public class SqliteConnection extends SQLiteOpenHelper {
         db.execSQL(favoritesTableQuery);
         db.execSQL(wallpaperListsQuery);
         db.execSQL(wallpaperInListQuery);
+        db.execSQL(wallpaperInFolderQuery);
     }
 
     @Override
@@ -75,6 +89,7 @@ public class SqliteConnection extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + FAVORITES_TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + WALLPAPER_LISTS_TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + WALLPAPER_IN_LIST_TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + WALLPAPER_IN_FOLDER_TABLE_NAME);
         onCreate(db);
     }
 
@@ -135,7 +150,7 @@ public class SqliteConnection extends SQLiteOpenHelper {
         return  favoritesList;
     }
 
-    public long createNewList(@NonNull String listName) throws Exception {
+    public long createNewList(@NonNull String listName) {
         long createdID = 0;
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -153,7 +168,6 @@ public class SqliteConnection extends SQLiteOpenHelper {
         }
         finally {
             db.close();
-            if (createdID < 1) throw new Exception();
             return createdID;
         }
     }
@@ -165,7 +179,7 @@ public class SqliteConnection extends SQLiteOpenHelper {
         try
         {
             String[] selectQuery = {WALLPAPER_LISTS_ID,WALLPAPER_LISTS_LIST_NAME,WALLPAPER_LISTS_CREATE_DATE};
-            Cursor cursor = db.query(WALLPAPER_LISTS_LIST_NAME,selectQuery,null,null,null,null,null);
+            Cursor cursor = db.query(WALLPAPER_LISTS_TABLE_NAME,selectQuery,null,null,null,null,null);
             while (cursor.moveToNext())
             {
                 int id = cursor.getInt(0);
@@ -174,10 +188,10 @@ public class SqliteConnection extends SQLiteOpenHelper {
 
 
                 String[] childSelectQuery = {WALLPAPER_IN_LIST_ID,WALLPAPER_IN_LIST_WALLPAPER_ID};
-                Cursor childCursor = db.query(WALLPAPER_IN_LIST_TABLE_NAME,childSelectQuery,null,null,null,null,null);
+                Cursor childCursor = db.query(WALLPAPER_IN_LIST_TABLE_NAME,childSelectQuery,WALLPAPER_IN_LIST_LIST_ID + "=?",new String[]{String.valueOf(id)},null,null,null);
 
                 List<wallpaperModel> childList = new ArrayList<>();
-                while (cursor.moveToNext())
+                while (childCursor.moveToNext())
                 {
                     int childID = childCursor.getInt(0);
                     String wallpaperID = childCursor.getString(1);
@@ -187,6 +201,8 @@ public class SqliteConnection extends SQLiteOpenHelper {
                     childList.add(model);
                 }
                 list.setModelList(childList);
+
+                wallpaperLists.add(list);
             }
         }
         catch (Exception ex)
@@ -215,7 +231,135 @@ public class SqliteConnection extends SQLiteOpenHelper {
             ex.printStackTrace();
             return false;
         }
+        finally {
+            db.close();
+        }
+    }
 
+    public boolean isWallpaperAddtoList (@NonNull int ListID,@NonNull wallpaperModel model)
+    {
+        SQLiteDatabase database =this.getReadableDatabase();
+        try
+        {
+            String[] selectQuery = {WALLPAPER_IN_LIST_ID};
+            Cursor cursor = database.query(WALLPAPER_IN_LIST_TABLE_NAME,selectQuery,
+                    WALLPAPER_IN_LIST_LIST_ID + "=? AND " + WALLPAPER_IN_LIST_WALLPAPER_ID + "=?",
+                    new String[]{String.valueOf(ListID),model.getId()},null,null,null);
+            if (cursor.getCount() > 0) return true;
+            else return false;
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            return false;
+        }
+        finally {
+            database.close();
+        }
+    }
+
+    public boolean deleteFromList(@NonNull int ListID,@NonNull wallpaperModel model)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try{
+            String[] where ={String.valueOf(ListID),model.getId()};
+            db.delete(WALLPAPER_IN_LIST_TABLE_NAME,WALLPAPER_IN_LIST_LIST_ID + "=? AND " + WALLPAPER_IN_LIST_WALLPAPER_ID + "=?",where);
+            return true;
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+            return false;
+        }
+        finally {
+            db.close();
+        }
+    }
+
+    public boolean deleteList(@NonNull int ListID)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try{
+            String[] where ={String.valueOf(ListID)};
+            db.delete(WALLPAPER_LISTS_TABLE_NAME,WALLPAPER_LISTS_ID + "=?",where);
+            return true;
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+            return false;
+        }
+        finally {
+            db.close();
+        }
+    }
+
+    public boolean createNewFolder(@NonNull String folderName,@NonNull String folderPath)
+    {
+        SQLiteDatabase database = this.getWritableDatabase();
+        try
+        {
+            ContentValues values = new ContentValues();
+            values.put(WALLPAPER_IN_FOLDER_NAME,folderName);
+            values.put(WALLPAPER_IN_FOLDER_PATH,folderPath);
+            database.insert(WALLPAPER_IN_FOLDER_TABLE_NAME,null,values);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            return false;
+        }
+        finally {
+            database.close();
+        }
+    }
+
+    public List<FolderModel> getAllFolders()
+    {
+        SQLiteDatabase database = this.getReadableDatabase();
+        List<FolderModel> list = new ArrayList<>();
+        try{
+            String[] columns = new String[]{WALLPAPER_IN_FOlDER_ID,WALLPAPER_IN_FOLDER_PATH,WALLPAPER_IN_FOLDER_NAME};
+            Cursor cursor = database.query(WALLPAPER_IN_FOLDER_TABLE_NAME,columns,null,null,null,null,null);
+
+            while (cursor.moveToNext())
+            {
+                int id = cursor.getInt(0);
+                String folderPath = cursor.getString(1);
+                String folderName = cursor.getString(2);
+
+                FolderModel model = new FolderModel(id,folderPath,folderName);
+                list.add(model);
+            }
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        finally {
+            database.close();
+            return list;
+        }
+    }
+
+    public boolean addFolder(@NonNull String folderName,@NonNull String folderPath)
+    {
+        SQLiteDatabase database = this.getWritableDatabase();
+
+        try
+        {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(WALLPAPER_IN_FOLDER_NAME,folderName);
+            contentValues.put(WALLPAPER_IN_FOLDER_PATH,folderPath);
+            long id = database.insert(WALLPAPER_IN_FOLDER_TABLE_NAME,null,contentValues);
+            return true;
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+            return false;
+        }
+        finally {
+            database.close();
+        }
     }
 
 }
