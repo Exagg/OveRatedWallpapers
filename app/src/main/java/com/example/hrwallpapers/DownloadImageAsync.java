@@ -84,7 +84,7 @@ public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
                             fileOutput.close();
                             if (downloadedSize == totalSize)
                             {
-                                model.setFilePath(file);
+                                model.setImageFile(file);
                                 this.downloadedPath = file.getPath();
                                 publishProgress(FILE_DOWNLOADED);
                                 return this.downloadedPath;
@@ -93,7 +93,7 @@ public class DownloadImageAsync extends AsyncTask<Object,Integer,String> {
                         }
                         else
                         {
-                            model.setFilePath(file);
+                            model.setImageFile(file);
                             this.downloadedPath = file.getPath();
                             publishProgress(FILE_ALREADY_CREATED);
                             return this.downloadedPath;

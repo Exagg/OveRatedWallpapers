@@ -11,23 +11,29 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.NativeExpressAdView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
 
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
-class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecyclerViewAdapter.wallpaperViewHolder> {
+class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 
     List<wallpaperModel> modelList;
+    List<Object>viewModelList = new ArrayList<>();
     FrameLayout fragmentHolder;
     wallpaperPopupFragment popupFragment;
     View mainContentView;
@@ -36,9 +42,11 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
     RecyclerView recyclerView;
     queryModel queryModel;
     private static final int OUTOFRANGE = 10;
+    private static final int NATIVE_AD_GAP = 13;
     private boolean isLocked = false;
     private int currentViewPosition;
     private int clickedItemPosition = 0;
+    private boolean hasNativeAds = true;
 
     private RequestOptions requestOptions = new RequestOptions()
             .skipMemoryCache(true)
@@ -56,10 +64,11 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         this.queryModel = queryModel;
         this.recyclerView = recyclerView;
         this.recyclerView.setItemViewCacheSize(0);
+        updateViewModelList();
     }
 
-    public int getCurrentViewPosition() {
-        return currentViewPosition;
+    public void setHasNativeAds(boolean hasNativeAds) {
+        this.hasNativeAds = hasNativeAds;
     }
 
     @Override
@@ -74,27 +83,56 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
 
     @NonNull
     @Override
-    public wallpaperViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View itemView = LayoutInflater.from(context).inflate(R.layout.wallpaper_list_model,null);
-        CircleProgressBar progressBar = itemView.findViewById(R.id.wallpaper_list_progressbar);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+        Object object = getModel(i);
 
-        wallpaperModel model = modelList.get(i);
-        wallpaperViewHolder holder = new wallpaperViewHolder(itemView,progressBar,popupFragment,this.context,model,this.queryModel,this);
+        if (i == 12)
+        {
+            Log.i(TAG, "onCreateViewHolder: ");
+        }
 
-        return holder;
+        if (object instanceof wallpaperNativeAdModel)
+        {
+            //Create native ad item every interval count item
+            View adView = LayoutInflater.from(context).inflate(R.layout.native_ad_layout,null);
+            wallpaperNativeAdHolder holder = new wallpaperNativeAdHolder(adView);
+            return holder;
+        }
+        else if (object instanceof wallpaperModel)
+        {
+            //Create wallpaper item
+            View itemView = LayoutInflater.from(context).inflate(R.layout.wallpaper_list_model,null);
+            CircleProgressBar progressBar = itemView.findViewById(R.id.wallpaper_list_progressbar);
+
+            wallpaperModel model = (wallpaperModel) getModel(i);
+            wallpaperViewHolder holder = new wallpaperViewHolder(itemView,progressBar,popupFragment,this.context,model,this.queryModel,this);
+
+            return holder;
+        }
+        else {
+            return null;
+        }
+    }
+
+    public Object getModel(int position)
+    {
+        if (this.viewModelList.size() != 0) return this.viewModelList.get(position);
+        else return 0;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull wallpaperViewHolder holder, int i) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int i) {
 
-        this.currentViewPosition = i;
-        if(holder.indexOf == 0) holder.indexOf = i;
+        if (holder instanceof wallpaperViewHolder)
+        {
+            wallpaperViewHolder viewHolder = (wallpaperViewHolder) holder;
+            this.currentViewPosition = i;
+            if(viewHolder.indexOf == 0) viewHolder.indexOf = i;
 
-        loadImage(holder);
-        Glide.with(this.context.getApplicationContext()).resumeRequests();
-
+            loadImage(viewHolder);
+            Glide.with(this.context.getApplicationContext()).resumeRequests();
+        }
     }
-
 
     @Override
     public int getItemCount() {
@@ -119,20 +157,37 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
         }
     }
 
+    public void updateViewModelList()
+    {
+        this.viewModelList = new ArrayList<>();
+        this.viewModelList.addAll(this.modelList);
+        for (int i = 0; i<this.viewModelList.size(); i++)
+        {
+            if (i % NATIVE_AD_GAP == 0 && i != 0)
+            {
+                this.viewModelList.add(i-1,new wallpaperNativeAdModel());
+            }
+        }
+    }
+
     public List<wallpaperModel> getModelList(){return this.modelList; }
 
     public void updateAdapter(List<wallpaperModel> modelList)
     {
         this.modelList = modelList;
+        updateViewModelList();
         this.notifyDataSetChanged();
     }
 
     public int getClickedItemPosition() { return clickedItemPosition;}
     @Override
-    public void onViewDetachedFromWindow(@NonNull wallpaperViewHolder holder) {
+    public void onViewDetachedFromWindow(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
-        Glide.with(this.context.getApplicationContext()).pauseAllRequests();
-        Glide.with(this.context.getApplicationContext()).clear(holder.wallpaperImage); // OOM handler it must be in the detached!! dont delete
+        if (holder instanceof wallpaperViewHolder)
+        {
+            Glide.with(this.context.getApplicationContext()).pauseAllRequests();
+            Glide.with(this.context.getApplicationContext()).clear(((wallpaperViewHolder) holder).wallpaperImage); // OOM handler it must be in the detached!! dont delete
+        }
     }
 
     @Override
@@ -142,8 +197,12 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
     }
 
     @Override
-    public void onViewAttachedToWindow(@NonNull wallpaperViewHolder holder) {
-        loadImage(holder);
+    public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
+        if (holder instanceof wallpaperViewHolder)
+        {
+            loadImage((wallpaperViewHolder) holder);
+        }
+
         super.onViewAttachedToWindow(holder);
     }
 
@@ -159,23 +218,35 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
+
+        if (this.hasNativeAds)
+        {
+            if (recyclerView.getLayoutManager() instanceof GridLayoutManager)
+            {
+                GridLayoutManager manager = (GridLayoutManager) recyclerView.getLayoutManager();
+                manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                    @Override
+                    public int getSpanSize(int position) {
+                        if (wallpaperRecyclerViewAdapter.this.getModel(position) instanceof wallpaperNativeAdModel) return 2;
+                        else return 1;
+                    }
+                });
+            }
+        }
     }
 
     public void setModelList(List<wallpaperModel> list)
     {
         this.modelList = list;
+        updateViewModelList();
     }
 
     public void addModelListToList(List<wallpaperModel> list)
     {
         int lastIndex = this.modelList.size();
         this.modelList.addAll(list);
+        updateViewModelList();
         this.notifyItemRangeInserted(lastIndex,this.modelList.size() - 1);
-    }
-
-    public void addModelToList(wallpaperModel model)
-    {
-        this.modelList.add(model);
     }
 
     public class wallpaperViewHolder extends RecyclerView.ViewHolder
@@ -338,4 +409,27 @@ class wallpaperRecyclerViewAdapter extends RecyclerView.Adapter<wallpaperRecycle
             }
         }
     }
+
+    public class wallpaperNativeAdHolder extends RecyclerView.ViewHolder
+    {
+        NativeExpressAdView nativeExpressAdView;
+
+        public wallpaperNativeAdHolder(@NonNull final View itemView) {
+            super(itemView);
+
+            this.nativeExpressAdView = itemView.findViewById(R.id.native_ad);
+            MobileAds.initialize(MainActivity.ma,MainActivity.ma.getResources().getString(R.string.app_ad_id));
+
+            AdRequest adRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
+            this.nativeExpressAdView.loadAd(adRequest);
+        }
+    }
+    public class wallpaperNativeAdModel
+    {
+        wallpaperNativeAdModel()
+        {
+
+        }
+    }
+
 }

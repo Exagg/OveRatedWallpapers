@@ -56,7 +56,7 @@ public class AddToListDialog extends DialogFragment implements View.OnClickListe
         this.backButton = view.findViewById(R.id.add_to_list_back_button);
 
 
-        wallpaperListModels = MainActivity.database.getWallpaperLists();
+        wallpaperListModels = MainActivity.database.getWallpaperLists(null,null);
         this.listViewAdapter = new AutoWallpaperListViewAdapter(getContext(),R.layout.layout_custom_list_of_wallpaper,wallpaperListModels,this.selectedModel);
 
 
@@ -133,7 +133,7 @@ public class AddToListDialog extends DialogFragment implements View.OnClickListe
     private void refreshList() {
         if (listViewAdapter != null)
         {
-            listViewAdapter.setList(MainActivity.database.getWallpaperLists());
+            listViewAdapter.setList(MainActivity.database.getWallpaperLists(null,null));
             onStart();
         }
     }
@@ -179,7 +179,7 @@ public class AddToListDialog extends DialogFragment implements View.OnClickListe
     }
 
     @Override
-    public void onListSelected(View v,wallpaperListModel wallpaperListModel) {
+    public void onListSelected(View view, @NonNull wallpaperListModel wallpaperListModel, @NonNull boolean newState) {
         if (this.selectedModel != null)
         {
             if(!MainActivity.database.isWallpaperAddtoList(wallpaperListModel.getID(),this.selectedModel))

@@ -21,6 +21,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static com.example.hrwallpapers.AutoWallpaperFragment.TAG;
+
 public class FileUtils {
     /* Get uri related content real local file path. */
     public static String getPath(Context ctx, Uri uri) {
@@ -57,7 +59,7 @@ public class FileUtils {
     public static String getFileName(Uri uri) {
         if (uri == null) return null;
         String fileName = null;
-        String path = uri.getPath();
+        String path = uri.getPath().replace(":",File.separator);
         int cut = path.lastIndexOf('/');
         if (cut != -1) {
             fileName = path.substring(cut + 1);
@@ -237,6 +239,9 @@ public class FileUtils {
     @SuppressLint("Recycle")
     private static String getRealPath(ContentResolver contentResolver, Uri uri, String whereClause) {
         String ret = "";
+
+        Log.i(TAG, "getRealPath: " + Environment.getExternalStorageDirectory().getAbsolutePath());
+        Log.i(TAG, "getRealPath: " + uri.getPath());
 
         // Query the uri with condition.
         Cursor cursor = contentResolver.query(uri, null, whereClause, null, null);

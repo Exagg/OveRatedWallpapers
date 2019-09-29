@@ -92,7 +92,7 @@ public class HistoryFragment extends Fragment {
                     downloadedImages) {
                 String wallpaperID = file.getName().replace("HQ_","").replace(".jpg","");
                 wallpaperModel model = new wallpaperModel(wallpaperID);
-                model.setFilePath(file);
+                model.setImageFile(file);
                 if (MainActivity.wallpaperInFavorites.contains(wallpaperID)) model.isFavorite.setValue(true);
                 else model.isFavorite.setValue(false);
                 wallpaperModelList.add(model);

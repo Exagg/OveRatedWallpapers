@@ -32,7 +32,8 @@
         android:layout_gravity="right"
         android:background="@android:color/transparent"
         android:tint="@color/white"
-        android:src="@drawable/ic_edit"/>
+        android:src="@drawable/ic_edit"
+        android:visibility="gone"/>
     <ImageButton
         android:id="@+id/list_item_delete"
         android:layout_width="50dp"

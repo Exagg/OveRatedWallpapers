@@ -5,9 +5,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -27,7 +30,8 @@ import java.util.List;
 
 public class SearchFragment extends Fragment implements Spinner.OnItemSelectedListener,
                                                         ToggleButton.OnCheckedChangeListener,
-                                                        View.OnClickListener
+                                                        View.OnClickListener,
+                                                        EditText.OnEditorActionListener
 {
     private static final String TAG = "SearchFragment";
     private static final queryModel query = new queryModel();
@@ -90,6 +94,7 @@ public class SearchFragment extends Fragment implements Spinner.OnItemSelectedLi
         safeForWorkButton.setOnCheckedChangeListener(this);
         sketchyButton.setOnCheckedChangeListener(this);
         sketchyButton.setOnCheckedChangeListener(this);
+        keywordInput.setOnEditorActionListener(this);
 
         colorSpinner.setOnItemSelectedListener(this);
         resolutionSpinner.setOnItemSelectedListener(this);
@@ -236,16 +241,38 @@ public class SearchFragment extends Fragment implements Spinner.OnItemSelectedLi
         switch (id)
         {
             case R.id.search_search_button:
-                Activity activity = getActivity();
-                query.setQuery(keywordInput.getText().toString());
-                query.setActivePage(0);
-                if (activity instanceof MainActivity)
+                search();
+                break;
+        }
+    }
+
+    private void search()
+    {
+        Activity activity = getActivity();
+        query.setQuery(keywordInput.getText().toString());
+        query.setActivePage(0);
+        if (activity instanceof MainActivity)
+        {
+            ((MainActivity) activity).showResultTab(query);
+            activity.onBackPressed();
+        }
+    }
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        boolean handled =false;
+        int id = v.getId();
+        Log.i(TAG, "onEditorAction: " + id);
+        switch (id)
+        {
+            case R.id.create_new_list_edit_text:
+                if (actionId == EditorInfo.IME_ACTION_SEND)
                 {
-                    ((MainActivity) activity).showResultTab(query);
-                    activity.onBackPressed();
+                    search();
+                    handled = true;
                 }
                 break;
         }
+        return handled;
     }
 }
 class ColorSpinnerAdapter extends ArrayAdapter<String>

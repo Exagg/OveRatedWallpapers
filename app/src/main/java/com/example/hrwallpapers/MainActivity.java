@@ -16,6 +16,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -38,6 +40,9 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.request.RequestOptions;
 import com.example.hrwallpapers.DataAccessLayer.SqliteConnection;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -58,7 +63,6 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener{
 
     public static final File downloadFolder = new File(Environment.getExternalStorageDirectory() + File.separator + MainActivity.DOWNLOAD_FILE_NAME);
-    public static SpliceWallpaperBackgroundService autoBackgroundService;
 
     public static SqliteConnection database;
 
@@ -100,16 +104,29 @@ public class MainActivity extends AppCompatActivity
     private boolean mDrawerIsOpen =false;
 
 
+    private AdView bottombannerAdview;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        MainActivity.checkPermissions(this,this,1);
         ma = this;
         database = new SqliteConnection(MainActivity.this);
         wallpaperInFavorites =database.getFavorites();
 
         startService(new Intent(this,SpliceWallpaperBackgroundService.class));
 
-        setContentView(R.layout.activity_main);
+
+        bottombannerAdview = this.findViewById(R.id.main_bottom_banner_ad);
+
+        MobileAds.initialize(this,getResources().getString(R.string.app_ad_id));
+
+        AdRequest adRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
+        bottombannerAdview.loadAd(adRequest);
+
+
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mainContentView = findViewById(R.id.main_content);
@@ -553,9 +570,19 @@ public class MainActivity extends AppCompatActivity
         ((Drawable) im.getDrawable()).setTint(MainActivity.ma.getResources().getColor(R.color.white));
 
     }
-    // This could be moved into an abstract BaseActivity
-    // class for being re-used by several instances
 
+    public static void showKeyboard(EditText mEtSearch, Context context) {
+        InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+    }
+
+    public static void hideKeyboard(EditText mEtSearch, Context context) {
+        mEtSearch.clearFocus();
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+
+
+    }
 
     public static void showToast(String message,int duration,Context context)
     {

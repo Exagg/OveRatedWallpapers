@@ -10,11 +10,13 @@ public class wallpaperListModel {
     private String listName;
     private List<wallpaperModel> wallpaperModels;
     private String createDate;
+    private boolean isActive;
 
-    public wallpaperListModel(@NonNull String listName,@NonNull int id)
+    public wallpaperListModel(@NonNull String listName,@NonNull int id,@NonNull boolean isActive)
     {
         this.listName = listName;
         this.ID = id;
+        this.isActive = isActive;
     }
 
     public void setModelList(List<wallpaperModel> modelList) {
@@ -35,5 +37,9 @@ public class wallpaperListModel {
 
     public List<wallpaperModel> getWallpaperModels() {
         return wallpaperModels;
+    }
+
+    public boolean isActive() {
+        return isActive;
     }
 }

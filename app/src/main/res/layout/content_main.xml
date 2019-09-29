@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,26 +8,33 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/app_bar_main"
     android:background="@color/colorPrimary"
-    android:id="@+id/main_content">
+    android:id="@+id/main_content"
+    android:orientation="vertical">
 
     <FrameLayout
-        android:id="@+id/main_fragment_holder"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_weight="100">
 
-    </FrameLayout>
-    <FrameLayout
-        android:id="@+id/main_menu_fragment_holder"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        <FrameLayout
+            android:id="@+id/main_fragment_holder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
+        </FrameLayout>
+        <FrameLayout
+            android:id="@+id/main_menu_fragment_holder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </FrameLayout>
     </FrameLayout>
-    
+
     <com.google.android.gms.ads.AdView
-        android:layout_width="match_parent"
+        android:id="@+id/main_bottom_banner_ad"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:adSize="Banner"/>
-
-
-</FrameLayout>
+        android:layout_gravity="bottom|center_horizontal"
+        app:adSize="BANNER"
+        app:adUnitId="@string/banner_ad_id"/>
+</LinearLayout>

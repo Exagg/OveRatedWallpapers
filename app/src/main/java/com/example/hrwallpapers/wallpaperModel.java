@@ -1,14 +1,12 @@
 package com.example.hrwallpapers;
 
-import android.util.Log;
-
 import java.io.File;
 import java.util.ArrayList;
 
 public class wallpaperModel {
 
     private static final String TAG = "WallpaperModel" ;
-    String thumbSrc,originalSrc,id,HQFileName,LQFileName,similiarsUrl;
+    public String thumbSrc,originalSrc,id,HQFileName,LQFileName,similiarsUrl;
     booleanListeners isFavorite;
     ArrayList<String> tagList;
     public String resolution;
@@ -16,7 +14,7 @@ public class wallpaperModel {
     public int originalWidth = 0;
     public int originalHeight = 0;
     boolean isPng=false;
-    private String filePath = null;
+    private File imageFile = null;
 
 
     public wallpaperModel(String id)
@@ -61,22 +59,27 @@ public class wallpaperModel {
         else return null;
     }
 
-    public void setFilePath(File file)
+    public void setImageFile(File file)
     {
-        Log.i(TAG, "setFilePath: " + file.getPath());
-        this.filePath = file.getPath();
+        this.imageFile = file;
     }
 
-    public void setFilePath(String filePath)
+    public void setImageFile(String filePath)
     {
-        Log.i(TAG, "setFilePath: " + filePath);
-        this.filePath = filePath;
+        this.imageFile =new File(filePath);
     }
 
-    public String getFilePath()
+    public String getFolderPath()
     {
-        return this.filePath;
+        return this.imageFile != null ? this.imageFile.getAbsolutePath().replace(this.imageFile.getName(),"") : "";
     }
+
+    public String getAbsoulteImagePath()
+    {
+        return this.imageFile != null ? this.imageFile.getAbsolutePath() : "";
+    }
+
+    public String getImageName() { return this.imageFile != null ? this.imageFile.getName() : ""; }
 
     public void setIsPng(boolean value) {
         this.isPng = value;

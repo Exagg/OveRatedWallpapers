@@ -5,9 +5,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import com.example.hrwallpapers.DownloadImageAsync;
 import com.example.hrwallpapers.FolderModel;
 import com.example.hrwallpapers.MainActivity;
 import com.example.hrwallpapers.wallpaperListModel;
@@ -17,8 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SqliteConnection extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION =4;
+    private static final int DATABASE_VERSION = 6;
     private static final String DATABASE_NAME = "Wallpapers";
+    private static final String TAG ="SqliteConnection";
 
 
 
@@ -36,16 +40,17 @@ public class SqliteConnection extends SQLiteOpenHelper {
             FAVORITES_PICTURE_TYPE_COLUMN + " TEXT NOT NULL\n"+
             ");";
 
-
-    private static final String WALLPAPER_LISTS_TABLE_NAME = "Lists";
-    private static final String WALLPAPER_LISTS_LIST_NAME = "Name";
-    private static final String WALLPAPER_LISTS_CREATE_DATE = "Create_Date";
-    private static final String WALLPAPER_LISTS_ID = "ID";
+    public static final String WALLPAPER_LISTS_ID = "ID";
+    public static final String WALLPAPER_LISTS_TABLE_NAME = "Lists";
+    public static final String WALLPAPER_LISTS_LIST_NAME = "Name";
+    public static final String WALLPAPER_LISTS_CREATE_DATE = "Create_Date";
+    public static final String WALLPAPER_LISTS_IS_ACTIVE = "Is_Active"; // Default value is 0, this area type is will be integer
 
     private static final String wallpaperListsQuery = "CREATE TABLE " + WALLPAPER_LISTS_TABLE_NAME + " (\n"+
             WALLPAPER_LISTS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,\n"+
             WALLPAPER_LISTS_LIST_NAME + " TEXT NOT NULL,\n"+
-            WALLPAPER_LISTS_CREATE_DATE + " TEXT NOT NULL\n"+
+            WALLPAPER_LISTS_CREATE_DATE + " TEXT NOT NULL,\n"+
+            WALLPAPER_LISTS_IS_ACTIVE + " INTEGER DEFAULT 0 \n"+
             ");";
 
 
@@ -61,15 +66,17 @@ public class SqliteConnection extends SQLiteOpenHelper {
             ");";
 
 
-    private static final String WALLPAPER_IN_FOLDER_TABLE_NAME = "Folders";
-    private static final String WALLPAPER_IN_FOlDER_ID = "ID";
-    private static final String WALLPAPER_IN_FOLDER_PATH = "Folder_Path";
-    private static final String WALLPAPER_IN_FOLDER_NAME = "Folder_Name";
+    public static final String WALLPAPER_IN_FOLDER_TABLE_NAME = "Folders";
+    public static final String WALLPAPER_IN_FOLDER_ID = "ID";
+    public static final String WALLPAPER_IN_FOLDER_PATH = "Folder_Path";
+    public static final String WALLPAPER_IN_FOLDER_NAME = "Folder_Name";
+    public static final String WALLPAPER_IN_FOLDER_IS_ACTIVE = "Is_Active"; // Default value is 0, this area type is will be integer
 
     private static final String wallpaperInFolderQuery =  "CREATE TABLE " + WALLPAPER_IN_FOLDER_TABLE_NAME + " (\n"+
-            WALLPAPER_IN_FOlDER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,\n"+
+            WALLPAPER_IN_FOLDER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,\n"+
             WALLPAPER_IN_FOLDER_PATH + " TEXT NOT NULL,\n"+
-            WALLPAPER_IN_FOLDER_NAME + " TEXT NOT NULL\n"+
+            WALLPAPER_IN_FOLDER_NAME + " TEXT NOT NULL,\n"+
+            WALLPAPER_IN_FOLDER_IS_ACTIVE + " INTEGER DEFAULT 0 \n"+
             ");";
 
     public SqliteConnection(Context context) {
@@ -172,19 +179,20 @@ public class SqliteConnection extends SQLiteOpenHelper {
         }
     }
 
-    public List<wallpaperListModel> getWallpaperLists()
+    public List<wallpaperListModel> getWallpaperLists(@Nullable String selection,@Nullable String[] selectionArgs)
     {
         List<wallpaperListModel> wallpaperLists = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         try
         {
-            String[] selectQuery = {WALLPAPER_LISTS_ID,WALLPAPER_LISTS_LIST_NAME,WALLPAPER_LISTS_CREATE_DATE};
-            Cursor cursor = db.query(WALLPAPER_LISTS_TABLE_NAME,selectQuery,null,null,null,null,null);
+            String[] selectQuery = {WALLPAPER_LISTS_ID,WALLPAPER_LISTS_LIST_NAME,WALLPAPER_LISTS_CREATE_DATE,WALLPAPER_LISTS_IS_ACTIVE};
+            Cursor cursor = db.query(WALLPAPER_LISTS_TABLE_NAME,selectQuery,selection,selectionArgs,null,null,null,null);
             while (cursor.moveToNext())
             {
                 int id = cursor.getInt(0);
                 String listName = cursor.getString(1);
-                wallpaperListModel list = new wallpaperListModel(listName,id);
+                int isActive = cursor.getInt(3);
+                wallpaperListModel list = new wallpaperListModel(listName,id,isActive == 0 ? false : true);
 
 
                 String[] childSelectQuery = {WALLPAPER_IN_LIST_ID,WALLPAPER_IN_LIST_WALLPAPER_ID};
@@ -196,7 +204,25 @@ public class SqliteConnection extends SQLiteOpenHelper {
                     int childID = childCursor.getInt(0);
                     String wallpaperID = childCursor.getString(1);
 
-                    wallpaperModel model = new wallpaperModel(wallpaperID);
+                    final wallpaperModel model = new wallpaperModel(wallpaperID);
+                    if (!MainActivity.isFileExists(model.HQFileName))
+                    {
+                        DownloadImageAsync downloadImageAsync = new DownloadImageAsync();
+                        downloadImageAsync.setTaskFisinhed(new DownloadImageAsync.onTaskFinished() {
+                            @Override
+                            public void Downloading(int percentage) {
+                            }
+
+                            @Override
+                            public void Finished(String imagePath) {
+                                Log.i(TAG, "Finished: " + model.id + " is downloaded");
+                            }
+                        });
+                        downloadImageAsync.execute(model);
+                    }
+                    else{
+                        model.setImageFile(MainActivity.findExistFie(model.HQFileName));
+                    }
 
                     childList.add(model);
                 }
@@ -258,6 +284,28 @@ public class SqliteConnection extends SQLiteOpenHelper {
         }
     }
 
+    public boolean isWallpaperListCreatedBefore (@NonNull String listName)
+    {
+        SQLiteDatabase database =this.getReadableDatabase();
+        try
+        {
+            String[] selectQuery = {WALLPAPER_LISTS_ID};
+            Cursor cursor = database.query(WALLPAPER_LISTS_TABLE_NAME,selectQuery,
+                    WALLPAPER_LISTS_LIST_NAME + "=?",
+                    new String[]{listName},null,null,null);
+            if (cursor.getCount() > 0) return true;
+            else return false;
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            return false;
+        }
+        finally {
+            database.close();
+        }
+    }
+
     public boolean deleteFromList(@NonNull int ListID,@NonNull wallpaperModel model)
     {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -292,15 +340,16 @@ public class SqliteConnection extends SQLiteOpenHelper {
         }
     }
 
-    public boolean createNewFolder(@NonNull String folderName,@NonNull String folderPath)
+    public boolean setActiveList(@NonNull int ListID,@NonNull boolean newState)
     {
         SQLiteDatabase database = this.getWritableDatabase();
         try
         {
-            ContentValues values = new ContentValues();
-            values.put(WALLPAPER_IN_FOLDER_NAME,folderName);
-            values.put(WALLPAPER_IN_FOLDER_PATH,folderPath);
-            database.insert(WALLPAPER_IN_FOLDER_TABLE_NAME,null,values);
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(WALLPAPER_LISTS_IS_ACTIVE,newState == true ? 1 : 0);
+            database.update(WALLPAPER_LISTS_TABLE_NAME,contentValues,
+                    WALLPAPER_LISTS_ID + "=?",new String[]{String.valueOf(ListID)});
+            isListActive(ListID);
             return true;
         }
         catch (Exception ex)
@@ -313,21 +362,46 @@ public class SqliteConnection extends SQLiteOpenHelper {
         }
     }
 
-    public List<FolderModel> getAllFolders()
+    public boolean isListActive(@NonNull int ListID) {
+        SQLiteDatabase database = this.getReadableDatabase();
+        try {
+            String[] selectQuery = new String[]{WALLPAPER_LISTS_ID,WALLPAPER_LISTS_IS_ACTIVE};
+            Cursor cursor = database.query(WALLPAPER_LISTS_TABLE_NAME, selectQuery, WALLPAPER_LISTS_ID + "=?", new String[]{String.valueOf(ListID)},
+                    null, null, null);
+            if (cursor.getCount() > 0){
+                cursor.moveToFirst();
+                if (cursor.getInt(1) == 1) return true;
+                else return false;
+            }else
+            return false;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return false;
+        } finally {
+            database.close();
+        }
+    }
+
+    /*
+    * This selection and selection args will be filter the result.
+    * If develepor want to get all folder, should send as null.
+    * */
+    public List<FolderModel> getAllFolders(@Nullable String selection,@Nullable String[] selectionArgs)
     {
         SQLiteDatabase database = this.getReadableDatabase();
         List<FolderModel> list = new ArrayList<>();
         try{
-            String[] columns = new String[]{WALLPAPER_IN_FOlDER_ID,WALLPAPER_IN_FOLDER_PATH,WALLPAPER_IN_FOLDER_NAME};
-            Cursor cursor = database.query(WALLPAPER_IN_FOLDER_TABLE_NAME,columns,null,null,null,null,null);
+            String[] columns = new String[]{WALLPAPER_IN_FOLDER_ID,WALLPAPER_IN_FOLDER_PATH,WALLPAPER_IN_FOLDER_NAME,WALLPAPER_IN_FOLDER_IS_ACTIVE};
+            Cursor cursor = database.query(WALLPAPER_IN_FOLDER_TABLE_NAME,columns,selection,selectionArgs,null,null,null);
 
             while (cursor.moveToNext())
             {
                 int id = cursor.getInt(0);
                 String folderPath = cursor.getString(1);
                 String folderName = cursor.getString(2);
+                boolean isActive = cursor.getInt(3) == 0 ? false : true;
 
-                FolderModel model = new FolderModel(id,folderPath,folderName);
+                FolderModel model = new FolderModel(id,folderPath,folderName,isActive);
                 list.add(model);
             }
         }
@@ -338,6 +412,28 @@ public class SqliteConnection extends SQLiteOpenHelper {
         finally {
             database.close();
             return list;
+        }
+    }
+
+    public boolean setActiveFolder(@NonNull int FolderID, @NonNull boolean newState)
+    {
+        SQLiteDatabase database = this.getWritableDatabase();
+        try
+        {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(WALLPAPER_IN_FOLDER_IS_ACTIVE,newState == true ? 1 : 0);
+            database.update(WALLPAPER_IN_FOLDER_TABLE_NAME,contentValues,
+                    WALLPAPER_IN_FOLDER_ID + "=?",new String[]{String.valueOf(FolderID)});
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            return false;
+        }
+        finally {
+            database.close();
         }
     }
 
@@ -362,4 +458,39 @@ public class SqliteConnection extends SQLiteOpenHelper {
         }
     }
 
+    public boolean isFolderAddedBefore(@NonNull String folderDest,@NonNull String folderName) {
+        SQLiteDatabase database =this.getReadableDatabase();
+        try
+        {
+            String[] selectQuery = {WALLPAPER_IN_FOLDER_ID};
+            Cursor cursor = database.query(WALLPAPER_IN_FOLDER_TABLE_NAME,selectQuery,
+                    WALLPAPER_IN_FOLDER_NAME + "=? AND " + WALLPAPER_IN_FOLDER_PATH + "=?",
+                    new String[]{folderName,folderDest},null,null,null);
+            if (cursor.getCount() > 0) return true;
+            else return false;
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            return false;
+        }
+        finally {
+            database.close();
+        }
+    }
+
+    public boolean deleteFolder(@NonNull int folderID)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            String[] where = {String.valueOf(folderID)};
+            db.delete(WALLPAPER_IN_FOLDER_TABLE_NAME, WALLPAPER_IN_FOLDER_ID + "=?", where);
+            return true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return false;
+        } finally {
+            db.close();
+        }
+    }
 }

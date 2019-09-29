@@ -207,12 +207,12 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
                 file.createNewFile();
                 fileOutputStream = new FileOutputStream(file);
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
-                activeModel.setFilePath(file);
+                activeModel.setImageFile(file);
                 MainActivity.showToast(String.format("This wallpaper is saved to %s",file.getPath()), Toast.LENGTH_SHORT,getContext());
             }
             else
             {
-                if(activeModel.getFilePath() == null) activeModel.setFilePath(file);
+                if(activeModel.getAbsoulteImagePath() == null) activeModel.setImageFile(file);
                 MainActivity.showToast(String.format("This wallpaper is already save to %s",file.getPath()), Toast.LENGTH_SHORT,getContext());
             }
 
@@ -239,7 +239,7 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
     @Override
     public void Finished(String imagePath) {
         activeBitmap = BitmapFactory.decodeFile(imagePath);
-        activeModel.setFilePath(imagePath);
+        activeModel.setImageFile(imagePath);
 
         if(this.activeBitmap != null)
         {
@@ -252,8 +252,8 @@ public class BottomDownloadDialog extends BottomSheetDialogFragment implements V
 
         if (activeBitmap != null && circleProgressBar.getProgress() >= 100f)
         {
-            MainActivity.showToast("This wallpaper is downloaded to " + activeModel.getFilePath(),Toast.LENGTH_SHORT,MainActivity.ma);
-            File file = new File(activeModel.getFilePath());
+            MainActivity.showToast("This wallpaper is downloaded to " + activeModel.getAbsoulteImagePath(),Toast.LENGTH_SHORT,MainActivity.ma);
+            File file = new File(activeModel.getAbsoulteImagePath());
             doEvent(file);
             dismiss();
         }
