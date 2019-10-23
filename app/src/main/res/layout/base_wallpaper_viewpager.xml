@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.example.hrwallpapers.CircleProgressBar
+    <com.slice.wallpapers.CircleProgressBar
         android:id="@+id/base_wallpaper_circleProgressBar"
         android:layout_width="50dp"
         android:layout_height="50dp"

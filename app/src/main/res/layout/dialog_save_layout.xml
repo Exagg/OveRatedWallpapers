@@ -7,7 +7,7 @@
     android:background="@android:color/transparent"
     android:orientation="vertical">
 
-    <com.example.hrwallpapers.CircleProgressBar
+    <com.slice.wallpapers.CircleProgressBar
         android:layout_margin="35dp"
         android:id="@+id/download_dialog_circlebar"
         android:layout_width="150dp"

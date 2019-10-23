@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".AutoWallpaperFragment">
+    tools:context="com.slice.wallpapers.AutoWallpaperFragment">
 
     <ScrollView android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -34,17 +34,19 @@
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"/>
 
-                <ToggleButton
+                <Switch
                 android:id="@+id/auto_wallpaper_enable_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:padding="10dp"
                 android:layout_weight="50"
-                android:textColor="@color/white"
-                android:textOn="ACTIVE"
-                android:textOff="PASSIVE"
-                android:textSize="16dp" />
+                android:track="@drawable/autowallpaper_service_track"
+                android:thumb="@drawable/autowallpaper_service_thumb"
+                android:textOn="Active"
+                android:textOff="Passive"
+                android:checked="false"
+                android:textColor="@color/white" />
 
             </LinearLayout>
 
@@ -99,7 +101,6 @@
                     android:textColor="@color/white" />
 
                 <RadioButton
-                    android:checked="true"
                     android:layout_marginRight="1dp"
                     android:layout_marginTop="1dp"
                     android:layout_marginBottom="1dp"

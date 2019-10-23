@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
-    tools:context=".FavoritesFragment">
+    tools:context="com.slice.wallpapers.FavoritesFragment">
     <LinearLayout
         android:id="@+id/favorites_no_content_container"
         android:layout_width="match_parent"
@@ -15,6 +15,7 @@
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:src="@drawable/ic_no_like"
+            android:scaleType="fitXY"
             android:layout_gravity="center"
             android:tint="@color/dark_gray"
             android:layout_margin="15dp"/>

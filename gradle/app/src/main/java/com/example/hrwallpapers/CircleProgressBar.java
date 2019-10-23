@@ -72,33 +72,12 @@ public class CircleProgressBar extends View {
             this.setVisibility(GONE);
             if (loadedEvent != null)
                 loadedEvent.progressBarLoaded(this);
-            if(responsibleView!= null)
-            {
-                if (visibilityType == 1)
-                {
-                    responsibleView.setVisibility(VISIBLE);
-                }
-                else {
-                    responsibleView.setVisibility(INVISIBLE);
-                }
-            }
         }
         else
         {
             this.isLoaded = false;
             this.isLoading = false;
             if (progress > 0) this.isLoading = true;
-            this.setVisibility(VISIBLE);
-            if(responsibleView!= null)
-            {
-                if (visibilityType == 1)
-                {
-                    responsibleView.setVisibility(INVISIBLE);
-                }
-                else {
-                    responsibleView.setVisibility(VISIBLE);
-                }
-            }
         }
 
         postInvalidate();

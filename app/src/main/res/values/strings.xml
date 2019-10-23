@@ -1,11 +1,15 @@
 <resources>
-    <string name="app_name">Splice Wallpaper</string>
+    <string name="app_name">SLICE Wallpaper</string>
+    <string name="banner_ad_id">ca-app-pub-9565358595210868/9807918122</string>
+    <string name="reward_id">ca-app-pub-9565358595210868/3360055110</string>
+    <string name="native_ad_id">ca-app-pub-9565358595210868/3697707287</string>
+    <string name="app_ad_id">ca-app-pub-9565358595210868~4008796538</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Splice Wallpapers</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
-
+    <string name="maintaince_mode">We WILL BE RIGHT BACK</string>
     <string name="title_activity_base_wallpaper">Wallpaper</string>
     <string name="title_activity_image_process">Filter</string>
 

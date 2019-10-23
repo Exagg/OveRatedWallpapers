@@ -78,7 +78,7 @@ public class FavoritesFragment extends Fragment {
         getActivity().setTitle(FRAGMENT_TITLE);
         popupFragment = setFragment(new wallpaperPopupFragment());
 
-        List<String> favorites = MainActivity.database.getFavorites();
+        List<String> favorites = SqliteConnection.connection.getFavorites();
 
         if (favorites.size() > 0)
         {
